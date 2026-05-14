@@ -13,14 +13,28 @@ forex_trade_tv/
 │   ├── 02_MARKET_PREP_ROUTINE.md         ← Daily morning routine
 │   └── 03_FUNDAMENTAL_AND_MACRO_GUIDE.md ← Economics + news + data sources
 │
-├── strategies/
-│   ├── 01_asian_breakout_cpr.pine        ← CPR-based, London open
-│   ├── 02_pdh_pdl_breakout_cpr.pine      ← CPR + Prev Day H/L
-│   ├── 03_smc_sweep_fvg.pine             ← Smart Money: Liquidity sweep + FVG
-│   ├── 04_opening_range_breakout.pine    ← ORB-15 classic
-│   ├── 05_vwap_bounce.pine               ← VWAP + trend continuation
-│   └── README.md                          ← How to copy-paste, backtest, alert
+├── strategies/                            🎯 TradingView Pine Scripts
+│   ├── 01_asian_breakout_cpr.pine
+│   ├── 02_pdh_pdl_breakout_cpr.pine
+│   ├── 03_smc_sweep_fvg.pine
+│   ├── 04_opening_range_breakout.pine
+│   ├── 05_vwap_bounce.pine
+│   └── README.md
 │
+├── bot/                                   🤖 Python automation → Telegram
+│   ├── README.md                         ← Setup guide (READ THIS for bot)
+│   ├── src/                              ← Strategies, indicators, data, news
+│   ├── run_signals.py                    ← Every 15 min: scan & alert
+│   ├── run_morning_brief.py              ← 11:30 AM IST daily brief
+│   └── run_news_watcher.py               ← Hourly red-news warnings
+│
+├── .github/workflows/                     ⚙️  GitHub Actions automation
+│   ├── signals.yml
+│   ├── morning_brief.yml
+│   ├── news_watcher.yml
+│   └── test_telegram.yml                 ← Manual trigger to test bot
+│
+├── requirements.txt
 └── README.md  (this file)
 ```
 
