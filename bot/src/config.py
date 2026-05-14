@@ -18,22 +18,39 @@ TELEGRAM_CHAT_ID: str   = os.getenv("TELEGRAM_CHAT_ID")   or TELEGRAM_CHAT_ID_DE
 
 # ─────────── Trading config ───────────
 @dataclass
+class PairConfig:
+    """One tradable instrument."""
+    display: str        # "XAUUSD"
+    yf_symbol: str      # yfinance ticker
+    td_symbol: str      # Twelve Data ticker (fallback)
+    pip_value_per_lot: float  # $ per 1 unit move per 1 standard lot
+    point_size: float   # smallest meaningful move (for display formatting)
+    min_lot: float = 0.01
+    enabled: bool = True
+
+
+# All pairs to scan. Add/remove freely.
+PAIRS: list = [
+    PairConfig("XAUUSD",  "GC=F",       "XAU/USD",  100.0,  0.01),  # gold: $1 move on 1 lot = $100
+    PairConfig("GBPUSD",  "GBPUSD=X",   "GBP/USD",  10.0,   0.0001),
+    PairConfig("EURUSD",  "EURUSD=X",   "EUR/USD",  10.0,   0.0001),
+    PairConfig("NAS100",  "NQ=F",       "NDX",      20.0,   0.25),  # Nasdaq futures
+]
+
+
+@dataclass
 class Settings:
-    # Primary pair. Yahoo tickers:
-    #   "GC=F"     = Gold Futures (best free intraday data for XAUUSD proxy)
-    #   "XAUUSD=X" = FX spot gold (less reliable intraday)
-    # Twelve Data symbol for fallback = "XAU/USD"
+    # Primary pair (used by single-pair legacy scripts; multi-pair uses PAIRS list)
     symbol_yf: str = "GC=F"
     symbol_td: str = "XAU/USD"
     symbol_display: str = "XAUUSD"
 
-    timeframe: str = "15m"          # yfinance interval
-    history_days: int = 30          # candles to fetch
+    timeframe: str = "15m"
+    history_days: int = 30
     account_size_usd: float = 10_000
-    risk_pct: float = 0.5           # % per trade
+    risk_pct: float = 0.5
     timezone: str = "Asia/Kolkata"
 
-    # Enable/disable strategies
     enable_strategies: List[str] = field(default_factory=lambda: [
         "s1_asian_breakout_cpr",
         "s2_pdh_pdl_cpr",
@@ -42,7 +59,6 @@ class Settings:
         "s5_vwap_bounce",
     ])
 
-    # Macro symbols for the morning brief
     macro_symbols: dict = field(default_factory=lambda: {
         "DXY (Dollar Index)":  "DX-Y.NYB",
         "US 10Y Yield":        "^TNX",
@@ -52,11 +68,10 @@ class Settings:
         "Bitcoin":             "BTC-USD",
     })
 
-    # ForexFactory weekly calendar — free, no key needed
     ff_calendar_url: str = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
-
-    # State file path (used to dedupe signals across runs)
     state_file: str = "bot/state/signals_seen.json"
+    trade_log_csv: str = "data/trades.csv"
+    bt_report_path: str = "data/backtest_report.md"
 
 
 CFG = Settings()

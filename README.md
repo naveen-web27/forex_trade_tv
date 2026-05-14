@@ -1,140 +1,184 @@
-# 🚀 Forex Trading System — Complete Knowledge Base + Pine Scripts
+# 🚀 Forex Trading System — Full Automation
 
-Personal trading workspace for **XAUUSD funded account growth → ₹1 Cr**.
+XAUUSD + multi-pair signal scanner running 24/5 on GitHub Actions → Telegram.
 
 ---
 
-## 📂 Folder Structure
+## 🤖 What runs automatically (all on GitHub Actions)
+
+| Workflow | Time (IST) | What you receive on Telegram |
+|----------|-----------|------------------------------|
+| 🌅 **Morning Brief** | Mon–Fri 11:30 AM | Red news + DXY/yields/gold + key levels + bias |
+| 📰 **News Watcher** | Every 30 min | Warning 30-90 min before red news |
+| 📈 **Signal Scanner** | Every 15 min, market hours | Signals from 5 strategies × 4 pairs |
+| 💬 **Commands** | Every 5 min | Replies to `/status` `/today` `/stats` `/levels` `/help` |
+| 🏁 **EOD Report** | Mon–Fri 11:00 PM | Today's P&L + closes trades + commits CSV |
+| 🔬 **Weekly Backtest** | Sunday 8:00 PM | 30-day stats per strategy × pair |
+
+---
+
+## 📊 Data persistence (committed to repo)
+
+| File | What |
+|------|------|
+| `data/trades.csv` | Every signal: entry, SL, TP, lot, status, result_R, result_$, exit |
+| `data/backtest_signals.csv` | All signals from last weekly backtest |
+| `data/backtest_report.md` | Readable weekly stats |
+
+Open these in **Excel / Google Sheets / Numbers** anytime → full audit trail.
+
+---
+
+## 🎯 Pairs configured
+
+| Pair | yfinance ticker | Notes |
+|------|----------------|-------|
+| XAUUSD | `GC=F` | Primary |
+| GBPUSD | `GBPUSD=X` | London breakouts |
+| EURUSD | `EURUSD=X` | Most liquid |
+| NAS100 | `NQ=F` | NY momentum |
+
+Edit `bot/src/config.py` → `PAIRS` list to add/remove (enabled flag per pair).
+
+---
+
+## 💬 Telegram commands (type in your group)
+
+| Command | Returns |
+|---------|---------|
+| `/help` | List of commands |
+| `/status` | Open trades + today's count |
+| `/today` | Today's P&L summary |
+| `/stats` | Lifetime win rate, total R, total $ |
+| `/levels` | Current XAUUSD CPR + PDH/PDL |
+
+Reply latency: 0–5 min (cron polling).
+
+---
+
+## 📂 Project structure
 
 ```
 forex_trade_tv/
-├── docs/
-│   ├── 01_GLOSSARY.md                    ← All trading terms explained
-│   ├── 02_MARKET_PREP_ROUTINE.md         ← Daily morning routine
-│   └── 03_FUNDAMENTAL_AND_MACRO_GUIDE.md ← Economics + news + data sources
-│
-├── strategies/                            🎯 TradingView Pine Scripts
-│   ├── 01_asian_breakout_cpr.pine
-│   ├── 02_pdh_pdl_breakout_cpr.pine
-│   ├── 03_smc_sweep_fvg.pine
-│   ├── 04_opening_range_breakout.pine
-│   ├── 05_vwap_bounce.pine
-│   └── README.md
-│
-├── bot/                                   🤖 Python automation → Telegram
-│   ├── README.md                         ← Setup guide (READ THIS for bot)
-│   ├── src/                              ← Strategies, indicators, data, news
-│   ├── run_signals.py                    ← Every 15 min: scan & alert
-│   ├── run_morning_brief.py              ← 11:30 AM IST daily brief
-│   └── run_news_watcher.py               ← Hourly red-news warnings
-│
-├── .github/workflows/                     ⚙️  GitHub Actions automation
-│   ├── signals.yml
-│   ├── morning_brief.yml
-│   ├── news_watcher.yml
-│   └── test_telegram.yml                 ← Manual trigger to test bot
-│
+├── README.md                  ⭐ this
 ├── requirements.txt
-└── README.md  (this file)
+│
+├── docs/
+│   ├── 01_GLOSSARY.md
+│   ├── 02_MARKET_PREP_ROUTINE.md
+│   ├── 03_FUNDAMENTAL_AND_MACRO_GUIDE.md
+│   └── 04_MT5_AUTOEXECUTE.md
+│
+├── strategies/                 🎯 TradingView Pine (1-5)
+│
+├── bot/
+│   ├── src/
+│   │   ├── config.py           ← PAIRS, strategies, risk %, telegram creds
+│   │   ├── data.py             ← yfinance + Twelve Data
+│   │   ├── indicators.py       ← ATR/EMA/VWAP/CPR/FVG/swings
+│   │   ├── strategies/         ← s1...s5
+│   │   ├── trade_log.py        ← CSV log + outcome eval
+│   │   ├── position_size.py    ← lot calc per pair
+│   │   ├── news.py             ← ForexFactory XML
+│   │   ├── formatters.py
+│   │   └── telegram_notify.py
+│   ├── run_signals.py
+│   ├── run_morning_brief.py
+│   ├── run_news_watcher.py
+│   ├── run_eod_report.py
+│   ├── run_backtest.py
+│   └── run_commands.py
+│
+├── data/                       📊 trade history + backtest output
+│
+└── .github/workflows/
+    ├── signals.yml
+    ├── morning_brief.yml
+    ├── news_watcher.yml
+    ├── eod_report.yml
+    ├── backtest.yml
+    ├── commands.yml
+    └── test_telegram.yml
 ```
 
 ---
 
-## 🎯 Quick Start (3 actions today)
+## 🚀 Deploy
 
-### 1. Read in this order (90 minutes)
-1. 📖 `docs/01_GLOSSARY.md` — get every term clear
-2. 🌅 `docs/02_MARKET_PREP_ROUTINE.md` — daily checklist
-3. 🌍 `docs/03_FUNDAMENTAL_AND_MACRO_GUIDE.md` — news & data
+```bash
+cd /Users/naveenkumarmadhesh/Documents/test_naveen/forex_trade_tv
+git add .
+git commit -m "Full automation: multi-pair, EOD CSV, backtest, commands"
+git push
+```
 
-### 2. Set up TradingView (15 minutes)
-1. Open `strategies/README.md` — follow copy-paste guide
-2. Paste **Strategy 1, 3, 4** into Pine Editor (start with these 3)
-3. Create alerts on each → enable phone push notifications
+Then GitHub → **Actions** → enable any newly-added workflows.
 
-### 3. Bookmark these URLs
-- [ForexFactory Calendar](https://www.forexfactory.com/calendar) (set IST timezone)
-- [CME FedWatch](https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html)
-- [TradingEconomics](https://tradingeconomics.com)
-- [Kitco News](https://www.kitco.com/news/) (gold specific)
+**Test it now:** Actions → 🏁 EOD Report → Run workflow. Should send an empty summary to Telegram.
 
 ---
 
-## 🧠 The 5 Strategies
+## ⚙️ Tuning
 
-| # | Name | When it fires | Difficulty | Best for |
-|---|------|---------------|------------|----------|
-| 1 | Asian Breakout + CPR | London open breakout | ⭐ | Trending days |
-| 2 | PDH/PDL + CPR | Prior-day level break | ⭐ | Continuation |
-| 3 | SMC Sweep + FVG | Liquidity grab + imbalance | ⭐⭐⭐ | Reversals |
-| 4 | Opening Range Breakout | First 15min break | ⭐ | Volatility expansion |
-| 5 | VWAP Bounce | Pullback in trend | ⭐⭐ | Trending days |
+Everything in `bot/src/config.py`:
 
-**Recommended combo:** Run **1 + 3 + 4** simultaneously → covers breakouts, reversals, and volatility plays.
+```python
+account_size_usd = 10_000
+risk_pct = 0.5
 
----
+enable_strategies = [
+    "s1_asian_breakout_cpr",
+    "s2_pdh_pdl_cpr",
+    "s3_smc_sweep_fvg",
+    "s4_orb",
+    "s5_vwap_bounce",
+]
 
-## 📊 The Path to ₹1 Cr (realistic plan)
-
-| Phase | Months | Action | Target |
-|-------|--------|--------|--------|
-| **Learn** | 1–2 | Read all docs, paper trade Pine scripts | Understand every signal |
-| **Backtest** | 1 | TradingView Strategy Tester on all 5 | Find best 2–3 strategies |
-| **Demo** | 2 | Forward-test on demo MT5 | Match backtest results |
-| **Funded #1** | 3 | Pass first challenge | $10k account |
-| **Scale** | 6 | Multiple funded accounts (FTMO, MFF, FN) | $100k+ combined |
-| **Cash out** | 12–24 | Consistent 6–10%/month payouts | ₹1 Cr cumulative |
-
-**Key rules:**
-- Risk ≤ 0.5% per trade
-- Max 2 trades/day
-- No trading 30 min around red news
-- Stop trading after 2 losses in a day
-- Journal every trade
+PAIRS = [
+    PairConfig("XAUUSD",  "GC=F",     ..., enabled=True),
+    PairConfig("GBPUSD",  "GBPUSD=X", ..., enabled=True),
+    PairConfig("EURUSD",  "EURUSD=X", ..., enabled=True),
+    PairConfig("NAS100",  "NQ=F",     ..., enabled=False),  # disable
+]
+```
 
 ---
 
-## ⚠️ Funded Account Survival Rules
+## 🎓 90-day roadmap
 
-1. **Daily DD limit** → if approaching, STOP trading for the day
-2. **Max DD limit** → if approaching, withdraw + restart fresh
-3. **Consistency rule** (FTMO etc.) → don't have one giant winning day vs many small
-4. **News rule** → many prop firms ban trading 5 min around red news
-5. **Weekend rule** → close all positions Friday 8 PM IST
-
----
-
-## 🛠️ Tools Stack
-
-| Need | Tool |
-|------|------|
-| Charts + backtest | TradingView (free → Essential ₹1,200/mo) |
-| News | ForexFactory + Investing.com mobile app |
-| Live trading | MT5 (from your prop firm) |
-| Journal | Notion / Excel / Edgewonk |
-| Macro data | TradingEconomics + FRED |
-| VPS (later) | Contabo / ForexVPS ~₹500–1500/mo |
+| Phase | Weeks | Action |
+|-------|-------|--------|
+| Learn | 1–2 | Read all docs. Watch signals. Don't trade live. |
+| Paper | 3–4 | Manually paper-trade every Telegram signal in MT5 demo |
+| Validate | 5–6 | Review `data/trades.csv` + backtest weekly. Confirm edge. |
+| Live half | 7–10 | Funded account @ 0.25% risk (half size) |
+| Live full | 11–12 | After 50+ trades, scale to 0.5% |
+| Auto | 13+ | See `docs/04_MT5_AUTOEXECUTE.md` — Windows VPS for full automation |
 
 ---
 
-## 📈 Next Levels (when you're ready)
+## ⚠️ Security
 
-- **Phase 2:** Python backtester (more precise than TV Strategy Tester)
-- **Phase 3:** MT5 Expert Advisor (full automation)
-- **Phase 4:** Multi-pair portfolio (XAUUSD + GBPUSD + NAS100)
-- **Phase 5:** Custom Python + ML signals
+The Telegram bot token is **hardcoded** in `bot/src/config.py`. Keep this repo **private**.
 
-Just ask when you're ready and I'll build them.
+If you ever push it public:
+1. `@BotFather` → `/revoke`
+2. Update `config.py` with new token
+3. Push
 
 ---
 
-## ❤️ Final Wisdom
+## 🏆 You now have:
+- ✅ 5 Pine Script strategies for TradingView
+- ✅ Same 5 strategies in Python, running 24/5 automatically
+- ✅ 4 pairs monitored in parallel
+- ✅ Auto position sizing
+- ✅ Auto trade logging to CSV
+- ✅ Auto EOD P&L reports
+- ✅ Weekly backtest
+- ✅ Telegram commands
+- ✅ Red news avoidance
+- ✅ Macro morning brief
+- ✅ Path to full MT5 auto-execution
 
-> **"Amateurs focus on rewards. Professionals focus on risk."**
->
-> Trading is 80% psychology, 15% risk management, 5% strategy.
-> All 5 of your strategies are good. **Your discipline is what wins.**
-
-📝 Journal every day. Review every week. Improve every month.
-
-**You got this, Naveen.** 🚀
+**An institutional-grade trading system, fully free, on GitHub.** 💪

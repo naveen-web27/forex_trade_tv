@@ -12,12 +12,15 @@ def _fmt_price(p: float) -> str:
     return f"{p:,.2f}"
 
 
-def signal_message(s: Signal, acct: float, risk_pct: float) -> str:
-    risk_money = acct * risk_pct / 100
-    # XAUUSD: $1 = $1 per contract per 1 oz; for messaging we just show R-distance in dollars
+def signal_message(s: Signal, acct: float, risk_pct: float,
+                   lot_size: float = 0.0, risk_usd: float = 0.0) -> str:
     sl_dist = abs(s.entry - s.sl)
     side_emoji = "🟢" if s.side == "LONG" else "🔴"
     arrow = "↑" if s.side == "LONG" else "↓"
+    lot_line = (f"📦 <b>Lot size</b>: <code>{lot_size:.2f}</code> "
+                f"(risk ${risk_usd:.0f} = {risk_pct}% of ${acct:,.0f})\n"
+                if lot_size > 0 else
+                f"💰 Risk @ {risk_pct}% = ${acct * risk_pct/100:,.0f}\n")
     return (
         f"{side_emoji} <b>{s.strategy} {s.side}</b>  {s.symbol} {arrow}\n"
         f"<i>{s.name}</i>\n"
@@ -29,7 +32,7 @@ def signal_message(s: Signal, acct: float, risk_pct: float) -> str:
         f"<b>TP2  </b>: <code>{_fmt_price(s.tp2)}</code>   ({s.rr2:.1f}R)\n"
         f"────────────────────\n"
         f"💡 {s.reason}\n"
-        f"💰 Risk @ {risk_pct}% = ${risk_money:,.0f}\n"
+        f"{lot_line}"
         f"🕒 {s.bar_time.strftime('%a %d %b %H:%M IST')}\n"
         f"\n⚠️ <b>Always verify on chart before entering.</b>"
     )
