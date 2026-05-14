@@ -47,8 +47,8 @@ class Settings:
 
     timeframe: str = "15m"
     history_days: int = 30
-    account_size_usd: float = 10_000
-    risk_pct: float = 0.5
+    account_size_usd: float = 5_000   # FundingPips challenge
+    risk_pct: float = 0.3             # Start cautious; bump to 0.5 after passing challenge
     timezone: str = "Asia/Kolkata"
 
     enable_strategies: List[str] = field(default_factory=lambda: [

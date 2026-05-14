@@ -15,6 +15,7 @@ import pytz
 
 from src import data, telegram_notify, trade_log
 from src.config import CFG, PAIRS
+from src.quotes import quote_of_the_day
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("run_eod")
@@ -78,8 +79,20 @@ def _format_eod(s: dict, lifetime: dict) -> str:
         f"  Total $:      ${lifetime['total_usd']:+,.2f}",
         f"  Open now:     {lifetime['open']}",
         "",
-        "<i>Trade log: data/trades.csv (committed to repo)</i>",
+        "─" * 28,
     ]
+    # Day-outcome aware motivation
+    if s["closed"] == 0 and s["opened"] == 0:
+        lines += ["🧘 <i>No signals today = no losses. Patience is a position.</i>"]
+    elif s["r_total"] > 0:
+        lines += ["🏆 <i>Green day. Don't get cocky. Tomorrow starts at zero. Stick to the plan.</i>"]
+    elif s["r_total"] < 0:
+        lines += ["🛡️ <i>Red day. This is the cost of doing business. Review the trades, don't revenge-trade.</i>"]
+    else:
+        lines += ["⚖️ <i>Breakeven. Better than blown. Keep grinding.</i>"]
+    lines += ["", quote_of_the_day(),
+              "",
+              "<i>📂 Trade log: data/trades.csv (committed to repo)</i>"]
     return "\n".join(lines)
 
 

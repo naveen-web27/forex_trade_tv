@@ -6,6 +6,7 @@ from typing import Iterable
 
 from .strategies import Signal
 from .news import NewsItem
+from .quotes import quote_of_the_day
 
 
 def _fmt_price(p: float) -> str:
@@ -34,7 +35,7 @@ def signal_message(s: Signal, acct: float, risk_pct: float,
         f"💡 {s.reason}\n"
         f"{lot_line}"
         f"🕒 {s.bar_time.strftime('%a %d %b %H:%M IST')}\n"
-        f"\n⚠️ <b>Always verify on chart before entering.</b>"
+        f"\n⚠️ <b>Verify on chart. Don't chase. Use EXACT lot above.</b>"
     )
 
 
@@ -68,7 +69,10 @@ def morning_brief(red_today: list[NewsItem],
             lines.append(f"  {k}: <code>{v:,.2f}</code>")
 
     lines += ["", f"🧭 <b>BIAS</b>: {bias}", "",
-              "<i>Run morning routine. Stick to plan. Risk ≤ 0.5%.</i>"]
+              "─" * 28,
+              quote_of_the_day(),
+              "",
+              "<i>🎯 Stick to the plan. Risk ≤ 0.3%. Max 2 trades/day. Stop after 2 losses.</i>"]
     return "\n".join(lines)
 
 
