@@ -6,9 +6,14 @@ from dataclasses import dataclass, field
 from typing import List
 
 
-# ─────────── Telegram (loaded from GitHub Secrets / env) ───────────
-TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID", "")
+# ─────────── Telegram credentials (hardcoded per user request) ───────────
+# ⚠️ Keep this repo PRIVATE on GitHub — anyone with read access can use the bot.
+TELEGRAM_BOT_TOKEN_DEFAULT = "7889376398:AAH7tMKhPHtt6NC75mMYvCgeV4bLtx2LwhA"
+TELEGRAM_CHAT_ID_DEFAULT   = "-4929420131"
+
+# Env vars override the defaults if set (handy for local testing)
+TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN") or TELEGRAM_BOT_TOKEN_DEFAULT
+TELEGRAM_CHAT_ID: str   = os.getenv("TELEGRAM_CHAT_ID")   or TELEGRAM_CHAT_ID_DEFAULT
 
 
 # ─────────── Trading config ───────────

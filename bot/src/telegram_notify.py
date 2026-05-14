@@ -1,25 +1,23 @@
-"""Telegram messenger (sync) — uses Bot HTTP API directly to avoid
-async complications inside GitHub Actions."""
+"""Telegram messenger — uses creds from config.py (env vars override)."""
 from __future__ import annotations
 
 import logging
-import os
 
 import requests
+
+from .config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 log = logging.getLogger(__name__)
 
 
 def send(text: str, parse_mode: str = "HTML", disable_web_page_preview: bool = True) -> bool:
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
-    if not token or not chat_id:
-        log.error("Telegram credentials missing (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID)")
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        log.error("Telegram credentials missing in config.py")
         return False
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     try:
         r = requests.post(url, json={
-            "chat_id": chat_id,
+            "chat_id": TELEGRAM_CHAT_ID,
             "text": text,
             "parse_mode": parse_mode,
             "disable_web_page_preview": disable_web_page_preview,
