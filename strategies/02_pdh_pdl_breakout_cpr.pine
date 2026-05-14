@@ -1,0 +1,120 @@
+//@version=5
+// =====================================================================
+// STRATEGY 2: Previous Day High/Low Breakout + CPR Confluence
+// Pair: XAUUSD  | Timeframe: M15  | Sessions: London + NY (12:30-22:30 IST)
+// Logic: When price breaks PDH/PDL with CPR direction → momentum trade
+// Complementary to Strategy 1 — fires on different days/setups
+// =====================================================================
+strategy("PDH/PDL Breakout + CPR [Naveen]",
+     overlay=true,
+     initial_capital=10000,
+     default_qty_type=strategy.percent_of_equity,
+     default_qty_value=100,
+     commission_type=strategy.commission.cash_per_contract,
+     commission_value=0.5,
+     pyramiding=0,
+     process_orders_on_close=true)
+
+// ───────────── INPUTS ─────────────
+grp1 = "📅 Trade Window"
+tradeSess   = input.session("1230-2230", "Trade Session (London+NY)", group=grp1)
+
+grp2 = "🎯 Risk & Targets"
+riskPct     = input.float(0.5,  "Risk % per trade", minval=0.1, maxval=2.0, step=0.1, group=grp2)
+slATRmult   = input.float(1.0,  "SL = ATR14 ×",  step=0.1, group=grp2)
+tp1R        = input.float(1.0,  "TP1 (R multiple)", group=grp2)
+tp2R        = input.float(2.0,  "TP2 (R multiple)", group=grp2)
+tp1Pct      = input.int(50, "Close % at TP1", group=grp2)
+
+grp3 = "🔍 Filters"
+useCPR      = input.bool(true,  "Require CPR direction confluence", group=grp3)
+useEMA      = input.bool(true,  "Require EMA50 trend confluence",   group=grp3)
+minDistATR  = input.float(0.3,  "Min distance from PDH/PDL (×ATR) to avoid noise", group=grp3)
+maxTradesDay= input.int(2,      "Max trades per day", minval=1, maxval=4, group=grp3)
+
+grp4 = "🔔 Alerts"
+alertOn     = input.bool(true, "Enable alerts", group=grp4)
+
+// ───────────── Previous Day Levels ─────────────
+pdh = request.security(syminfo.tickerid, "D", high[1],  lookahead=barmerge.lookahead_on)
+pdl = request.security(syminfo.tickerid, "D", low[1],   lookahead=barmerge.lookahead_on)
+pdc = request.security(syminfo.tickerid, "D", close[1], lookahead=barmerge.lookahead_on)
+
+plot(pdh, "PDH", color.new(color.lime, 0), linewidth=2, style=plot.style_linebr)
+plot(pdl, "PDL", color.new(color.red,  0), linewidth=2, style=plot.style_linebr)
+
+// ───────────── CPR ─────────────
+pivot  = (pdh + pdl + pdc) / 3
+bc     = (pdh + pdl) / 2
+tc     = (pivot - bc) + pivot
+cprTop = math.max(tc, bc)
+cprBot = math.min(tc, bc)
+
+plot(pivot,  "Pivot", color.new(color.yellow, 0))
+plot(cprTop, "TC",    color.new(color.aqua,   0))
+plot(cprBot, "BC",    color.new(color.aqua,   0))
+
+// ───────────── State ─────────────
+inSess = not na(time(timeframe.period, tradeSess))
+var int tradesToday = 0
+newDay = ta.change(time("D")) != 0
+if newDay
+    tradesToday := 0
+
+// ───────────── Indicators ─────────────
+atr   = ta.atr(14)
+ema50 = ta.ema(close, 50)
+
+// ───────────── Entry Conditions ─────────────
+cprBull  = not useCPR or close > pivot
+cprBear  = not useCPR or close < pivot
+trendUp  = not useEMA or close > ema50
+trendDn  = not useEMA or close < ema50
+
+breakUp  = ta.crossover(close,  pdh) and (close - pdh) >= atr * minDistATR * 0
+breakDn  = ta.crossunder(close, pdl) and (pdl - close) >= atr * minDistATR * 0
+
+longCond  = inSess and tradesToday < maxTradesDay and breakUp and cprBull and trendUp
+shortCond = inSess and tradesToday < maxTradesDay and breakDn and cprBear and trendDn
+
+// ───────────── Orders ─────────────
+if longCond
+    sl  = close - atr * slATRmult
+    risk = close - sl
+    tp1 = close + risk * tp1R
+    tp2 = close + risk * tp2R
+    strategy.entry("L", strategy.long)
+    strategy.exit("L-TP1", from_entry="L", qty_percent=tp1Pct, limit=tp1, stop=sl)
+    strategy.exit("L-TP2", from_entry="L", limit=tp2, stop=sl)
+    tradesToday += 1
+
+if shortCond
+    sl  = close + atr * slATRmult
+    risk = sl - close
+    tp1 = close - risk * tp1R
+    tp2 = close - risk * tp2R
+    strategy.entry("S", strategy.short)
+    strategy.exit("S-TP1", from_entry="S", qty_percent=tp1Pct, limit=tp1, stop=sl)
+    strategy.exit("S-TP2", from_entry="S", limit=tp2, stop=sl)
+    tradesToday += 1
+
+// Close at end of session
+if not inSess and strategy.position_size != 0
+    strategy.close_all(comment="EOD")
+
+// ───────────── Alerts ─────────────
+if alertOn and longCond
+    alert("🟢 STRAT2 LONG  " + syminfo.ticker + " @ " + str.tostring(close,"#.##") +
+          " | PDH=" + str.tostring(pdh,"#.##") +
+          " | SL="  + str.tostring(close - atr*slATRmult,"#.##"),
+          alert.freq_once_per_bar_close)
+if alertOn and shortCond
+    alert("🔴 STRAT2 SHORT " + syminfo.ticker + " @ " + str.tostring(close,"#.##") +
+          " | PDL=" + str.tostring(pdl,"#.##") +
+          " | SL="  + str.tostring(close + atr*slATRmult,"#.##"),
+          alert.freq_once_per_bar_close)
+
+// Visual
+plotshape(longCond,  "Long",  shape.triangleup,   location.belowbar, color.lime, size=size.small)
+plotshape(shortCond, "Short", shape.triangledown, location.abovebar, color.red,  size=size.small)
+bgcolor(inSess ? color.new(color.green, 95) : na)

@@ -1,0 +1,103 @@
+//@version=5
+// =====================================================================
+// STRATEGY 4: Opening Range Breakout (ORB-15)
+// Pair: XAUUSD  | Timeframe: M15
+// Idea: Mark high/low of FIRST 15-min candle of London open (12:30 IST).
+//       Trade break of that range within next 3 hours.
+// =====================================================================
+strategy("Opening Range Breakout [Naveen]",
+     overlay=true,
+     initial_capital=10000,
+     default_qty_type=strategy.percent_of_equity,
+     default_qty_value=100,
+     pyramiding=0,
+     process_orders_on_close=true)
+
+// ───────────── INPUTS ─────────────
+g1 = "📅 Session"
+orbStart    = input.session("1200-1215", "Opening 15-min (broker time)", group=g1,
+                  tooltip="London open candle. 12:00-12:15 broker ≈ 12:30-12:45 IST. Adjust to your broker.")
+tradeWin    = input.session("1215-1530", "Trade Window", group=g1)
+
+g2 = "🎯 Risk & Targets"
+slBufATR    = input.float(0.2, "SL buffer (×ATR)", group=g2)
+tp1R        = input.float(1.5, "TP1 (R)", group=g2)
+tp2R        = input.float(3.0, "TP2 (R)", group=g2)
+tp1Pct      = input.int(50, "Close % at TP1", group=g2)
+
+g3 = "🔍 Filters"
+useEMA      = input.bool(true, "Trade only with EMA200 trend", group=g3)
+minRangeATR = input.float(0.5, "Min ORB range (×ATR) — skip if too tight", group=g3)
+
+g4 = "🔔 Alerts"
+alertOn     = input.bool(true, "Enable alerts", group=g4)
+
+// ───────────── STATE ─────────────
+atr   = ta.atr(14)
+ema200 = ta.ema(close, 200)
+
+inORB   = not na(time(timeframe.period, orbStart))
+inTrade = not na(time(timeframe.period, tradeWin))
+
+var float orbHi = na
+var float orbLo = na
+var bool  longTaken  = false
+var bool  shortTaken = false
+
+newDay = ta.change(time("D")) != 0
+if newDay
+    orbHi := na
+    orbLo := na
+    longTaken  := false
+    shortTaken := false
+
+if inORB
+    orbHi := na(orbHi) ? high : math.max(orbHi, high)
+    orbLo := na(orbLo) ? low  : math.min(orbLo, low)
+
+plot(orbHi, "ORB High", color.new(color.lime, 0), linewidth=2, style=plot.style_linebr)
+plot(orbLo, "ORB Low",  color.new(color.red,  0), linewidth=2, style=plot.style_linebr)
+plot(ema200, "EMA200", color.new(color.orange, 0))
+
+// ───────────── ENTRY ─────────────
+rangeOk = not na(orbHi) and (orbHi - orbLo) >= atr * minRangeATR
+trendUp = not useEMA or close > ema200
+trendDn = not useEMA or close < ema200
+
+longCond  = inTrade and not longTaken  and rangeOk and ta.crossover(close, orbHi) and trendUp
+shortCond = inTrade and not shortTaken and rangeOk and ta.crossunder(close, orbLo) and trendDn
+
+if longCond
+    sl = orbLo - atr * slBufATR
+    risk = close - sl
+    tp1 = close + risk * tp1R
+    tp2 = close + risk * tp2R
+    strategy.entry("L", strategy.long)
+    strategy.exit("L-TP1", from_entry="L", qty_percent=tp1Pct, limit=tp1, stop=sl)
+    strategy.exit("L-TP2", from_entry="L", limit=tp2, stop=sl)
+    longTaken := true
+
+if shortCond
+    sl = orbHi + atr * slBufATR
+    risk = sl - close
+    tp1 = close - risk * tp1R
+    tp2 = close - risk * tp2R
+    strategy.entry("S", strategy.short)
+    strategy.exit("S-TP1", from_entry="S", qty_percent=tp1Pct, limit=tp1, stop=sl)
+    strategy.exit("S-TP2", from_entry="S", limit=tp2, stop=sl)
+    shortTaken := true
+
+if not inTrade and strategy.position_size != 0
+    strategy.close_all(comment="EOD")
+
+if alertOn and longCond
+    alert("🟢 STRAT4 ORB LONG "  + syminfo.ticker + " @ " + str.tostring(close,"#.##"),
+          alert.freq_once_per_bar_close)
+if alertOn and shortCond
+    alert("🔴 STRAT4 ORB SHORT " + syminfo.ticker + " @ " + str.tostring(close,"#.##"),
+          alert.freq_once_per_bar_close)
+
+plotshape(longCond,  "L", shape.triangleup,   location.belowbar, color.lime, size=size.small)
+plotshape(shortCond, "S", shape.triangledown, location.abovebar, color.red,  size=size.small)
+bgcolor(inORB   ? color.new(color.blue, 90)  : na)
+bgcolor(inTrade ? color.new(color.green, 95) : na)
