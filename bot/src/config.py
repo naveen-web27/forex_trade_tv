@@ -46,7 +46,11 @@ class Settings:
     symbol_display: str = "XAUUSD"
 
     timeframe: str = "15m"
-    history_days: int = 30
+
+    # ── history_days raised from 30 → 40 so S6 (Virgin CPR) has 30+ daily bars ──
+    # S6 needs LOOKBACK_DAYS(30) + 2 rows of daily data; 40 days gives comfortable margin.
+    history_days: int = 40
+
     account_size_usd: float = 5_000   # FundingPips challenge
     risk_pct: float = 0.3             # Start cautious; bump to 0.5 after passing challenge
     timezone: str = "Asia/Kolkata"
@@ -57,6 +61,7 @@ class Settings:
         "s3_smc_sweep_fvg",
         "s4_orb",
         "s5_vwap_bounce",
+        "s6_virgin_cpr",   # ← Virgin CPR scanner (consolidated Telegram summary)
     ])
 
     macro_symbols: dict = field(default_factory=lambda: {
@@ -70,6 +75,10 @@ class Settings:
 
     ff_calendar_url: str = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
     state_file: str = "bot/state/signals_seen.json"
+
+    # S6 state file lives alongside signals_seen.json — auto-resolved in run_signals.py
+    # bot/state/vcpr_seen.json
+
     trade_log_csv: str = "data/trades.csv"
     bt_report_path: str = "data/backtest_report.md"
 
