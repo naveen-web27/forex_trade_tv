@@ -97,6 +97,7 @@ class VCprReport:
         return lines
 
 
+
 # ─── internal helpers ────────────────────────────────────────────────────────
 def _calc_atr(daily_df: pd.DataFrame, period: int = 14) -> pd.Series:
     """ATR via exponential smoothing of True Range — same as Pine ta.atr()."""
