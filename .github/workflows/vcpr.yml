@@ -1,0 +1,49 @@
+name: 📈 VCPR Scanner
+
+on:
+  schedule:
+    - cron: "30 0 * * 1-5"
+    - cron: "30 14 * * 1-5"
+  workflow_dispatch:   # allow manual run from Actions tab
+
+permissions:
+  contents: write      # needed to commit state files (signals_seen.json + vcpr_seen.json)
+
+concurrency:
+  group: signals
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run signal scanner
+        env:
+          PYTHONPATH: bot
+        run: python bot/run_vcpr.py
+
+      - name: Commit dedupe state (if changed)
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain bot/state)" ]]; then
+            git add bot/state
+            git commit -m "chore: update signal state [skip ci]"
+            git push
+          else
+            echo "No state changes."
+          fi

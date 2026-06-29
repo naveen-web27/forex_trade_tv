@@ -6,3 +6,4 @@ python-telegram-bot>=21.0
 lxml>=4.9
 pytz>=2024.1
 tabulate>=0.9
+git+https://github.com/rongardF/tvdatafeed.git@main#egg=tvdatafeed

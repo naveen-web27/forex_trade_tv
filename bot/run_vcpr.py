@@ -217,73 +217,20 @@ def safe_vcpr(symbol, exchange="FX", retries=5):
             print(f"[{symbol}] Attempt {attempt+1}/{retries} failed: {e}")
     return []
 def main() -> int:
-    log.info("=== Multi-pair signal scan start ===")
 
-    # 1) Red news filter
-    try:
-        if news.red_news_active(buffer_minutes=30):
-            log.info("Red news active — skipping signal scan.")
-            return 0
-    except Exception as e:
-        log.warning("News check failed (continuing): %s", e)
 
-    seen = state.load_seen()
-    new_seen = set(seen)
-    sent = 0
+    all_reports = {
+        "EURUSD": safe_vcpr("EURUSD"),
+        "USDJPY": safe_vcpr("USDJPY"),
+        "GBPUSD": safe_vcpr("GBPUSD"),
+        "AUDUSD": safe_vcpr("AUDUSD"),
+        "USDCHF": safe_vcpr("USDCHF"),
+        "EURJPY": safe_vcpr("EURJPY"),
+        "GBPJPY": safe_vcpr("GBPJPY"),
+        "XAUUSD": safe_vcpr("XAUUSD"),
+    }
 
-    # ── Fetch all pair data once, reuse for both directional + VCPR scans ──
-    pair_data_map: dict = {}
-    for pair in PAIRS:
-        if not pair.enabled:
-            continue
-        log.info("─── Fetching %s ───", pair.display)
-        try:
-            df, daily = fetch_for_pair(pair)
-            if len(df) < 220 or len(daily) < 3:
-                log.warning("[%s] not enough data (%d intraday, %d daily)",
-                            pair.display, len(df), len(daily))
-                continue
-            pair_data_map[pair.display] = (df, daily)
-        except Exception as e:
-            log.warning("[%s] data fetch failed: %s", pair.display, e)
-
-    # ── Directional strategies (S1–S5) ──────────────────────────────────────
-    directional_strategies = [s for s in CFG.enable_strategies if s != "s6_virgin_cpr"]
-
-    for pair in PAIRS:
-        if not pair.enabled or pair.display not in pair_data_map:
-            continue
-
-        df, daily = pair_data_map[pair.display]
-        log.info("─── %s directional ───", pair.display)
-
-        for strat_name in directional_strategies:
-            try:
-                mod = importlib.import_module(f"src.strategies.{strat_name}")
-                sig = mod.check(df, daily, pair.display)
-                if sig is None:
-                    continue
-                key = sig.dedupe_key()
-                if key in seen:
-                    log.info("[%s/%s] already alerted (%s)", pair.display, strat_name, key)
-                    continue
-
-                lots, risk_usd = position_size.compute_size(pair.display, sig.entry, sig.sl)
-                text = signal_message(sig, CFG.account_size_usd, CFG.risk_pct,
-                                      lot_size=lots, risk_usd=risk_usd)
-                if telegram_notify.send(text):
-                    trade_log.append_signal(sig, lots, risk_usd)
-                    new_seen.add(key)
-                    sent += 1
-                    log.info("[%s/%s] ✅ SENT %s @ %.4f (%.2f lots)",
-                             pair.display, strat_name, sig.side, sig.entry, lots)
-                else:
-                    log.error("[%s/%s] Telegram send failed", pair.display, strat_name)
-            except Exception as e:
-                log.exception("[%s/%s] error: %s", pair.display, strat_name, e)
-
-    state.save_seen(new_seen)
-
+    telegram_notify.send(_format_vcpr_message(all_reports))
     return 0
 
 
