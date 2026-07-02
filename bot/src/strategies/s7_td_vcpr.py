@@ -211,7 +211,7 @@ def fetch_data(
         symbol=symbol,
         exchange=exchange,
         interval=Interval.in_daily,
-        n_bars=15
+        n_bars=30
     )
 
     last_30.reset_index(inplace=True)

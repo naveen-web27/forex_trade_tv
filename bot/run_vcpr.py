@@ -28,7 +28,7 @@ from src.formatters import signal_message
 from src.strategies.s6_virgin_cpr import check as vcpr_check, VCprReport
 from src.strategies.s7_td_vcpr import check as td_vcpr_check
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-log = logging.getLogger("run_signals")
+log = logging.getLogger("run_vcpr")
 
 # Path for VCPR dedup state (separate from directional-signal state)
 VCPR_STATE_FILE = Path(CFG.state_file).parent / "vcpr_seen.json"
@@ -36,37 +36,7 @@ VCPR_STATE_FILE = Path(CFG.state_file).parent / "vcpr_seen.json"
 IST = timezone(timedelta(hours=5, minutes=30))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# VCPR state helpers
-# ─────────────────────────────────────────────────────────────────────────────
 
-def _load_vcpr_state() -> dict:
-    if VCPR_STATE_FILE.exists():
-        try:
-            return json.loads(VCPR_STATE_FILE.read_text())
-        except Exception:
-            return {}
-    return {}
-
-
-def _save_vcpr_state(state_dict: dict):
-    VCPR_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    VCPR_STATE_FILE.write_text(json.dumps(state_dict, indent=2))
-
-
-def _vcpr_already_alerted(state_dict: dict, symbol: str, date: str) -> bool:
-    return state_dict.get(symbol, {}).get(date, False)
-
-
-def _vcpr_mark_alerted(state_dict: dict, symbol: str, date: str):
-    if symbol not in state_dict:
-        state_dict[symbol] = {}
-    state_dict[symbol][date] = True
-    # Prune entries older than 35 days to keep the file lean
-    cutoff = (datetime.now(IST) - timedelta(days=35)).strftime("%Y-%m-%d")
-    state_dict[symbol] = {
-        d: v for d, v in state_dict[symbol].items() if d >= cutoff
-    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -100,7 +70,7 @@ def _format_vcpr_message(all_reports) -> str:
 
         for report in reports:
             lines.append(
-                f"   └─ {report}"
+                f"   └─Date: {report[0]} | width: {report[3]:.1f}"
             )
 
     lines += [
@@ -121,92 +91,7 @@ def _format_vcpr_message(all_reports) -> str:
 # VCPR scan — runs alongside directional strategies
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_vcpr_scan(pair_data_map: dict) -> int:
-    """
-    Scan all pairs for Virgin CPRs.
-    Sends ONE consolidated Telegram message for all NEW virgin CPRs found.
-    Also sends a full morning summary at 09:00–09:14 IST regardless of newness.
 
-    Args:
-        pair_data_map: {pair.display: (df_15m, df_daily)} — already fetched data
-
-    Returns:
-        int: number of new virgin CPR bands alerted across all pairs
-    """
-    log.info("=== Virgin CPR scan ===")
-    vcpr_state = _load_vcpr_state()
-    now_ist = datetime.now(IST)
-    is_morning = (now_ist.hour == 9 and now_ist.minute < 15)
-
-    all_reports: list[VCprReport] = []
-    new_reports: list[VCprReport] = []   # only reports with NEW (un-alerted) bands
-
-    for pair in PAIRS:
-        if not pair.enabled:
-            continue
-        if pair.display not in pair_data_map:
-            continue
-
-        df, daily = pair_data_map[pair.display]
-        try:
-            report = vcpr_check(df, daily, pair.display)
-            if report is None:
-                continue
-
-            all_reports.append(report)
-
-            # Filter to only bands we haven't sent before
-            new_bands = [
-                b for b in report.bands
-                if not _vcpr_already_alerted(vcpr_state, pair.display, b.date)
-            ]
-            if new_bands:
-                from src.strategies.s6_virgin_cpr import VCprReport as R
-                new_rpt = R(symbol=pair.display, bands=new_bands)
-                new_reports.append(new_rpt)
-                for b in new_bands:
-                    _vcpr_mark_alerted(vcpr_state, pair.display, b.date)
-
-        except Exception as e:
-            log.exception("[%s] VCPR scan error: %s", pair.display, e)
-
-    alerted = 0
-
-    # Morning summary (09:00–09:14 IST) — send ALL current VCPRs
-    if is_morning:
-        msg = _format_vcpr_message(all_reports, is_morning=True)
-        if telegram_notify.send(msg):
-            log.info("📊 Morning VCPR summary sent.")
-        else:
-            log.error("Morning VCPR summary Telegram send failed.")
-
-    # Alert for NEW virgin CPRs found this run (any time of day)
-    elif new_reports:
-        msg = _format_vcpr_message(new_reports, is_morning=False)
-        if telegram_notify.send(msg):
-            alerted = sum(len(r.bands) for r in new_reports)
-            log.info("📬 VCPR alert sent: %d new band(s) across %d pair(s).",
-                     alerted, len(new_reports))
-        else:
-            log.error("VCPR alert Telegram send failed.")
-
-    else:
-        log.info("VCPR: no new virgin CPRs this run.")
-
-    _save_vcpr_state(vcpr_state)
-    return alerted
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────────────────────────────────────
-
-def fetch_for_pair(pair) -> tuple:
-    df = data.fetch_yf(pair.yf_symbol, interval=CFG.timeframe, days=CFG.history_days)
-    daily = data.fetch_daily(pair.yf_symbol, days=40)   # 40 days → covers VCPR lookback
-    return df, daily
-
-import time
 
 def safe_vcpr(symbol, exchange="FX", retries=5):
     for attempt in range(retries):
@@ -228,6 +113,11 @@ def main() -> int:
         "EURJPY": safe_vcpr("EURJPY"),
         "GBPJPY": safe_vcpr("GBPJPY"),
         "XAUUSD": safe_vcpr("XAUUSD"),
+        "NZDCHF": safe_vcpr("NZDCHF"),
+        "USDCAD": safe_vcpr("USDCAD"),
+        "AUDNZD": safe_vcpr("AUDNZD"),
+        "AUDCAD": safe_vcpr("AUDCAD"),
+
     }
 
     telegram_notify.send(_format_vcpr_message(all_reports))
