@@ -1,21 +1,3 @@
-None selected 
-
-Skip to content
-Using Gmail with screen readers
-in:sent 
-Enable desktop notifications for Gmail.
-   OK  No thanks
-1 of 89
-Pine script
-
-Naveenkumar Madhesh <naveenfascino777@gmail.com>
-Attachments
-Sun, May 31, 6:24 PM
-to naveen
-
-
- 2 Attachments
-  •  Scanned by Gmail
 // CPR MASTER — ALL-IN-ONE INDICATOR WITH 1H ORDER FLOW
 // ---------------------------------------------------------------------
 // Modules (toggle each in settings):
@@ -25,15 +7,23 @@ to naveen
 //    D. Virgin CPR — yesterday's TC / Pivot / BC plotted as a
 //       horizontal line that EXTENDS RIGHT until any candle touches it.
 //       Once touched the line stops extending (turns gray dashed).
+//    D2. Weekly Virgin CPR  — same logic on weekly bars (BLUE boxes)
+//        Rare, strong magnet zones. ~1-2 touches per month per pair.
+//    D3. Monthly Virgin CPR — same logic on monthly bars (ORANGE boxes)
+//        Very rare, very high accuracy. ~1-2 per quarter per pair.
 //    E. Friday Gold Buy signal — bullish BC touch + reversal on Friday
 //    F. Bonus extras: daily VWAP, weekly pivot, ATR value
 //    G. Dashboard (top-right) with everything live
 //    H. Trend Change Detector (daily, clean v2)
 //    I. Volume Profile (Daily History POC/VAH/VAL on every day) - IST based
 //    J. Last 5 Hours Order Flow Dashboard (bottom-right) - IST based
+//    K. Smart Money / Institutional Order Flow (bottom-left)
+//       Cumulative buy vs sell across last 1H–4H blocks.
+//       Detects ACCUMULATION (price ↓ but buyers dominant) and
+//       DISTRIBUTION (price ↑ but sellers dominant). Predicts next bias.
 // =====================================================================
 //@version=5
-indicator("CPR Master · ALL-IN-ONE (IST 1H Order Flow)", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=200)
+indicator("CPR Master · Pro", overlay=true, max_lines_count=500, max_labels_count=500, max_boxes_count=200)
 
 // ─────────────────────────── TOGGLES
 gT = "Modules ON/OFF"
@@ -47,6 +37,8 @@ mWPIV   = input.bool(true,  "F. Weekly pivot",       group=gT)
 mMPIV   = input.bool(true,  "F. Monthly pivot",      group=gT)
 mTREND  = input.bool(true,  "H. Trend Change Detector", group=gT)
 mDash   = input.bool(true,  "G. Dashboard",          group=gT)
+mWVCPR  = input.bool(true,  "D2. Weekly Virgin CPR",  group=gT)
+mMVCPR  = input.bool(true,  "D3. Monthly Virgin CPR", group=gT)
 
 // ─────────────────────────── RSI INPUTS
 gR = "A · RSI"
@@ -68,6 +60,14 @@ srMax     = input.int(4,    "Max zones each side", group=gS, minval=1, maxval=10
 // ─────────────────────────── VIRGIN CPR INPUTS
 gV = "D · Virgin CPR"
 vLook    = input.int(7,     "Keep virgin bands from last N days", group=gV, minval=1, maxval=20)
+
+// ─────────────────────────── WEEKLY VIRGIN CPR INPUTS
+gWV = "D2 · Weekly Virgin CPR"
+wvLook   = input.int(8,  "Keep weekly virgin bands from last N weeks",  group=gWV, minval=1, maxval=20)
+
+// ─────────────────────────── MONTHLY VIRGIN CPR INPUTS
+gMV = "D3 · Monthly Virgin CPR"
+mvLook   = input.int(6,  "Keep monthly virgin bands from last N months", group=gMV, minval=1, maxval=12)
 
 // ─────────────────────────── FRIDAY GOLD INPUTS
 gF = "E · Friday Gold Buy"
@@ -110,9 +110,10 @@ pdVaColor  = input.color(color.teal,    "Yday VAH/VAL Color", group=gVP, inline=
 pdVaWidth  = input.int(1,               "Width",             group=gVP, inline="yv")
 pdVaStyle  = input.string("dotted",     "Style",             group=gVP, inline="yv", options=["off","solid","dashed","dotted"])
 
-// ─────────────────────────── ORDER FLOW TABLE INPUTS
-gOF = "J · 1H Order Flow Table Settings"
-showTable = input.bool(true, "Show 1H Order Flow Table (Bottom-Right)", group=gOF)
+// ─────────────────────────── TABLE TOGGLES
+gOF = "Tables ON/OFF"
+showIOF   = input.bool(true, "K. Smart Money Order Flow (bottom-right)", group=gOF)
+showN     = input.int(4, "Periods to analyse (hours)", group=gOF, minval=2, maxval=5)
 
 // Helper mapping styles
 f_lineStyle(s) =>
@@ -298,6 +299,148 @@ plot(mMPIV ? mPivot : na, "Monthly Pivot", color=color.new(color.fuchsia, 0), li
 plot(mMPIV ? mR1    : na, "Monthly R1",    color=color.new(color.fuchsia, 50), linewidth=1, style=plot.style_linebr)
 plot(mMPIV ? mS1    : na, "Monthly S1",    color=color.new(color.fuchsia, 50), linewidth=1, style=plot.style_linebr)
 
+// ─────────────────────────── D2 · WEEKLY VIRGIN CPR
+// wH, wL, wPivot already defined above in Module F — reused here
+wvBc = (wH + wL) / 2.0
+wvTc = 2.0 * wPivot - wvBc
+isNewWeek = ta.change(time("W", "Asia/Kolkata")) != 0
+
+var box[]   wvBox     = array.new_box(0)
+var label[] wvLabel   = array.new_label(0)
+var float[] wvTop     = array.new_float(0)
+var float[] wvBot     = array.new_float(0)
+var bool[]  wvTouched = array.new_bool(0)
+
+if mWVCPR and isNewWeek
+    wTop = math.max(wvTc, wvBc)
+    wBot = math.min(wvTc, wvBc)
+    wBx = box.new(left=bar_index, top=wTop, right=bar_index + 1, bottom=wBot,
+         xloc=xloc.bar_index, extend=extend.right,
+         border_color=color.new(color.blue, 20),
+         bgcolor=color.new(color.blue, 80))
+    wLb = label.new(bar_index, (wTop + wBot) / 2.0, text="W-VCPR",
+         xloc=xloc.bar_index, style=label.style_label_left,
+         color=color.new(color.blue, 20), textcolor=color.white, size=size.normal)
+    array.push(wvBox,     wBx)
+    array.push(wvLabel,   wLb)
+    array.push(wvTop,     wTop)
+    array.push(wvBot,     wBot)
+    array.push(wvTouched, false)
+    while array.size(wvBox) > wvLook
+        wb0 = array.shift(wvBox)
+        wl0 = array.shift(wvLabel)
+        if not na(wb0)
+            box.delete(wb0)
+        if not na(wl0)
+            label.delete(wl0)
+        array.shift(wvTop)
+        array.shift(wvBot)
+        array.shift(wvTouched)
+
+wVirginTouchBuy  = false
+wVirginTouchSell = false
+if mWVCPR and array.size(wvBox) > 0
+    for wi = 0 to array.size(wvBox) - 1
+        if not array.get(wvTouched, wi)
+            wTop2 = array.get(wvTop, wi)
+            wBot2 = array.get(wvBot, wi)
+            wBx2  = array.get(wvBox, wi)
+            wLb2  = array.get(wvLabel, wi)
+            if not na(wLb2) and barstate.islast
+                label.set_x(wLb2, bar_index + 4)
+            if high >= wBot2 and low <= wTop2
+                array.set(wvTouched, wi, true)
+                box.set_extend(wBx2, extend.none)
+                box.set_right(wBx2, bar_index)
+                box.set_bgcolor(wBx2, color.new(color.gray, 85))
+                box.set_border_color(wBx2, color.new(color.gray, 40))
+                if not na(wLb2)
+                    label.set_x(wLb2, bar_index)
+                    label.set_y(wLb2, (wTop2 + wBot2) / 2.0)
+                    label.set_text(wLb2, "✓W")
+                    label.set_color(wLb2, color.new(color.gray, 30))
+                if close[1] > wTop2
+                    wVirginTouchBuy := true
+                if close[1] < wBot2
+                    wVirginTouchSell := true
+
+wVirginBuySig  = wVirginTouchBuy  and (bullPin or bullEng) and rsi > 35
+wVirginSellSig = wVirginTouchSell and (bearPin or bearEng) and rsi < 65
+
+plotshape(mWVCPR and wVirginBuySig,  "W-Virgin BUY",  style=shape.diamond, location=location.belowbar, color=color.new(color.blue, 0),    size=size.normal, text="W👻BUY")
+plotshape(mWVCPR and wVirginSellSig, "W-Virgin SELL", style=shape.diamond, location=location.abovebar, color=color.new(color.navy, 0),    size=size.normal, text="W👻SELL")
+
+// ─────────────────────────── D3 · MONTHLY VIRGIN CPR
+// mH, mL, mPivot already defined above in Module F — reused here
+mvBc = (mH + mL) / 2.0
+mvTc = 2.0 * mPivot - mvBc
+isNewMonth = ta.change(time("M", "Asia/Kolkata")) != 0
+
+var box[]   mvBox     = array.new_box(0)
+var label[] mvLabel   = array.new_label(0)
+var float[] mvTop     = array.new_float(0)
+var float[] mvBot     = array.new_float(0)
+var bool[]  mvTouched = array.new_bool(0)
+
+if mMVCPR and isNewMonth
+    mTop = math.max(mvTc, mvBc)
+    mBot = math.min(mvTc, mvBc)
+    mBx = box.new(left=bar_index, top=mTop, right=bar_index + 1, bottom=mBot,
+         xloc=xloc.bar_index, extend=extend.right,
+         border_color=color.new(color.orange, 10),
+         bgcolor=color.new(color.orange, 75))
+    mLb = label.new(bar_index, (mTop + mBot) / 2.0, text="M-VCPR",
+         xloc=xloc.bar_index, style=label.style_label_left,
+         color=color.new(color.orange, 10), textcolor=color.white, size=size.large)
+    array.push(mvBox,     mBx)
+    array.push(mvLabel,   mLb)
+    array.push(mvTop,     mTop)
+    array.push(mvBot,     mBot)
+    array.push(mvTouched, false)
+    while array.size(mvBox) > mvLook
+        mb0 = array.shift(mvBox)
+        ml0 = array.shift(mvLabel)
+        if not na(mb0)
+            box.delete(mb0)
+        if not na(ml0)
+            label.delete(ml0)
+        array.shift(mvTop)
+        array.shift(mvBot)
+        array.shift(mvTouched)
+
+mVirginTouchBuy  = false
+mVirginTouchSell = false
+if mMVCPR and array.size(mvBox) > 0
+    for mi = 0 to array.size(mvBox) - 1
+        if not array.get(mvTouched, mi)
+            mTop2 = array.get(mvTop, mi)
+            mBot2 = array.get(mvBot, mi)
+            mBx2  = array.get(mvBox, mi)
+            mLb2  = array.get(mvLabel, mi)
+            if not na(mLb2) and barstate.islast
+                label.set_x(mLb2, bar_index + 4)
+            if high >= mBot2 and low <= mTop2
+                array.set(mvTouched, mi, true)
+                box.set_extend(mBx2, extend.none)
+                box.set_right(mBx2, bar_index)
+                box.set_bgcolor(mBx2, color.new(color.gray, 85))
+                box.set_border_color(mBx2, color.new(color.gray, 40))
+                if not na(mLb2)
+                    label.set_x(mLb2, bar_index)
+                    label.set_y(mLb2, (mTop2 + mBot2) / 2.0)
+                    label.set_text(mLb2, "✓M")
+                    label.set_color(mLb2, color.new(color.gray, 30))
+                if close[1] > mTop2
+                    mVirginTouchBuy := true
+                if close[1] < mBot2
+                    mVirginTouchSell := true
+
+mVirginBuySig  = mVirginTouchBuy  and (bullPin or bullEng) and rsi > 35
+mVirginSellSig = mVirginTouchSell and (bearPin or bearEng) and rsi < 65
+
+plotshape(mMVCPR and mVirginBuySig,  "M-Virgin BUY",  style=shape.diamond, location=location.belowbar, color=color.new(color.orange, 0), size=size.large, text="M👻BUY")
+plotshape(mMVCPR and mVirginSellSig, "M-Virgin SELL", style=shape.diamond, location=location.abovebar, color=color.new(color.red,    0), size=size.large, text="M👻SELL")
+
 // ─────────────────────────── H · TREND CHANGE DETECTOR (DAILY, CLEAN v2)
 dClose  = request.security(syminfo.tickerid, "D", close[1], lookahead=barmerge.lookahead_on)
 dEma20  = request.security(syminfo.tickerid, "D", ta.ema(close, ema20Len)[1],  lookahead=barmerge.lookahead_on)
@@ -467,11 +610,15 @@ bgcolor(mTREND and trendChangeBear ? color.new(color.red,  94) : mTREND and tren
 
 alertcondition(mTREND and isNewDay and trendChangeBear, "Trend Change Bearish (daily)", "Top: trend changed DOWN today")
 alertcondition(mTREND and isNewDay and trendChangeBull, "Trend Change Bullish (daily)", "Bottom: trend changed UP today")
-alertcondition(virginBuySig,  "Virgin CPR Buy",  "BUY  : virgin CPR tagged from above")
-alertcondition(virginSellSig, "Virgin CPR Sell", "SELL : virgin CPR tagged from below")
-alertcondition(fridayBuy,     "Friday Gold Buy", "BUY  : Friday gold setup at BC")
-alertcondition(rsi >= rsiOB,  "RSI Overbought",  "RSI overbought")
-alertcondition(rsi <= rsiOS,  "RSI Oversold",    "RSI oversold")
+alertcondition(virginBuySig,   "Virgin CPR Buy",    "BUY  : daily virgin CPR tagged from above")
+alertcondition(virginSellSig,  "Virgin CPR Sell",   "SELL : daily virgin CPR tagged from below")
+alertcondition(wVirginBuySig,  "W-Virgin CPR Buy",  "BUY  : WEEKLY virgin CPR tagged from above 📅")
+alertcondition(wVirginSellSig, "W-Virgin CPR Sell", "SELL : WEEKLY virgin CPR tagged from below 📅")
+alertcondition(mVirginBuySig,  "M-Virgin CPR Buy",  "BUY  : MONTHLY virgin CPR tagged from above ⭐")
+alertcondition(mVirginSellSig, "M-Virgin CPR Sell", "SELL : MONTHLY virgin CPR tagged from below ⭐")
+alertcondition(fridayBuy,      "Friday Gold Buy",   "BUY  : Friday gold setup at BC")
+alertcondition(rsi >= rsiOB,   "RSI Overbought",    "RSI overbought")
+alertcondition(rsi <= rsiOS,   "RSI Oversold",      "RSI oversold")
 
 // =====================================================================
 //  I · UPGRADED HISTORICAL DAILY VOLUME PROFILE (IST BASED)
@@ -729,40 +876,24 @@ if isNew1h
     current1hStartBar := bar_index
     current1hStartTime := time
 
-current1hVolume := current1hVolume + nz(volume)
+current1hVolume        := current1hVolume + nz(volume)
 current1hPriceVolumeSum := current1hPriceVolumeSum + (hlc3 * nz(volume))
-if close >= open
-    current1hBuyVolume := current1hBuyVolume + nz(volume)
 
-// ─────────────────────────── J-b · IST ORDER FLOW DASHBOARD RENDER (BOTTOM_RIGHT)
-var table statsTable = table.new(position = position.bottom_right, columns = 4, rows = 6, bgcolor = color.new(color.black, 15), border_color = color.gray, border_width = 1)
-if showTable and barstate.islast
-    table.cell(statsTable, 0, 0, "1H Block (IST)", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
-    table.cell(statsTable, 1, 0, "Volume (Contracts)", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
-    table.cell(statsTable, 2, 0, "Avg Price (VWAP)", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
-    table.cell(statsTable, 3, 0, "Market Dominance", bgcolor=color.new(color.blue, 30), text_color=color.white, text_size=size.small)
-    
-    for r = 0 to 4
-        string t = array.get(hist1hTime, r)
-        float v = array.get(hist1hVol, r)
-        float p = array.get(hist1hPrice, r)
-        float bp = array.get(hist1hBuyPct, r)
-        
-        if t != ""
-            color sideColor = bp >= 50.0 ? color.new(color.green, 60) : color.new(color.red, 60)
-            string domText = bp >= 50.0 ? str.tostring(bp, "0") + "% Bullish" : str.tostring(100 - bp, "0") + "% Bearish"
-            
-            table.cell(statsTable, 0, r + 1, t, text_color=color.white, text_size=size.small)
-            table.cell(statsTable, 1, r + 1, str.tostring(v, "#,###"), text_color=color.white, text_size=size.small)
-            table.cell(statsTable, 2, r + 1, str.tostring(p, format.mintick), text_color=color.white, text_size=size.small)
-            table.cell(statsTable, 3, r + 1, domText, bgcolor=sideColor, text_color=color.white, text_size=size.small)
+// Level 2 buy/sell classification: candle position within its range
+// buy_vol  = volume × (close − low)  / (high − low)
+// sell_vol = volume × (high − close) / (high − low)
+// Fixes the 100%‑buy/sell problem caused by the old close>=open method.
+// A doji (close≈open) in the middle of a range now reads ~50/50 correctly.
+float _range = high - low
+float _buyFrac = _range > 0 ? (close - low) / _range : 0.5
+current1hBuyVolume := current1hBuyVolume + nz(volume) * _buyFrac
 
 // ─────────────────────────── G · DASHBOARD
 f_cell(t,c,r,txt,bg,fg) => table.cell(t,c,r,txt,text_color=fg,bgcolor=bg,text_size=size.small)
 var table dash = na
 if mDash and barstate.islast
     if na(dash)
-        dash := table.new(position.top_right, 2, 17, border_width=1)
+        dash := table.new(position.top_right, 2, 19, border_width=1)
     bgH = color.new(color.black, 10)
     bgR = color.new(color.gray, 70)
     f_cell(dash,0,0,"CPR Master · Live", bgH, color.white)
@@ -823,5 +954,130 @@ if mDash and barstate.islast
     ypTxt = na(pdPOC) ? "…" : str.tostring(pdPOC, format.mintick) + (close>pdPOC?" ↑":" ↓")
     ypCol = na(pdPOC) ? color.white : (close>pdPOC?color.lime:color.red)
     f_cell(dash,1,16,ypTxt,bgR,ypCol)
-Pine_script.txt
-Displaying Pine_script.txt.
+
+    wvc = 0
+    if array.size(wvTouched) > 0
+        for wi2 = 0 to array.size(wvTouched) - 1
+            if not array.get(wvTouched, wi2)
+                wvc += 1
+    f_cell(dash,0,17,"W-Virgin CPRs",bgR,color.white)
+    f_cell(dash,1,17,str.tostring(wvc),bgR,wvc>0?color.blue:color.white)
+
+    mvc = 0
+    if array.size(mvTouched) > 0
+        for mi2 = 0 to array.size(mvTouched) - 1
+            if not array.get(mvTouched, mi2)
+                mvc += 1
+    f_cell(dash,0,18,"M-Virgin CPRs",bgR,color.white)
+    f_cell(dash,1,18,str.tostring(mvc),bgR,mvc>0?color.orange:color.white)
+
+// ═════════════════════════════════════════════════════════════════════
+//  K · SMART MONEY / INSTITUTIONAL ORDER FLOW  (bottom-left)
+//
+//  Cumulative buy vs sell volume across the last N completed 1H blocks.
+//  Full signal guide → docs/05_ORDER_FLOW_SIGNAL_GUIDE.md
+//
+//  🏦 ACCUMULATION = Price ↓ but buyers dominate → institutions buying dips
+//  🏦 DISTRIBUTION = Price ↑ but sellers dominate → institutions selling rally
+//  🚀 BULLISH FLOW = 3+/N hours buy-dominant (momentum building)
+//  📉 BEARISH FLOW = 3+/N hours sell-dominant (momentum building)
+//  ⚖️  MIXED       = No clear bias — DO NOT TRADE
+// ═════════════════════════════════════════════════════════════════════
+var table iofTable = table.new(position.bottom_right, 4, 8,bgcolor      = color.new(color.black, 10),border_color = color.new(color.gray,  40),border_width = 1)
+
+if showIOF and barstate.islast
+    hBg = color.new(#0d1b4b, 10)
+    table.cell(iofTable, 0, 0, "🕐 Block (IST)",   bgcolor=hBg, text_color=color.white,  text_size=size.small)
+    table.cell(iofTable, 1, 0, "🟢 Cum.Buy",      bgcolor=hBg, text_color=color.lime,   text_size=size.small)
+    table.cell(iofTable, 2, 0, "🔴 Cum.Sell",     bgcolor=hBg, text_color=color.red,    text_size=size.small)
+    table.cell(iofTable, 3, 0, "Running Bias",   bgcolor=hBg, text_color=color.yellow, text_size=size.small)
+
+    // ── Row 1: currently forming block (live) ───────────────────────────────
+    float  kLiveBuyPct  = current1hVolume > 0 ? (current1hBuyVolume / current1hVolume) * 100 : 50.0
+    string kLiveTime    = str.format_time(current1hStartTime, "HH:mm", "Asia/Kolkata") + " 🔴 LIVE"
+    float  kLiveBuyVol  = current1hVolume * kLiveBuyPct / 100.0
+    float  kLiveSellVol = current1hVolume - kLiveBuyVol
+    bool   kLiveIsBull  = kLiveBuyVol >= kLiveSellVol
+    color  kLiveRowBg   = kLiveIsBull ? color.new(color.green, 82) : color.new(color.red, 82)
+    string kLiveBias    = kLiveIsBull ? "🐂 " + str.tostring(kLiveBuyPct, "#.#") + "% buy" : "🐻 " + str.tostring(100.0 - kLiveBuyPct, "#.#") + "% sell"
+    table.cell(iofTable, 0, 1, kLiveTime,                               bgcolor=color.new(color.yellow, 70), text_color=color.black, text_size=size.small)
+    table.cell(iofTable, 1, 1, str.tostring(kLiveBuyVol,  "#,###"),     bgcolor=color.new(color.yellow, 70), text_color=color.black, text_size=size.small)
+    table.cell(iofTable, 2, 1, str.tostring(kLiveSellVol, "#,###"),     bgcolor=color.new(color.yellow, 70), text_color=color.black, text_size=size.small)
+    table.cell(iofTable, 3, 1, kLiveBias, bgcolor=kLiveRowBg,           text_color=color.white, text_size=size.small)
+
+    // ─ Accumulate buy / sell across last showN 1H blocks ────────────────
+    float cumBuy  = 0.0
+    float cumSell = 0.0
+    int   bullHrs = 0
+    int   maxP    = math.min(showN, 5) - 1     // 0-based last index
+
+    for p = 0 to maxP
+        float vol  = array.get(hist1hVol,    p)
+        float bp   = array.get(hist1hBuyPct, p)
+        string tim = array.get(hist1hTime,   p)
+
+        if vol > 0
+            float bv = vol * bp / 100.0
+            float sv = vol - bv
+            cumBuy  := cumBuy  + bv
+            cumSell := cumSell + sv
+
+            if bv > sv
+                bullHrs := bullHrs + 1
+
+            float  cumPct   = (cumBuy + cumSell) > 0 ? cumBuy / (cumBuy + cumSell) * 100 : 50.0
+            bool   isBull   = cumBuy > cumSell
+            color  rowBg    = isBull ? color.new(color.green, 82) : color.new(color.red, 82)
+            string period   = tim != "" ? tim + " (⬆" + str.tostring(p + 1) + "H)" : str.tostring(p + 1) + "H ago"
+            string biasTxt  = isBull
+                 ? "🐂 " + str.tostring(cumPct, "#.#") + "% buy"
+                 : "🐻 " + str.tostring(100.0 - cumPct, "#.#") + "% sell"
+
+            table.cell(iofTable, 0, p + 2, period,                          text_color=color.white, text_size=size.small)
+            table.cell(iofTable, 1, p + 2, str.tostring(cumBuy,  "#,###"),  text_color=color.lime,  text_size=size.small)
+            table.cell(iofTable, 2, p + 2, str.tostring(cumSell, "#,###"),  text_color=color.red,   text_size=size.small)
+            table.cell(iofTable, 3, p + 2, biasTxt, bgcolor=rowBg,          text_color=color.white, text_size=size.small)
+
+    // ─ 4H Verdict row ─────────────────────────────────────────────
+    float p0   = array.get(hist1hPrice, 0)
+    float pN   = array.get(hist1hPrice, maxP)
+    bool  prUp = not na(p0) and not na(pN) and p0 > pN
+    float net  = cumBuy - cumSell
+    float bPct = (cumBuy + cumSell) > 0 ? cumBuy / (cumBuy + cumSell) * 100 : 50.0
+
+    color  vBg  = bullHrs >= 3 ? color.new(color.green, 30) :
+                  bullHrs <= 1 ? color.new(color.red,   30) :
+                                 color.new(color.orange, 30)
+    string netStr = (net >= 0 ? "+" : "") + str.tostring(net, "#,###")
+    table.cell(iofTable, 0, 6, str.tostring(showN) + "H VERDICT", bgcolor=vBg, text_color=color.white, text_size=size.small)
+    table.cell(iofTable, 1, 6, str.tostring(bullHrs) + "/" + str.tostring(showN) + " bull hrs",
+         bgcolor=vBg, text_color=color.white, text_size=size.small)
+    table.cell(iofTable, 2, 6, str.tostring(bPct, "#.#") + "% buy",
+         bgcolor=vBg, text_color=color.white, text_size=size.small)
+    table.cell(iofTable, 3, 6, net >= 0 ? "🐂 Net BUY" : "🐻 Net SELL",
+         bgcolor = net >= 0 ? color.new(color.green, 40) : color.new(color.red, 40),
+         text_color=color.white, text_size=size.small)
+
+    // ─ Smart Money Signal row ────────────────────────────────────
+    string sigTxt = ""
+    color  sigBg  = color.gray
+
+    if not prUp and net > 0 and bullHrs >= 2
+        sigTxt := "🏦 ACCUMULATION — Price↓ but BUYERS dominate → Institutions BUYING dips"
+        sigBg  := color.new(color.teal, 20)
+    else if prUp and net < 0 and bullHrs <= 2
+        sigTxt := "🏦 DISTRIBUTION — Price↑ but SELLERS dominate → Institutions SELLING rally"
+        sigBg  := color.new(color.maroon, 20)
+    else if bullHrs >= 3
+        sigTxt := "🚀 BULLISH FLOW ("+str.tostring(bullHrs)+"/"+str.tostring(showN)+"h) — more BUY orders likely incoming"
+        sigBg  := color.new(color.green, 25)
+    else if bullHrs <= 1
+        sigTxt := "📉 BEARISH FLOW ("+str.tostring(showN - bullHrs)+"/"+str.tostring(showN)+"h sell) — more SELL orders likely incoming"
+        sigBg  := color.new(color.red, 25)
+    else
+        sigTxt := "⚖️ MIXED FLOW — No clear institutional bias yet. Wait."
+        sigBg  := color.new(color.gray, 25)
+
+    table.cell(iofTable, 0, 7, "SIGNAL", bgcolor=sigBg, text_color=color.white, text_size=size.small)
+    table.cell(iofTable, 1, 7, sigTxt,   bgcolor=sigBg, text_color=color.white, text_size=size.small)
+    table.merge_cells(iofTable, 1, 7, 3, 7)
