@@ -5,10 +5,12 @@ current price of each pair is approaching any active Virgin CPR band.
 
 Proximity rule
 --------------
-Expand each band by PROXIMITY_EXPANSION × band_width on both sides.
-  proximity_low  = bcpr − (width × PROXIMITY_EXPANSION)
-  proximity_high = tcpr + (width × PROXIMITY_EXPANSION)
-If current_close falls inside that expanded zone → price is "close to VCPR".
+Alert only when the price is between PROXIMITY_PIPS_MIN and PROXIMITY_PIPS_MAX
+pips away from the nearest band edge (bcpr or tcpr).
+  • Price approaching from below  → distance = bcpr - price
+  • Price approaching from above  → distance = price - tcpr
+  • Price inside the band         → skipped (distance = 0)
+Pip sizes: 0.01 for JPY pairs, 0.10 for XAU, 0.0001 for all others.
 
 De-duplication
 --------------
@@ -44,8 +46,9 @@ VCPR_ACTIVE_FILE    = _STATE_DIR / "vcpr_active.json"
 PROXIMITY_SEEN_FILE = _STATE_DIR / "vcpr_proximity_seen.json"
 
 # ── tunables ──────────────────────────────────────────────────────────────────
-PROXIMITY_EXPANSION  = 1.0   # expand band by 1× width on each side
-EXCHANGE             = "FX"  # TradingView exchange used for all pairs
+PROXIMITY_PIPS_MIN = 5    # don't alert if price is inside / touching band
+PROXIMITY_PIPS_MAX = 20   # don't alert if price is farther than this from band
+EXCHANGE           = "FX" # TradingView exchange used for all pairs
 
 # Cooldown per timeframe — higher timeframe = longer wait before re-alerting
 COOLDOWN_HOURS: dict[str, int] = {
@@ -71,6 +74,16 @@ _tv = TvDatafeed()
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
+
+def _pip_size(symbol: str) -> float:
+    """Return the pip/point size for pip-distance calculations."""
+    sym = symbol.upper()
+    if "JPY" in sym:
+        return 0.01
+    if "XAU" in sym:
+        return 0.10
+    return 0.0001
+
 
 def _load_json(path: Path) -> dict:
     if path.exists():
@@ -116,27 +129,50 @@ def _should_alert(seen: dict, key: str, cooldown_hours: int) -> bool:
         return True
 
 
-def _format_alert(symbol: str, price: float, triggered: list[dict], timeframe: str) -> str:
-    """Build a Telegram HTML message for one pair/timeframe with proximity hits."""
+def _format_consolidated_alert(hits: list[dict]) -> str:
+    """Build a single consolidated Telegram HTML message for all proximity hits."""
+    from collections import defaultdict
+
     now_ist = datetime.now(IST).strftime("%d %b %Y %H:%M IST")
-    emoji = TF_EMOJI.get(timeframe, "⚡")
     lines = [
-        f"{emoji} <b>VCPR Proximity — {symbol} ({timeframe.upper()})</b>",
+        "⚡ <b>VCPR Proximity Alert</b>",
         f"🕐 {now_ist}",
-        f"💹 <b>Current price:</b> {price:.5f}",
-        "────────────────────────",
+        "════════════════════════════",
     ]
-    for b in triggered:
-        midpoint = (b["bcpr"] + b["tcpr"]) / 2
-        dist = abs(price - midpoint)
-        direction = "🔼 above" if price > midpoint else "🔽 below"
-        lines.append(
-            f"📅 <b>{b['date']}</b> | "
-            f"Band [{b['bcpr']:.5f} – {b['tcpr']:.5f}]"
-        )
-        lines.append(f"   ↳ Price is {direction} midpoint by {dist:.5f}")
+
+    # Group hits by symbol (preserve sorted order)
+    by_symbol: dict[str, list[dict]] = defaultdict(list)
+    for hit in hits:
+        by_symbol[hit["symbol"]].append(hit)
+
+    for symbol, sym_hits in sorted(by_symbol.items()):
+        price = sym_hits[0]["price"]
+        lines.append(f"\n🔹 <b>{symbol}</b>  💹 Current: <b>{price:.5f}</b>")
+        for h in sym_hits:
+            b   = h["band"]
+            tf  = h["timeframe"]
+            emoji = TF_EMOJI.get(tf, "⚡")
+            dist_pips = h["dist_pips"]
+            dist_raw  = h["dist_raw"]
+            if price < b["bcpr"]:
+                direction = "🔼 approaching from below"
+            else:
+                direction = "🔽 approaching from above"
+            lines.append(
+                f"   {emoji} {tf.capitalize()} <b>{b['date']}</b>  "
+                f"[{b['bcpr']:.5f} – {b['tcpr']:.5f}]"
+            )
+            lines.append(
+                f"      ↳ {direction} | "
+                f"Δ <b>{dist_pips:.1f} pips</b>  ({dist_raw:.5f})"
+            )
+
+    total_pairs = len(by_symbol)
+    total_bands = len(hits)
     lines += [
-        "────────────────────────",
+        "",
+        "════════════════════════════",
+        f"📊 <b>{total_bands}</b> band(s) across <b>{total_pairs}</b> pair(s)",
         "📖 Wait for reaction + confirmation candle before entry.",
     ]
     return "\n".join(lines)
@@ -175,40 +211,72 @@ def main() -> int:
     for bands_dict in tf_data.values():
         all_symbols.update(bands_dict.keys())
 
-    # ── 4. Check each symbol × each timeframe ────────────────────────────────
+    # ── 4. Check each symbol × each timeframe, collect all hits ──────────────
+    all_hits: list[dict] = []
+
     for symbol in sorted(all_symbols):
         price = _fetch_current_price(symbol)
         if price is None:
             log.warning("[%s] skipping — could not fetch current price", symbol)
             continue
 
+        pip = _pip_size(symbol)
+
         for timeframe, cooldown_hours in COOLDOWN_HOURS.items():
             bands = tf_data[timeframe].get(symbol, [])
             if not bands:
                 continue
 
-            triggered: list[dict] = []
             for b in bands:
-                proximity_low  = b["bcpr"] - b["width"] * PROXIMITY_EXPANSION
-                proximity_high = b["tcpr"] + b["width"] * PROXIMITY_EXPANSION
+                # Distance from current price to the nearest band edge
+                if price < b["bcpr"]:
+                    dist_raw = b["bcpr"] - price   # approaching from below
+                elif price > b["tcpr"]:
+                    dist_raw = price - b["tcpr"]   # approaching from above
+                else:
+                    dist_raw = 0.0                 # inside the band — skip
 
-                if proximity_low <= price <= proximity_high:
-                    key = f"{symbol}_{timeframe}_{b['date']}"
-                    if _should_alert(seen, key, cooldown_hours):
-                        triggered.append(b)
-                        seen[key] = datetime.now(IST).isoformat()
-                        updated = True
-                    else:
-                        log.debug("[%s/%s] %s already alerted recently", symbol, timeframe, b["date"])
+                dist_pips = dist_raw / pip
 
-            if triggered:
-                msg = _format_alert(symbol, price, triggered, timeframe)
-                telegram_notify.send(msg)
-                log.info("[%s/%s] sent proximity alert for %d band(s)", symbol, timeframe, len(triggered))
+                if not (PROXIMITY_PIPS_MIN <= dist_pips <= PROXIMITY_PIPS_MAX):
+                    log.debug(
+                        "[%s/%s] %s dist=%.1f pips — outside window [%d-%d]",
+                        symbol, timeframe, b["date"],
+                        dist_pips, PROXIMITY_PIPS_MIN, PROXIMITY_PIPS_MAX,
+                    )
+                    continue
+
+                key = f"{symbol}_{timeframe}_{b['date']}"
+                if _should_alert(seen, key, cooldown_hours):
+                    all_hits.append({
+                        "symbol":    symbol,
+                        "price":     price,
+                        "timeframe": timeframe,
+                        "band":      b,
+                        "dist_raw":  dist_raw,
+                        "dist_pips": dist_pips,
+                    })
+                    seen[key] = datetime.now(IST).isoformat()
+                    updated = True
+                else:
+                    log.debug("[%s/%s] %s already alerted recently", symbol, timeframe, b["date"])
 
         log.info("[%s] price=%.5f checked", symbol, price)
 
-    # ── 5. Persist updated dedup state ───────────────────────────────────────
+    # ── 5. Send ONE consolidated alert if there are any hits ─────────────────
+    if all_hits:
+        msg = _format_consolidated_alert(all_hits)
+        telegram_notify.send(msg)
+        log.info(
+            "Sent consolidated alert: %d band(s) across %d pair(s)",
+            len(all_hits),
+            len({h["symbol"] for h in all_hits}),
+        )
+    else:
+        log.info("No pairs within %d–%d pip window — no alert sent.",
+                 PROXIMITY_PIPS_MIN, PROXIMITY_PIPS_MAX)
+
+    # ── 6. Persist updated dedup state ───────────────────────────────────────
     if updated:
         _save_json(PROXIMITY_SEEN_FILE, seen)
 

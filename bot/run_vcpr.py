@@ -21,6 +21,8 @@ from src.config import CFG, PAIRS
 from src.formatters import signal_message
 
 # ── VCPR imports ──────────────────────────────────────────────────────────────
+from tvDatafeed import TvDatafeed, Interval
+
 from src.strategies.s6_virgin_cpr import check as vcpr_check, VCprReport
 from src.strategies.s7_td_vcpr import check as td_vcpr_check
 from src.strategies.s8_weekly_monthly_vcpr import check as wm_vcpr_check
@@ -35,15 +37,62 @@ VCPR_ACTIVE_FILE = Path(CFG.state_file).parent / "vcpr_active.json"
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
+_tv = TvDatafeed()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Price / pip helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _pip_size(symbol: str) -> float:
+    sym = symbol.upper()
+    if "JPY" in sym:
+        return 0.01
+    if "XAU" in sym:
+        return 0.10
+    return 0.0001
+
+
+def _fetch_current_prices(symbols: list[str], exchange: str = "FX",
+                          retries: int = 5) -> dict[str, float]:
+    """Return {symbol: latest_close} for every symbol we can fetch."""
+    prices: dict[str, float] = {}
+    for symbol in symbols:
+        for attempt in range(retries):
+            try:
+                df = _tv.get_hist(symbol=symbol, exchange=exchange,
+                                  interval=Interval.in_15_minutes, n_bars=3)
+                if df is None or df.empty:
+                    raise ValueError("empty response")
+                prices[symbol] = float(df["close"].iloc[-2])
+                break
+            except Exception as e:
+                log.warning("[%s] price fetch attempt %d/%d: %s",
+                            symbol, attempt + 1, retries, e)
+    return prices
+
+
+def _band_pip_distance(price: float, bcpr: float, tcpr: float,
+                       pip: float) -> tuple[float, float, str]:
+    """Return (dist_raw, dist_pips, direction_label) for a band."""
+    if price < bcpr:
+        dist_raw = bcpr - price
+        direction = "🔼 below band"
+    elif price > tcpr:
+        dist_raw = price - tcpr
+        direction = "🔽 above band"
+    else:
+        dist_raw = 0.0
+        direction = "↔ inside band"
+    return dist_raw, dist_raw / pip, direction
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VCPR Telegram message formatter
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict) -> str:
+def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
+                         prices: dict[str, float]) -> str:
     now_ist = datetime.now(IST)
     ts = now_ist.strftime("%d %b %Y %H:%M IST")
 
@@ -57,9 +106,13 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict) -> str:
     d_total = w_total = m_total = 0
 
     for symbol in all_symbols:
+        price = prices.get(symbol)
+        pip   = _pip_size(symbol)
+
         d = daily.get(symbol, [])
         w = weekly.get(symbol, [])
         m = monthly.get(symbol, [])
+
         if not d and not w and not m:
             continue
 
@@ -67,16 +120,34 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict) -> str:
         w_total += len(w)
         m_total += len(m)
 
+        price_str = f"  💹 {price:.5f}" if price is not None else ""
         lines.append(
-            f"\n🔹 <b>{symbol}</b> "
-            f"| D:{len(d)}  W:{len(w)}  M:{len(m)}"
+            f"\n🔹 <b>{symbol}</b>{price_str}"
+            f"  | D:{len(d)}  W:{len(w)}  M:{len(m)}"
         )
+
         for r in d:
-            lines.append(f"   🟣 Daily  {r[0]} | w={r[3]:.5f}")
+            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
+            lines.append(
+                f"   🟣 Daily  {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
+            )
         for r in w:
-            lines.append(f"   🔵 Weekly {r[0]} | w={r[3]:.5f}")
+            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
+            lines.append(
+                f"   🔵 Weekly {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
+            )
         for r in m:
-            lines.append(f"   🟠 Monthly {r[0]} | w={r[3]:.5f}")
+            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
+            lines.append(
+                f"   🟠 Monthly {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
+            )
+
+    if d_total + w_total + m_total == 0:
+        return (
+            "🌅 👻 <b>Virgin CPR</b>\n"
+            f"🕐 {ts}\n"
+            "No active VCPR bands found this scan."
+        )
 
     lines += [
         "",
@@ -161,7 +232,9 @@ def main() -> int:
         monthly[symbol] = wm["monthly"]
 
     _save_vcpr_active(daily, weekly, monthly)
-    telegram_notify.send(_format_vcpr_message(daily, weekly, monthly))
+
+    prices = _fetch_current_prices(PAIRS_LIST)
+    telegram_notify.send(_format_vcpr_message(daily, weekly, monthly, prices))
     return 0
 
 
