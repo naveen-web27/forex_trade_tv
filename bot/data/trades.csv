@@ -1,2 +1,0 @@
-id,timestamp_ist,strategy,strategy_name,symbol,side,entry,sl,tp1,tp2,risk_dist,rr1,rr2,reason,lot_size,risk_usd,status,exit_price,exit_time_ist,result_r,result_usd,closed_at_ist
-1c4c3800f7,2026-06-29T17:15:00+05:30,S2,PDH/PDL + CPR,GBPUSD,LONG,1.32329,1.32270,1.32389,1.32449,0.00060,1.00,2.00,Broke PDH 1.32 | above Pivot 1.32,2512.8800,15.00,OPEN,,,,,

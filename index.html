@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Gops Briyani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+   
+/* ═══════════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════════ */
+:root{
+  --red:#8b1a1a; --red2:#6e1212;
+  --gold:#c9922a; --gold2:#e8c46a;
+  --dark:#180900; --dark2:#100500;
+  --cream:#fdf6ed; --cream2:#f4e8d0;
+  --text:#2e1a0a; --muted:#7a5c40;
+  --white:#fffdf8;
+  --nav-h:68px;
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden}
+img{display:block;max-width:100%}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+button{cursor:pointer;font-family:inherit}
+
+h1,h2,h3,h4{font-family:'Playfair Display',serif;line-height:1.15}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-weight:700}
+p{line-height:1.8;color:var(--muted);font-weight:300}
+
+/* ── utilities ── */
+.container{max-width:1180px;margin:0 auto;padding:0 1.25rem}
+.tag{display:block;font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.6rem}
+.gold-bar{width:44px;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;margin:1rem 0}
+.gold-bar.c{margin:1rem auto}
+
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;border-radius:3px;border:2px solid transparent;transition:.25s;white-space:nowrap}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red)}.btn-red:hover{background:var(--red2);border-color:var(--red2)}
+.btn-gold{background:var(--gold);color:#fff;border-color:var(--gold)}.btn-gold:hover{background:#a67520;border-color:#a67520}
+.btn-outline{border-color:rgba(255,255,255,.5);color:#fff}.btn-outline:hover{background:rgba(255,255,255,.15);border-color:#fff}
+.btn-outline-dark{border-color:var(--gold);color:var(--gold)}.btn-outline-dark:hover{background:var(--gold);color:#fff}
+
+/* reveal */
+.rev{opacity:0;transform:translateY(30px);transition:.7s ease}
+.rev.in{opacity:1;transform:none}
+.rev-d1{transition-delay:.1s}.rev-d2{transition-delay:.2s}.rev-d3{transition-delay:.3s}
+
+/* grain */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");opacity:.4}
+
+/* ═══════════════════════════════════════════════
+   TOP BAR
+═══════════════════════════════════════════════ */
+#topbar{background:var(--dark2);padding:.5rem 1.25rem;font-size:.8rem;color:rgba(255,255,255,.55)}
+#topbar .tb-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+#topbar a{color:var(--gold2);transition:.2s}#topbar a:hover{color:#fff}
+.tb-socials{display:flex;gap:.75rem;font-size:1rem}
+
+/* ═══════════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════════ */
+#nav{position:sticky;top:0;z-index:500;background:var(--white);height:var(--nav-h);box-shadow:0 2px 24px rgba(0,0,0,.09)}
+.nav-wrap{max-width:1180px;margin:0 auto;padding:0 1.25rem;height:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+
+/* logo */
+.nav-logo{display:flex;align-items:center;gap:.7rem;flex-shrink:0}
+.nav-logo img{height:46px;width:auto;object-fit:contain}
+.nav-logo-txt strong{display:block;font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);line-height:1.1}
+.nav-logo-txt span{display:block;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:600}
+
+/* desktop links */
+.nav-links{display:flex;align-items:center;gap:.25rem}
+.nav-links li{position:relative}
+.nav-links li>a{display:block;padding:.5rem .85rem;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;font-weight:500;color:var(--text);border-radius:3px;transition:.2s}
+.nav-links li>a:hover{color:var(--gold);background:rgba(201,146,42,.07)}
+.nav-links .has-drop>a::after{content:' ▾';font-size:.6rem}
+/* dropdown */
+.nav-drop{display:none;position:absolute;top:calc(100% + .5rem);left:0;min-width:170px;background:var(--white);border-top:2px solid var(--gold);border-radius:0 0 4px 4px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:600;padding:.3rem 0}
+.nav-links .has-drop:hover .nav-drop{display:block}
+.nav-drop a{display:block;padding:.6rem 1.1rem;font-size:.8rem;color:var(--muted);transition:.2s}
+.nav-drop a:hover{color:var(--gold);background:var(--cream)}
+/* order btn */
+.nav-order-btn{background:var(--red);color:#fff!important;border-radius:3px;padding:.45rem 1.1rem!important;font-weight:600!important;margin-left:.35rem}
+.nav-order-btn:hover{background:var(--red2)!important}
+
+/* hamburger */
+.hamburger{display:none;flex-direction:column;gap:5px;padding:.5rem;background:none;border:none}
+.hamburger span{display:block;width:24px;height:2px;background:var(--dark);border-radius:1px;transition:.3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* mobile nav drawer */
+.mobile-nav{display:none;position:fixed;inset:0;top:var(--nav-h);background:var(--dark);z-index:490;padding:2rem 1.5rem;flex-direction:column;gap:.5rem;overflow-y:auto}
+.mobile-nav.open{display:flex}
+.mobile-nav a{color:rgba(255,255,255,.8);font-size:1.05rem;padding:.85rem 1rem;border-bottom:1px solid rgba(255,255,255,.07);font-weight:500;display:block;transition:.2s}
+.mobile-nav a:hover{color:var(--gold)}
+.mobile-nav .mob-section{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:.5rem 1rem 0;margin-top:.5rem}
+.mobile-nav .mob-order{background:var(--red);color:#fff!important;border-radius:3px;text-align:center;margin-top:1rem}
+
+/* ═══════════════════════════════════════════════
+   HERO SLIDER
+═══════════════════════════════════════════════ */
+#hero{position:relative;height:calc(100vh - var(--nav-h));min-height:520px;overflow:hidden;background:var(--dark)}
+.slides-wrap{display:flex;height:100%;transition:transform .85s cubic-bezier(.4,0,.2,1)}
+.slide{min-width:100%;height:100%;position:relative;flex-shrink:0}
+.slide-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 7s linear}
+.slide.act .slide-bg{transform:scale(1.05)}
+.slide-ov{position:absolute;inset:0;background:linear-gradient(120deg,rgba(15,4,0,.82) 0%,rgba(15,4,0,.45) 55%,rgba(120,20,20,.2) 100%)}
+.slide-body{position:relative;z-index:2;height:100%;display:flex;align-items:center;padding:0 clamp(1.25rem,6vw,7rem)}
+.slide-inner{max-width:620px}
+.slide-inner .slide-tag{color:var(--gold2);margin-bottom:1rem}
+.slide-inner h1{color:#fff;font-size:clamp(2.4rem,6vw,5.5rem);margin-bottom:1rem;font-style:italic}
+.slide-inner h1 em{font-style:normal;color:var(--gold2)}
+.slide-inner p{color:rgba(255,255,255,.72);font-size:clamp(.9rem,2vw,1.05rem);margin-bottom:2rem;max-width:440px}
+.slide-btns{display:flex;gap:.75rem;flex-wrap:wrap}
+/* controls */
+.slide-ctrl{position:absolute;top:50%;transform:translateY(-50%);z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.25);color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:.25s;backdrop-filter:blur(4px)}
+.slide-ctrl:hover{background:var(--gold);border-color:var(--gold)}
+.prev-btn{left:1rem}.next-btn{right:1rem}
+.slide-dots{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;z-index:10}
+.sdot{width:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.3);cursor:pointer;transition:.3s;border:none}
+.sdot.act{width:28px;background:var(--gold)}
+
+/* ═══════════════════════════════════════════════
+   INFO RIBBON
+═══════════════════════════════════════════════ */
+.ribbon{background:var(--red);padding:.9rem 1.25rem}
+.ribbon-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:2.5rem;flex-wrap:wrap}
+.rib-item{display:flex;align-items:center;gap:.6rem;text-align:left}
+.rib-icon{font-size:1.3rem}
+.rib-lbl{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6);display:block}
+.rib-val{font-family:'Playfair Display',serif;font-size:.95rem;color:#fff}
+
+/* ═══════════════════════════════════════════════
+   ABOUT
+═══════════════════════════════════════════════ */
+#about{padding:5rem 0}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+/* images side */
+.about-imgs{position:relative;padding-bottom:3rem}
+.about-main-img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px;display:block}
+.about-main-ph{width:100%;aspect-ratio:3/4;background:var(--cream2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:6rem;display:none}
+.about-float-img{position:absolute;bottom:0;right:-1.5rem;width:58%;aspect-ratio:4/3;object-fit:cover;border:3px solid var(--white);border-radius:4px;box-shadow:0 12px 40px rgba(0,0,0,.15)}
+.about-badge{position:absolute;top:1.5rem;left:-1rem;width:100px;height:100px;border-radius:50%;background:var(--red);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(139,26,26,.4);z-index:2}
+.about-badge .n{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;line-height:1}
+.about-badge .l{font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85;text-align:center}
+/* text side */
+.about-text h2{margin-bottom:.75rem}
+.about-text p{margin-bottom:1rem}
+.about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin:2rem 0;padding:1.5rem;background:var(--cream2);border-radius:4px;border-left:3px solid var(--gold)}
+.stat .n{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--red);display:block}
+.stat .l{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ═══════════════════════════════════════════════
+   WHY US
+═══════════════════════════════════════════════ */
+.why{background:var(--cream2);padding:4.5rem 0}
+.why h2{text-align:center;margin-bottom:.5rem}
+.why-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-top:2.5rem}
+.why-card{background:var(--white);border-radius:4px;padding:1.75rem 1.25rem;text-align:center;box-shadow:0 3px 16px rgba(0,0,0,.05);transition:.3s}
+.why-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.1)}
+.why-card .ic{font-size:2.2rem;margin-bottom:.85rem}
+.why-card h3{font-size:.95rem;margin-bottom:.4rem;color:var(--dark)}
+.why-card p{font-size:.82rem;margin:0}
+
+/* ═══════════════════════════════════════════════
+   ██████  MENU — GOOGLE SHEETS LIVE  ██████
+═══════════════════════════════════════════════ */
+#menu{background:var(--dark);padding:5rem 0}
+.menu-hdr{text-align:center;margin-bottom:2.5rem}
+.menu-hdr .tag{color:var(--gold)}
+.menu-hdr h2{color:#fff}
+.menu-hdr p{color:rgba(255,255,255,.45);font-size:.9rem;margin-top:.4rem}
+
+/* sheet status banner */
+.sheet-status{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.65rem 1.25rem;border-radius:30px;font-size:.78rem;font-weight:500;margin:0 auto 2rem;max-width:fit-content}
+.sheet-status.live{background:rgba(76,175,80,.15);color:#81c784;border:1px solid rgba(76,175,80,.3)}
+.sheet-status.demo{background:rgba(255,152,0,.1);color:#ffb74d;border:1px solid rgba(255,152,0,.25)}
+.sheet-status.err{background:rgba(244,67,54,.1);color:#ef9a9a;border:1px solid rgba(244,67,54,.25)}
+.sheet-status .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sheet-status.live .dot{background:#4caf50;animation:pulse-dot 2s infinite}
+.sheet-status.demo .dot{background:#ff9800}
+.sheet-status.err .dot{background:#f44336}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* loading spinner */
+.menu-loading{text-align:center;padding:4rem 0;color:rgba(255,255,255,.4)}
+.spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,.08);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* category tabs */
+.cat-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-bottom:2.5rem}
+.cat-tab{padding:.55rem 1.3rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);border-radius:30px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;transition:.25s;cursor:pointer}
+.cat-tab:hover{color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.3)}
+.cat-tab.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+
+/* menu grid */
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.m-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:6px;overflow:hidden;position:relative;transition:.3s;display:flex;flex-direction:column}
+.m-card:hover{transform:translateY(-4px);box-shadow:0 16px 44px rgba(0,0,0,.4);border-color:rgba(201,146,42,.3)}
+/* dish image */
+.m-img-wrap{position:relative;height:180px;overflow:hidden;flex-shrink:0}
+.m-img-wrap img{width:100%;height:100%;object-fit:cover;transition:.4s}
+.m-card:hover .m-img-wrap img{transform:scale(1.06)}
+.m-img-ph{width:100%;height:100%;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:3rem}
+/* badge */
+.m-badge{position:absolute;top:.65rem;right:.65rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .6rem;border-radius:2px;font-weight:600;z-index:2}
+.badge-best{background:var(--gold);color:#fff}
+.badge-new{background:#2e7d32;color:#fff}
+.badge-chef{background:var(--red);color:#fff}
+/* card body */
+.m-body{padding:1rem 1.1rem 1.25rem;display:flex;flex-direction:column;flex:1}
+.m-type{display:flex;align-items:center;gap:.4rem;font-size:.67rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem}
+.dot-v{color:#4caf50;font-size:1rem}.dot-nv{color:#f44336;font-size:1rem}
+.m-body h3{font-size:1rem;color:#fff;margin-bottom:.35rem;font-family:'Playfair Display',serif;font-weight:700}
+.m-body p{font-size:.8rem;color:rgba(255,255,255,.4);line-height:1.6;flex:1;margin:0 0 .75rem}
+.m-price{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--gold);font-weight:700}
+/* unavailable overlay */
+.m-card.unavail{opacity:.4;pointer-events:none}
+.m-card.unavail::after{content:'Currently Unavailable';position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
+/* no items */
+.no-items{text-align:center;padding:3rem;color:rgba(255,255,255,.3);grid-column:1/-1}
+
+/* ═══════════════════════════════════════════════
+   EVENTS
+═══════════════════════════════════════════════ */
+#events{padding:5rem 0}
+.events-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2.5rem}
+.ev-card{border-radius:6px;overflow:hidden;min-height:340px;position:relative;display:flex;align-items:flex-end}
+.ev-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:.55s}
+.ev-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:6rem;background:var(--cream2)}
+.ev-card:hover .ev-bg{transform:scale(1.05)}
+.ev-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,5,0,.92) 0%,transparent 65%)}
+.ev-body{position:relative;z-index:2;padding:2rem}
+.ev-body h3{color:#fff;font-size:1.5rem;margin-bottom:.5rem}
+.ev-body p{color:rgba(255,255,255,.65);font-size:.88rem;margin-bottom:1.2rem}
+
+/* ═══════════════════════════════════════════════
+   OUTLETS
+═══════════════════════════════════════════════ */
+#outlets{background:var(--red);padding:5rem 0}
+.outlets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+.out-card{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:1.75rem;transition:.25s}
+.out-card:hover{background:rgba(255,255,255,.15)}
+.out-card h3{color:#fff;font-size:1.1rem;margin-bottom:1rem;font-family:'Playfair Display',serif}
+.out-row{display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.85rem}
+.out-row .ic{font-size:1rem;flex-shrink:0;margin-top:.15rem}
+.out-row p,.out-row a{font-size:.84rem;color:rgba(255,255,255,.6);margin:0;line-height:1.55}
+.out-row a{color:var(--gold2);transition:.2s}.out-row a:hover{color:#fff}
+
+/* ═══════════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════════ */
+#testi{background:var(--cream2);padding:5rem 0}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+.t-card{background:var(--white);border-radius:6px;padding:1.75rem;box-shadow:0 3px 18px rgba(0,0,0,.06);position:relative}
+.t-card::before{content:'\201C';font-family:'Playfair Display',serif;font-size:5rem;color:var(--gold2);opacity:.25;position:absolute;top:-.4rem;left:1rem;line-height:1;pointer-events:none}
+.stars{color:var(--gold);font-size:.95rem;margin-bottom:.85rem}
+.t-card p{font-style:italic;font-size:.88rem;color:var(--muted);margin-bottom:1.25rem}
+.t-auth{display:flex;align-items:center;gap:.75rem}
+.t-av{width:38px;height:38px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;flex-shrink:0}
+.t-name{font-weight:600;font-size:.88rem;color:var(--dark)}
+.t-date{font-size:.72rem;color:var(--muted)}
+
+/* ═══════════════════════════════════════════════
+   CONTACT
+═══════════════════════════════════════════════ */
+#contact{padding:5rem 0}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+.contact-info h2{margin-bottom:1.25rem}
+.c-row{display:flex;align-items:flex-start;gap:.85rem;margin-bottom:1.25rem}
+.c-ic{width:40px;height:40px;border-radius:50%;background:rgba(139,26,26,.09);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.c-lbl{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.2rem}
+.c-val{font-size:.92rem;color:var(--text)}
+.c-val a{color:var(--text);transition:.2s}.c-val a:hover{color:var(--gold)}
+/* form */
+.res-form{display:flex;flex-direction:column;gap:.85rem}
+.res-form h3{font-size:1.75rem;margin-bottom:.2rem}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.f-g label{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.35rem;font-weight:500}
+.f-g input,.f-g select,.f-g textarea{width:100%;padding:.8rem 1rem;border:1.5px solid rgba(0,0,0,.1);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);background:var(--white);outline:none;transition:.25s}
+.f-g input:focus,.f-g select:focus,.f-g textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,146,42,.1)}
+.f-g textarea{resize:vertical;min-height:100px}
+.form-ok{display:none;background:rgba(76,175,80,.1);border:1px solid #4caf50;color:#2e7d32;padding:.9rem;border-radius:4px;text-align:center;font-size:.88rem;font-weight:500}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer{background:var(--dark2);color:rgba(255,255,255,.5)}
+.foot-top{padding:4rem 0 2.5rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem}
+.foot-brand strong{display:block;font-family:'Playfair Display',serif;font-size:1.6rem;color:#fff;margin-bottom:.5rem}
+.foot-brand p{font-size:.83rem;margin:0 0 1.2rem}
+.foot-socs{display:flex;gap:.5rem}
+.f-soc{width:34px;height:34px;border-radius:50%;border:1px solid rgba(201,146,42,.3);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:.9rem;transition:.25s}
+.f-soc:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+.foot-col h4{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;font-weight:600}
+.foot-col ul li{margin-bottom:.5rem}
+.foot-col ul li a{color:rgba(255,255,255,.4);font-size:.84rem;transition:.2s}
+.foot-col ul li a:hover{color:var(--gold)}
+.foot-col p{font-size:.83rem;line-height:1.85}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.06);padding:1.25rem 0;display:flex;justify-content:space-between;align-items:center;font-size:.76rem;flex-wrap:wrap;gap:.5rem}
+
+/* float order btn */
+.float-order{position:fixed;bottom:1.5rem;right:1.5rem;z-index:400;width:56px;height:56px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 5px 22px rgba(139,26,26,.5);transition:.3s;animation:fp 2s ease infinite}
+.float-order:hover{transform:scale(1.12);background:var(--red2)}
+@keyframes fp{0%,100%{box-shadow:0 5px 22px rgba(139,26,26,.5)}50%{box-shadow:0 5px 32px rgba(139,26,26,.8)}}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media(max-width:980px){
+  .nav-links{display:none}
+  .hamburger{display:flex}
+
+  .about-grid{grid-template-columns:1fr;gap:3rem}
+  .about-imgs{padding-bottom:4rem}
+  .about-badge{left:.5rem;top:.5rem}
+
+  .why-grid{grid-template-columns:1fr 1fr}
+  .menu-grid{grid-template-columns:1fr 1fr}
+  .events-grid{grid-template-columns:1fr}
+  .outlets-grid{grid-template-columns:1fr 1fr}
+  .testi-grid{grid-template-columns:1fr 1fr}
+  .contact-grid{grid-template-columns:1fr;gap:3rem}
+  .foot-top{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:640px){
+  :root{--nav-h:60px}
+
+  #topbar .tb-inner{justify-content:center;gap:.5rem}
+  .tb-left{text-align:center;font-size:.72rem}
+
+  .ribbon-inner{gap:1.2rem}
+  .rib-item{flex-direction:column;text-align:center;gap:.2rem}
+
+  h2{font-size:1.7rem}
+  .about-float-img{display:none}
+  .about-imgs{padding-bottom:0}
+  .about-badge{position:static;margin:1rem auto 0;display:flex}
+  .about-stats{grid-template-columns:repeat(3,1fr)}
+
+  .why-grid{grid-template-columns:1fr 1fr}
+  .menu-grid{grid-template-columns:1fr}
+  .outlets-grid{grid-template-columns:1fr}
+  .testi-grid{grid-template-columns:1fr}
+  .events-grid{grid-template-columns:1fr}
+
+  .f-row{grid-template-columns:1fr}
+  .foot-top{grid-template-columns:1fr}
+  .foot-bottom{flex-direction:column;text-align:center}
+  .slide-btns{flex-direction:column;align-items:flex-start}
+  .slide-ctrl{width:36px;height:36px;font-size:.9rem}
+}
+
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr}
+  .about-stats{grid-template-columns:1fr 1fr}
+}
+</style>
+<!-- Billzo config — load before any scripts so theme & vars are ready -->
+<script src="config.js"></script>
+</head>
+<body>
+
+<!-- ════ TOP BAR ════ -->
+<div id="topbar">
+  <div class="tb-inner">
+    <div class="tb-left">
+      📞 <a id="tb-phone" href="#">044-4004-4004</a>
+      &nbsp;·&nbsp;
+      ✉️ <a id="tb-email" href="#">hello@spicegarden.in</a>
+    </div>
+    <div class="tb-socials" id="tb-soc"></div>
+  </div>
+</div>
+
+<!-- ════ NAV ════ -->
+<nav id="nav">
+  <div class="nav-wrap">
+    <a href="#" class="nav-logo">
+      <img src="images/logo.png" alt="Logo" id="logo-img" onerror="this.style.display='none'"/>
+      <div class="nav-logo-txt">
+        <span id="nav-since">Since 1975</span>
+        <strong id="nav-name">Spice Garden Biryani</strong>
+      </div>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#">Home</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li class="has-drop">
+        <a href="#about">About</a>
+        <div class="nav-drop">
+          <a href="#about">Our Story</a>
+          <a href="#about">Who We Are</a>
+        </div>
+      </li>
+      <li class="has-drop">
+        <a href="#events">Events</a>
+        <div class="nav-drop">
+          <a href="#events">Catering</a>
+          <a href="#events">Party Halls</a>
+        </div>
+      </li>
+      <li><a href="#outlets">Outlets</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#" id="nav-order" class="nav-order-btn">🛵 Order Online</a></li>
+    </ul>
+
+    <button class="hamburger" id="ham" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ════ MOBILE NAV ════ -->
+<nav class="mobile-nav" id="mob-nav">
+  <a href="#" onclick="closeNav()">Home</a>
+  <div class="mob-section">Menu & About</div>
+  <a href="#menu" onclick="closeNav()">Menu</a>
+  <a href="#about" onclick="closeNav()">Our Story</a>
+  <div class="mob-section">Events</div>
+  <a href="#events" onclick="closeNav()">Catering</a>
+  <a href="#events" onclick="closeNav()">Party Halls</a>
+  <div class="mob-section">Find Us</div>
+  <a href="#outlets" onclick="closeNav()">Our Outlets</a>
+  <a href="#contact" onclick="closeNav()">Contact Us</a>
+  <a href="#" id="mob-order" class="mob-order" onclick="closeNav()">🛵 Order Online</a>
+</nav>
+
+<!-- ════ HERO SLIDER ════ -->
+<section id="hero">
+  <div class="slides-wrap" id="slides">
+    <!-- Slide 1 -->
+    <div class="slide act">
+      <div class="slide-bg" id="bg0"
+        style="background-image:url('images/hero1.jpg'),linear-gradient(135deg,#1a0500 0%,#8b1a1a 100%)"></div>
+      <div class="slide-ov"></div>
+      <div class="slide-body">
+        <div class="slide-inner">
+          <span class="tag slide-tag" id="s0tag">Est. 1975 · Authentic Flavours</span>
+          <h1>Welcome to <em id="s0em">Spice Garden</em></h1>
+          <p id="s0p">Where every dish tells a story — crafted with love, served with warmth since 1975.</p>
+          <div class="slide-btns">
+            <a href="#menu" class="btn btn-gold">Explore Menu</a>
+            <a href="#contact" class="btn btn-outline">Reserve Table</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Slide 2 -->
+    <div class="slide">
+      <div class="slide-bg"
+        style="background-image:url('images/hero2.jpg'),linear-gradient(135deg,#2a0500 0%,#1a0900 100%)"></div>
+      <div class="slide-ov"></div>
+      <div class="slide-body">
+        <div class="slide-inner">
+          <span class="tag slide-tag">A Feast for the Senses</span>
+          <h1>New Innovations on <em>Old Customs</em></h1>
+          <p>Aromatic biryanis, rich gravies, fiery kebabs — every bite is a journey through heritage.</p>
+          <div class="slide-btns">
+            <a href="#menu" class="btn btn-gold">View Menu</a>
+            <a href="#about" class="btn btn-outline">Our Story</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Slide 3 -->
+    <div class="slide">
+      <div class="slide-bg"
+        style="background-image:url('images/hero3.jpg'),linear-gradient(135deg,#0a0500 0%,#1a0900 100%)"></div>
+      <div class="slide-ov"></div>
+      <div class="slide-body">
+        <div class="slide-inner">
+          <span class="tag slide-tag">Events & Catering</span>
+          <h1>A Place for <em>One and All</em></h1>
+          <p>Premium party halls and catering for weddings, corporate events and all celebrations.</p>
+          <div class="slide-btns">
+            <a href="#events" class="btn btn-gold">Book Event</a>
+            <a href="#outlets" class="btn btn-outline">Find Outlets</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="slide-ctrl prev-btn" onclick="prevSlide()">&#8592;</button>
+  <button class="slide-ctrl next-btn" onclick="nextSlide()">&#8594;</button>
+  <div class="slide-dots" id="sdots"></div>
+</section>
+
+<!-- ════ RIBBON ════ -->
+<div class="ribbon">
+  <div class="ribbon-inner">
+    <div class="rib-item"><span class="rib-icon">🕐</span><div><span class="rib-lbl">Open Hours</span><span class="rib-val" id="rib-h">11 AM – 11 PM Daily</span></div></div>
+    <div class="rib-item"><span class="rib-icon">📍</span><div><span class="rib-lbl">Outlets</span><span class="rib-val" id="rib-o">3 Locations · Chennai</span></div></div>
+    <div class="rib-item"><span class="rib-icon">📞</span><div><span class="rib-lbl">Call Us</span><span class="rib-val" id="rib-p">044-4004-4004</span></div></div>
+    <div class="rib-item"><span class="rib-icon">🏆</span><div><span class="rib-lbl">Recognition</span><span class="rib-val" id="rib-a">Best Biryani · Chennai 2024</span></div></div>
+  </div>
+</div>
+
+<!-- ════ ABOUT ════ -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-imgs rev">
+        <img src="images/about-main.jpg" alt="Restaurant" class="about-main-img" id="ab-main-img" onerror="this.style.display='none';document.getElementById('ab-ph').style.display='flex'"/>
+        <div class="about-main-ph" id="ab-ph">🍛</div>
+        <img src="images/about-float.jpg" alt="Kitchen" class="about-float-img" onerror="this.style.display='none'"/>
+        <div class="about-badge">
+          <span class="n" id="ab-yr">50+</span>
+          <span class="l">Years of<br/>Excellence</span>
+        </div>
+      </div>
+      <div class="about-text rev rev-d2">
+        <span class="tag">Our Story</span>
+        <h2 id="ab-title">Torchbearers in Quality, Taste & Economy</h2>
+        <div class="gold-bar"></div>
+        <p id="ab-p1">Born from a passion for authentic flavours, we have been delighting the people of Chennai since 1975. What started as a humble eatery has grown into one of the city's most beloved restaurant chains.</p>
+        <p id="ab-p2">Our chefs honour age-old recipes while embracing modern presentation. Every ingredient is sourced fresh, every dish cooked with care.</p>
+        <div class="about-stats">
+          <div class="stat"><span class="n" id="st1n">50+</span><span class="l" id="st1l">Years Old</span></div>
+          <div class="stat"><span class="n" id="st2n">3</span><span class="l" id="st2l">Outlets</span></div>
+          <div class="stat"><span class="n" id="st3n">1M+</span><span class="l" id="st3l">Guests</span></div>
+        </div>
+        <a href="#menu" class="btn btn-red">Explore Our Menu</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ WHY US ════ -->
+<section class="why">
+  <div class="container">
+    <div class="rev" style="text-align:center">
+      <span class="tag">Why Choose Us</span>
+      <h2>Our Promise to You</h2>
+      <div class="gold-bar c"></div>
+    </div>
+    <div class="why-grid" id="why-grid"></div>
+  </div>
+</section>
+
+<!-- ════ MENU — GOOGLE SHEETS LIVE ════ -->
+<section id="menu">
+  <div class="container">
+    <div class="menu-hdr rev">
+      <span class="tag">What We Serve</span>
+      <h2>Our Signature Menu</h2>
+      <div class="gold-bar c"></div>
+      <p id="menu-sub">Live from our Google Sheet — add or edit dishes anytime</p>
+    </div>
+
+    <!-- Sheet connection status -->
+    <div class="sheet-status demo" id="sheet-status">
+      <span class="dot"></span>
+      <span id="sheet-status-txt">Connecting to Google Sheet…</span>
+    </div>
+
+    <!-- Menu renders here -->
+    <div id="menu-area">
+      <div class="menu-loading" id="menu-loading">
+        <div class="spinner"></div>
+        <p>Loading menu…</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ EVENTS ════ -->
+<section id="events">
+  <div class="container">
+    <div class="rev" style="text-align:center">
+      <span class="tag">Celebrations & Catering</span>
+      <h2>Host Your Next Event With Us</h2>
+      <div class="gold-bar c"></div>
+      <p style="max-width:500px;margin:.4rem auto 0">Premium venues and full-service catering for every occasion.</p>
+    </div>
+    <div class="events-grid rev" id="events-grid"></div>
+  </div>
+</section>
+
+<!-- ════ OUTLETS ════ -->
+<section id="outlets">
+  <div class="container">
+    <div class="rev" style="text-align:center">
+      <span class="tag" style="color:var(--gold2)">Find Us</span>
+      <h2 style="color:#fff">Our Outlets</h2>
+      <div class="gold-bar c"></div>
+    </div>
+    <div class="outlets-grid rev" id="outlets-grid"></div>
+  </div>
+</section>
+
+<!-- ════ TESTIMONIALS ════ -->
+<section id="testi">
+  <div class="container">
+    <div class="rev" style="text-align:center">
+      <span class="tag">Guest Reviews</span>
+      <h2>What Our Guests Say</h2>
+      <div class="gold-bar c"></div>
+    </div>
+    <div class="testi-grid rev" id="testi-grid"></div>
+  </div>
+</section>
+
+<!-- ════ CONTACT ════ -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="rev">
+        <span class="tag">Reach Us</span>
+        <h2>Visit or Reserve a Table</h2>
+        <div class="gold-bar"></div>
+        <div id="c-details"></div>
+      </div>
+      <div class="rev rev-d2">
+        <div class="res-form">
+          <h3>Book a Table</h3>
+          <p style="margin-bottom:1rem;font-size:.88rem">We'll confirm your reservation shortly.</p>
+          <div class="f-row">
+            <div class="f-g"><label>Your Name</label><input type="text" id="fn" placeholder="Ramesh Kumar"/></div>
+            <div class="f-g"><label>Phone</label><input type="tel" id="fp" placeholder="+91 98765 43210"/></div>
+          </div>
+          <div class="f-row">
+            <div class="f-g"><label>Date</label><input type="date" id="fd"/></div>
+            <div class="f-g"><label>Guests</label>
+              <select id="fg"><option>1 person</option><option>2 people</option><option selected>4 people</option><option>6 people</option><option>8+ people</option></select>
+            </div>
+          </div>
+          <div class="f-g"><label>Special Request</label><textarea id="fm" placeholder="Anniversary, dietary needs…"></textarea></div>
+          <button class="btn btn-red" style="width:100%;justify-content:center;padding:1rem" onclick="submitRes()">✓ Confirm Reservation</button>
+          <div class="form-ok" id="form-ok">✅ Thank you! We'll confirm your table soon.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ FOOTER ════ -->
+<footer>
+  <div class="container">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <strong id="ft-name">Spice Garden Biryani</strong>
+        <p id="ft-tag">Serving authentic flavours with love since 1975.</p>
+        <div class="foot-socs" id="ft-soc"></div>
+      </div>
+      <div class="foot-col">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#menu">Menu</a></li>
+          <li><a href="#about">Our Story</a></li>
+          <li><a href="#events">Events</a></li>
+          <li><a href="#outlets">Outlets</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Hours</h4>
+        <p id="ft-hrs"></p>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <p id="ft-ct"></p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span id="ft-copy">© 2025 Spice Garden Biryani</span>
+      <span>Designed with ♥</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating order button -->
+<a href="#" class="float-order" id="float-order" title="Order Online">🛵</a>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ███████╗ ██████╗ ██████╗ ███████╗
+     ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+     ██║     ██║   ██║██████╔╝█████╗
+     ██║     ██║   ██║██╔══██╗██╔══╝
+     ╚██████╗╚██████╔╝██║  ██║███████╗
+      ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+
+  EDIT ONLY THE CONFIG BELOW — everything is auto-populated
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ── Billzo: build CONFIG from APP_CONFIG (falls back to demo data) ── */
+(function() {
+  var _c  = window.APP_CONFIG || {};
+  var _b  = _c.business   || {};
+  var _a  = _c.about      || {};
+  var _sh = _c.sheets     || {};
+  var _sl = _c.heroSlides || [];
+
+  window.CONFIG = {
+    name:       _b.name       || 'Spice Garden Biryani',
+    tagline:    _b.tagline    || 'Serving authentic flavours with love since 1975.',
+    since:      _b.since      || '1975',
+    phone:      _b.phone      || '044-4004-4004',
+    email:      _b.email      || 'hello@spicegarden.in',
+    orderLink:  _b.orderLink  || 'https://www.zomato.com/',
+    award:      _b.award      || 'Best Biryani · Chennai 2024',
+    hoursShort: _b.hoursShort || '11 AM – 11 PM Daily',
+    hoursLong:  _b.hoursLong  || 'Mon–Thu: 11 AM – 10 PM\nFri–Sun: 11 AM – 11 PM',
+    slide0Em:   (_sl[0] && _sl[0].h1Em) || _b.name || 'Spice Garden',
+    slide0Rest: (_sl[0] && _sl[0].h1Rest) || '',
+    slide0Tag:  (_sl[0] && _sl[0].tag)   || 'Since 1975 · Chennai',
+    slide0P:    (_sl[0] && _sl[0].p)     || '',
+    slide1Em:   (_sl[1] && _sl[1].h1Em) || 'Feed',
+    slide1Rest: (_sl[1] && _sl[1].h1Rest) || ' Your Crowd',
+    slide1Tag:  (_sl[1] && _sl[1].tag)   || 'Catering Available',
+    slide1P:    (_sl[1] && _sl[1].p)     || 'Bulk orders & catering for every occasion.',
+    slide2Em:   (_sl[2] && _sl[2].h1Em) || 'Fresh',
+    slide2Rest: (_sl[2] && _sl[2].h1Rest) || ' Every Day',
+    slide2Tag:  (_sl[2] && _sl[2].tag)   || 'Open Daily',
+    slide2P:    (_sl[2] && _sl[2].p)     || 'Cooked fresh, served hot.',
+    abYears:    _a.years || '50+',
+    abTitle:    _a.title || 'Torchbearers in Quality, Taste & Economy',
+    abP1:       _a.p1    || 'Born from a passion for authentic flavours, we have been delighting the people of Chennai since 1975.',
+    abP2:       _a.p2    || 'Our chefs honour age-old recipes while embracing modern presentation.',
+    stats:      _a.stats || [
+      { n:'50+', l:'Years Old' },
+      { n:'3',   l:'Outlets'   },
+      { n:'1M+', l:'Guests'    },
+    ],
+    whyUs:    _c.whyUs || [
+      { ic:'🍲', title:'Authentic Recipes',  desc:'Family recipes passed down over 5 decades of tradition' },
+      { ic:'🌿', title:'Fresh Ingredients',  desc:'Sourced fresh every morning from trusted local markets'  },
+      { ic:'👨‍🍳', title:'Expert Chefs', desc:'25+ years of combined culinary expertise in our kitchen' },
+      { ic:'🏅', title:'Award Winning',      desc:'Best Biryani Restaurant, Chennai Food Awards 2023 & 2024' },
+    ],
+    events:   _c.events || [
+      { title:'Catering Services',   desc:'We bring our legendary food directly to your venue.',  image:'images/catering.jpg',  emoji:'🍽️', btn:'Enquire Now',  href:'#contact' },
+      { title:'Private Party Halls', desc:'Premium venues for weddings, birthdays, conferences.', image:'images/partyhall.jpg', emoji:'🎉', btn:'Book a Hall',  href:'#contact' },
+    ],
+    outlets:  _c.outlets || [
+      { name:'Alandur',         address:'No. 45, GST Road,\nAlandur, Chennai – 600 016',         phone:'044-2234 5678', map:'https://maps.google.com/?q=Alandur+Chennai' },
+      { name:'Perungudi (OMR)', address:'Old Mahabalipuram Road,\nPerungudi, Chennai – 600 096', phone:'044-2896 4321', map:'https://maps.google.com/?q=Perungudi+OMR+Chennai' },
+      { name:'Thousand Lights', address:'Anna Salai, Thousand Lights,\nChennai – 600 006',       phone:'044-4004 4004', map:'https://maps.google.com/?q=Thousand+Lights+Chennai' },
+    ],
+    testimonials: _c.testimonials || [
+      { name:'Priya S.',  date:'Jan 2025', stars:5, review:'Absolutely the best Chicken Biryani in Chennai. The aroma alone is worth the trip!' },
+      { name:'Arjun M.',  date:'Dec 2024', stars:5, review:'Celebrated my parents\u2019 anniversary here. The staff went above and beyond.' },
+      { name:'Divya R.',  date:'Feb 2025', stars:5, review:'Catered our corporate event for 200 people. Flawless — food arrived hot!' },
+    ],
+    socials: _c.social || {
+      instagram: 'https://instagram.com/',
+      facebook:  'https://facebook.com/',
+      whatsapp:  'https://wa.me/914440044004',
+      youtube:   'https://youtube.com/',
+    },
+    sheetCSV: _sh.menuCSV || '',
+    formURL:  _c.formURL  || '',
+  };
+})();
+var CONFIG = window.CONFIG;
+
+/* ── DEMO DATA: used when Sheet is not connected ──
+   If APP_CONFIG.demoMenu is set, it takes priority. */
+const DEMO = (window.APP_CONFIG && window.APP_CONFIG.demoMenu) || [
+  {Category:"Biryani",     Name:"Chicken Dum Biryani",  Description:"Slow-cooked on dum with whole spices and saffron",             Price:"380", Type:"NonVeg", ImageURL:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Biryani_at_Bawarchi.jpg/320px-Biryani_at_Bawarchi.jpg", Badge:"Bestseller", Available:"Yes"},
+  {Category:"Biryani",     Name:"Mutton Biryani",        Description:"Tender mutton in aged basmati rice — a house favourite",        Price:"450", Type:"NonVeg", ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Biryani",     Name:"Veg Dum Biryani",       Description:"Seasonal vegetables layered in fragrant basmati with kewra",   Price:"280", Type:"Veg",    ImageURL:"", Badge:"New",        Available:"Yes"},
+  {Category:"Biryani",     Name:"Egg Biryani",            Description:"Masala-coated eggs layered with spiced saffron rice",          Price:"300", Type:"NonVeg", ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Starters",   Name:"Chicken 65",             Description:"Crispy spiced chicken with curry leaves & green chilli",        Price:"280", Type:"NonVeg", ImageURL:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Chicken-65.jpg/320px-Chicken-65.jpg", Badge:"Bestseller", Available:"Yes"},
+  {Category:"Starters",   Name:"Paneer Tikka",           Description:"Charcoal-grilled marinated cottage cheese, mint chutney",       Price:"320", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Starters",   Name:"Seekh Kebab",            Description:"Minced lamb on skewers with smoky charcoal flavour",            Price:"360", Type:"NonVeg", ImageURL:"", Badge:"Chef Special",Available:"Yes"},
+  {Category:"Starters",   Name:"Veg Spring Rolls",       Description:"Crispy rolls stuffed with sautéed seasonal vegetables",         Price:"220", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Main Course",Name:"Butter Chicken",         Description:"Tender chicken in rich tomato-butter gravy",                    Price:"380", Type:"NonVeg", ImageURL:"", Badge:"Bestseller", Available:"Yes"},
+  {Category:"Main Course",Name:"Dal Makhani",            Description:"Slow-cooked black lentils with cream and butter",               Price:"280", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Main Course",Name:"Chettinad Chicken",      Description:"Fiery South Indian classic with kalpasi & marathi mokku",       Price:"400", Type:"NonVeg", ImageURL:"", Badge:"Chef Special",Available:"Yes"},
+  {Category:"Main Course",Name:"Palak Paneer",           Description:"Cottage cheese in velvety creamy spinach sauce",                Price:"300", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Desserts",   Name:"Phirni",                 Description:"Chilled rice pudding with cardamom and pistachios",             Price:"110", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Desserts",   Name:"Gulab Jamun",            Description:"Soft milk-solid dumplings in warm rose sugar syrup (2 pcs)",    Price:"120", Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Desserts",   Name:"Kulfi Falooda",          Description:"Traditional kulfi with rose falooda and basil seeds",           Price:"160", Type:"Veg",    ImageURL:"", Badge:"Bestseller", Available:"Yes"},
+  {Category:"Drinks",     Name:"Mango Lassi",            Description:"Chilled yogurt with fresh Alphonso mango",                      Price:"100", Type:"Veg",    ImageURL:"", Badge:"Bestseller", Available:"Yes"},
+  {Category:"Drinks",     Name:"Masala Chai",            Description:"Aromatic Indian spiced tea with ginger",                        Price:"60",  Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+  {Category:"Drinks",     Name:"Fresh Lime Soda",        Description:"Chilled lime soda — sweet or salted",                          Price:"80",  Type:"Veg",    ImageURL:"", Badge:"",           Available:"Yes"},
+];
+
+/* ═══════════════════════════════════════
+   BOOT
+═══════════════════════════════════════ */
+function boot(){
+  /* topbar */
+  const tbp = document.getElementById('tb-phone');
+  tbp.textContent = CONFIG.phone; tbp.href = `tel:${CONFIG.phone}`;
+  const tbe = document.getElementById('tb-email');
+  tbe.textContent = CONFIG.email; tbe.href = `mailto:${CONFIG.email}`;
+  buildSocials('tb-soc', true);
+
+  /* nav */
+  document.getElementById('nav-name').textContent = CONFIG.name;
+  document.getElementById('nav-since').textContent = `Since ${CONFIG.since}`;
+  document.getElementById('nav-order').href = CONFIG.orderLink;
+  document.getElementById('mob-order').href = CONFIG.orderLink;
+
+  /* hero */
+  document.getElementById('s0em').textContent = CONFIG.slide0Em || CONFIG.name;
+
+  /* ribbon */
+  document.getElementById('rib-h').textContent = CONFIG.hoursShort;
+  document.getElementById('rib-o').textContent = `${CONFIG.outlets.length} Locations`;
+  document.getElementById('rib-p').textContent = CONFIG.phone;
+  document.getElementById('rib-a').textContent = CONFIG.award;
+
+  /* about */
+  document.getElementById('ab-yr').textContent = CONFIG.abYears;
+  document.getElementById('ab-title').textContent = CONFIG.abTitle;
+  document.getElementById('ab-p1').textContent = CONFIG.abP1;
+  document.getElementById('ab-p2').textContent = CONFIG.abP2;
+  CONFIG.stats.forEach((s,i)=>{
+    document.getElementById(`st${i+1}n`).textContent = s.n;
+    document.getElementById(`st${i+1}l`).textContent = s.l;
+  });
+
+  /* why us */
+  const wg = document.getElementById('why-grid');
+  CONFIG.whyUs.forEach((w,i)=>{
+    const d = document.createElement('div');
+    d.className = `why-card rev rev-d${Math.min(i,3)}`;
+    d.innerHTML = `<div class="ic">${w.ic}</div><h3>${w.title}</h3><p>${w.desc}</p>`;
+    wg.appendChild(d);
+  });
+
+  /* events */
+  const eg = document.getElementById('events-grid');
+  CONFIG.events.forEach(ev=>{
+    eg.innerHTML += `<div class="ev-card">
+      <div class="ev-bg" style="background-image:url('${ev.image}')"></div>
+      <div class="ev-ph" style="${ev.image?'display:none':''}"> ${ev.emoji}</div>
+      <div class="ev-ov"></div>
+      <div class="ev-body">
+        <h3>${ev.title}</h3><p>${ev.desc}</p>
+        <a href="${ev.href}" class="btn btn-gold">${ev.btn}</a>
+      </div>
+    </div>`;
+  });
+
+  /* outlets */
+  const og = document.getElementById('outlets-grid');
+  CONFIG.outlets.forEach(o=>{
+    og.innerHTML += `<div class="out-card rev">
+      <h3>📍 ${o.name}</h3>
+      <div class="out-row"><span class="ic">🏠</span><p>${o.address.replace('\n','<br>')}</p></div>
+      <div class="out-row"><span class="ic">📞</span><a href="tel:${o.phone}">${o.phone}</a></div>
+      <div class="out-row"><span class="ic">🗺️</span><a href="${o.map}" target="_blank">Get Directions ↗</a></div>
+    </div>`;
+  });
+
+  /* testimonials */
+  const tg = document.getElementById('testi-grid');
+  CONFIG.testimonials.forEach(t=>{
+    tg.innerHTML += `<div class="t-card rev">
+      <div class="stars">${'★'.repeat(t.stars)}${'☆'.repeat(5-t.stars)}</div>
+      <p>"${t.review}"</p>
+      <div class="t-auth">
+        <div class="t-av">${t.name[0]}</div>
+        <div><div class="t-name">${t.name}</div><div class="t-date">${t.date}</div></div>
+      </div>
+    </div>`;
+  });
+
+  /* contact details */
+  document.getElementById('c-details').innerHTML = `
+    <div class="c-row"><div class="c-ic">📍</div><div><span class="c-lbl">Main Outlet</span><span class="c-val">${CONFIG.outlets[0].address.replace('\n','<br>')}</span></div></div>
+    <div class="c-row"><div class="c-ic">📞</div><div><span class="c-lbl">Phone</span><span class="c-val"><a href="tel:${CONFIG.phone}">${CONFIG.phone}</a></span></div></div>
+    <div class="c-row"><div class="c-ic">✉️</div><div><span class="c-lbl">Email</span><span class="c-val"><a href="mailto:${CONFIG.email}">${CONFIG.email}</a></span></div></div>
+    <div class="c-row"><div class="c-ic">🕐</div><div><span class="c-lbl">Hours</span><span class="c-val">${CONFIG.hoursLong.replace(/\n/g,'<br>')}</span></div></div>`;
+
+  /* footer */
+  document.getElementById('ft-name').textContent = CONFIG.name;
+  document.getElementById('ft-tag').textContent  = CONFIG.tagline;
+  document.getElementById('ft-hrs').innerHTML    = CONFIG.hoursLong.replace(/\n/g,'<br>');
+  document.getElementById('ft-ct').innerHTML     = `${CONFIG.phone}<br>${CONFIG.email}`;
+  document.getElementById('ft-copy').textContent = `© ${new Date().getFullYear()} ${CONFIG.name}. All rights reserved.`;
+  buildSocials('ft-soc', false);
+
+  /* float */
+  document.getElementById('float-order').href = CONFIG.orderLink;
+
+  /* slider dots */
+  buildDots(3);
+
+  /* menu */
+  loadMenu();
+}
+
+function buildSocials(elId, small){
+  const el = document.getElementById(elId);
+  const icons = {instagram:'📷', facebook:'📘', whatsapp:'💬', youtube:'▶️'};
+  Object.entries(CONFIG.socials).forEach(([k,v])=>{
+    if(!v) return;
+    const a = document.createElement('a');
+    a.href = v; a.target = '_blank';
+    a.className = small ? '' : 'f-soc';
+    a.innerHTML = icons[k]||'🔗';
+    el.appendChild(a);
+  });
+}
+
+/* ═══════════════════════════════════════
+   GOOGLE SHEETS MENU LOADER
+   ✅ Loads live CSV from published sheet
+   ✅ Images pulled from ImageURL column
+   ✅ Falls back to demo data if no URL set
+═══════════════════════════════════════ */
+async function loadMenu(){
+  const status    = document.getElementById('sheet-status');
+  const statusTxt = document.getElementById('sheet-status-txt');
+
+  if(!CONFIG.sheetCSV){
+    setStatus('demo','⚠️ Demo mode — connect your Google Sheet in CONFIG.sheetCSV');
+    renderMenu(DEMO);
+    return;
+  }
+
+  setStatus('demo','⏳ Connecting to Google Sheet…');
+
+  try {
+    /* Fetch CSV from published Google Sheet */
+    const res = await fetch(CONFIG.sheetCSV);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const csv = await res.text();
+    const rows = parseCSV(csv);
+
+    if(!rows.length) throw new Error('Sheet is empty or headers are wrong');
+
+    setStatus('live', `✅ Live from Google Sheet — ${rows.length} dishes loaded`);
+    renderMenu(rows);
+
+  } catch(err){
+    console.error('Sheet load error:', err);
+    setStatus('err', `⚠️ Could not load sheet (${err.message}) — showing demo menu`);
+    renderMenu(DEMO);
+  }
+}
+
+function setStatus(type, msg){
+  const el = document.getElementById('sheet-status');
+  el.className = `sheet-status ${type}`;
+  document.getElementById('sheet-status-txt').textContent = msg;
+}
+
+/* ── CSV Parser — handles quoted commas ── */
+function parseCSV(text){
+  const lines = text.replace(/\r/g,'').trim().split('\n');
+  if(lines.length < 2) return [];
+
+  const headers = splitCSVLine(lines[0]);
+  return lines.slice(1)
+    .map(line => {
+      const vals = splitCSVLine(line);
+      const obj = {};
+      headers.forEach((h,i) => obj[h.trim()] = (vals[i]||'').trim());
+      return obj;
+    })
+    .filter(r => r.Name && r.Name.length > 0);
+}
+
+function splitCSVLine(line){
+  const vals=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){vals.push(cur.replace(/^"|"$/g,''));cur='';}
+    else cur+=c;
+  }
+  vals.push(cur.replace(/^"|"$/g,''));
+  return vals;
+}
+
+/* ── Render Menu ── */
+function renderMenu(items){
+  const area = document.getElementById('menu-area');
+  const cats = [...new Set(items.map(r=>r.Category).filter(Boolean))];
+
+  let html = '';
+
+  /* category tabs */
+  html += `<div class="cat-tabs">`;
+  cats.forEach((c,i)=>
+    html += `<button class="cat-tab${i===0?' on':''}" onclick="filterCat('${c}',this)">${c}</button>`
+  );
+  html += `</div>`;
+
+  /* grid of cards */
+  html += `<div class="menu-grid" id="m-grid">`;
+  items.forEach(item => {
+    const avail   = (item.Available||'yes').toLowerCase() !== 'no';
+    const isVeg   = (item.Type||'Veg').toLowerCase() === 'veg';
+    const hasImg  = item.ImageURL && item.ImageURL.trim().length > 0;
+    const badgeCls = item.Badge==='Bestseller' ? 'badge-best' :
+                     item.Badge==='New'         ? 'badge-new'  : 'badge-chef';
+
+    /* Image HTML:
+       - If ImageURL is filled in sheet → shows image from that URL
+       - If empty → shows emoji placeholder
+       Image can be: a direct URL, Cloudinary URL, imgbb URL, or images/ path */
+    const imgHTML = hasImg
+      ? `<div class="m-img-wrap">
+           <img src="${item.ImageURL}" alt="${item.Name}" loading="lazy"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+           <div class="m-img-ph" style="display:none">${isVeg?'🥗':'🍗'}</div>
+         </div>`
+      : `<div class="m-img-wrap"><div class="m-img-ph">${isVeg?'🥗':'🍗'}</div></div>`;
+
+    html += `<div class="m-card${avail?'':' unavail'}" data-cat="${item.Category}">
+      ${item.Badge ? `<div class="m-badge ${badgeCls}">${item.Badge}</div>` : ''}
+      ${imgHTML}
+      <div class="m-body">
+        <div class="m-type">
+          <span class="${isVeg?'dot-v':'dot-nv'}">●</span>
+          ${item.Type||'Veg'}
+        </div>
+        <h3>${item.Name}</h3>
+        <p>${item.Description||''}</p>
+        <div class="m-price">₹ ${item.Price}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  area.innerHTML = html;
+  reObserve();
+}
+
+function filterCat(cat, btn){
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.m-card').forEach(c=>{
+    c.style.display = c.dataset.cat===cat ? '' : 'none';
+  });
+}
+
+/* ═══════════════════════════════════════
+   SLIDER
+═══════════════════════════════════════ */
+let sIdx=0, sTotal=3, sTimer;
+function buildDots(n){
+  const el=document.getElementById('sdots');
+  for(let i=0;i<n;i++){
+    const b=document.createElement('button');
+    b.className='sdot'+(i===0?' act':'');
+    b.setAttribute('aria-label',`Slide ${i+1}`);
+    b.onclick=()=>goSlide(i);
+    el.appendChild(b);
+  }
+}
+function goSlide(n){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('act',i===n));
+  document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('act',i===n));
+  document.getElementById('slides').style.transform=`translateX(-${n*100}%)`;
+  sIdx=n;
+}
+function nextSlide(){goSlide((sIdx+1)%sTotal);resetTimer()}
+function prevSlide(){goSlide((sIdx-1+sTotal)%sTotal);resetTimer()}
+function resetTimer(){clearInterval(sTimer);sTimer=setInterval(nextSlide,5000)}
+sTimer=setInterval(nextSlide,5000);
+
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+function toggleNav(){
+  const mob=document.getElementById('mob-nav');
+  const ham=document.getElementById('ham');
+  mob.classList.toggle('open');
+  ham.classList.toggle('open');
+}
+function closeNav(){
+  document.getElementById('mob-nav').classList.remove('open');
+  document.getElementById('ham').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+function reObserve(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('in')});
+  },{threshold:.1});
+  document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
+}
+reObserve();
+
+/* ═══════════════════════════════════════
+   RESERVATION FORM
+═══════════════════════════════════════ */
+async function submitRes(){
+  const name  = document.getElementById('fn').value.trim();
+  const phone = document.getElementById('fp').value.trim();
+  const date  = document.getElementById('fd').value;
+  if(!name||!phone||!date){alert('Please fill Name, Phone and Date.');return;}
+  const data={name,phone,date,guests:document.getElementById('fg').value,message:document.getElementById('fm').value,timestamp:new Date().toISOString()};
+  if(CONFIG.formURL){
+    await fetch(CONFIG.formURL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(()=>{});
+  }
+  document.getElementById('form-ok').style.display='block';
+  ['fn','fp','fd','fm'].forEach(id=>document.getElementById(id).value='');
+}
+
+boot();
+</script>
+</body>
+</html>
