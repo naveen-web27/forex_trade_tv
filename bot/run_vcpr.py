@@ -91,6 +91,36 @@ def _band_pip_distance(price: float, bcpr: float, tcpr: float,
 # VCPR Telegram message formatter
 # ─────────────────────────────────────────────────────────────────────────────
 
+TG_LIMIT = 4096  # Telegram hard limit for a single HTML message
+
+
+def _short_date(date_val) -> str:
+    """'2026-07-04' or date object → '04Jul'"""
+    s = str(date_val)[:10]
+    try:
+        dt = datetime.strptime(s, "%Y-%m-%d")
+        return dt.strftime("%d%b")
+    except ValueError:
+        return s
+
+
+def _send_chunked(text: str) -> None:
+    """Split on newlines and send in ≤4096-char chunks."""
+    if len(text) <= TG_LIMIT:
+        telegram_notify.send(text)
+        return
+    chunk, lines = "", text.split("\n")
+    for line in lines:
+        candidate = chunk + "\n" + line if chunk else line
+        if len(candidate) > TG_LIMIT:
+            telegram_notify.send(chunk)
+            chunk = line
+        else:
+            chunk = candidate
+    if chunk:
+        telegram_notify.send(chunk)
+
+
 def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
                          prices: dict[str, float]) -> str:
     ts = datetime.now(IST).strftime("%d %b %H:%M IST")
@@ -211,7 +241,7 @@ def main() -> int:
     _save_vcpr_active(daily, weekly, monthly)
 
     prices = _fetch_current_prices(PAIRS_LIST)
-    telegram_notify.send(_format_vcpr_message(daily, weekly, monthly, prices))
+    _send_chunked(_format_vcpr_message(daily, weekly, monthly, prices))
     return 0
 
 
