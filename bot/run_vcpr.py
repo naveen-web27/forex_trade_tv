@@ -93,13 +93,11 @@ def _band_pip_distance(price: float, bcpr: float, tcpr: float,
 
 def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
                          prices: dict[str, float]) -> str:
-    now_ist = datetime.now(IST)
-    ts = now_ist.strftime("%d %b %Y %H:%M IST")
+    ts = datetime.now(IST).strftime("%d %b %H:%M IST")
 
     lines = [
-        "🌅 👻 <b>Virgin CPR — Daily · Weekly · Monthly</b>",
-        f"🕐 {ts}",
-        "════════════════════════════",
+        f"🌅👻 <b>Virgin CPR</b> · {ts}",
+        "────────────────────",
     ]
 
     all_symbols = sorted(set(list(daily) + list(weekly) + list(monthly)))
@@ -120,48 +118,27 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         w_total += len(w)
         m_total += len(m)
 
-        price_str = f"  💹 {price:.5f}" if price is not None else ""
-        lines.append(
-            f"\n🔹 <b>{symbol}</b>{price_str}"
-            f"  | D:{len(d)}  W:{len(w)}  M:{len(m)}"
-        )
+        price_str = f" {price:.5f}" if price is not None else ""
+        lines.append(f"🔹<b>{symbol}</b>{price_str}")
 
         for r in d:
-            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
-            lines.append(
-                f"   🟣 Daily  {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
-            )
+            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
+            lines.append(f"  🟣{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
         for r in w:
-            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
-            lines.append(
-                f"   🔵 Weekly {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
-            )
+            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
+            lines.append(f"  🔵{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
         for r in m:
-            _, dist_pips, _ = _band_pip_distance(price, r[1], r[2], pip)
-            lines.append(
-                f"   🟠 Monthly {r[0]} | [{r[1]:.5f}–{r[2]:.5f}] | Δ<b>{dist_pips:.1f}p</b>"
-            )
+            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
+            lines.append(f"  🟠{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
 
     if d_total + w_total + m_total == 0:
-        return (
-            "🌅 👻 <b>Virgin CPR</b>\n"
-            f"🕐 {ts}\n"
-            "No active VCPR bands found this scan."
-        )
+        return f"🌅👻 <b>Virgin CPR</b> · {ts}\nNo active VCPR bands found."
 
     lines += [
-        "",
-        "════════════════════════════",
-        f"📊 Daily:{d_total}  Weekly:{w_total}  Monthly:{m_total}",
-        "",
-        "📖 <b>Guide:</b>",
-        "🟣 Daily  = 3-5/week  | medium strength",
-        "🔵 Weekly = 1-2/month | strong HTF magnet",
-        "🟠 Monthly= 1-2/qtr   | institutional level ⭐",
-        "⚡ Wait for reaction + confirmation candle",
+        "────────────────────",
+        f"📊 D:{d_total} W:{w_total} M:{m_total}  ⚡confirm before entry",
     ]
     return "\n".join(lines)
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VCPR scan — runs alongside directional strategies
