@@ -169,6 +169,7 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         "────────────────────",
         f"D:{d_total} W:{w_total} M:{m_total}",
     ]
+    print(lines)
     return "\n".join(lines)
 
 # ─────────────────────────────────────────────────────────────────────────────
