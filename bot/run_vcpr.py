@@ -140,7 +140,6 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         d = daily.get(symbol, [])
         w = weekly.get(symbol, [])
         m = monthly.get(symbol, [])
-
         if not d and not w and not m:
             continue
 
@@ -148,25 +147,27 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         w_total += len(w)
         m_total += len(m)
 
-        price_str = f" {price:.5f}" if price is not None else ""
-        lines.append(f"🔹<b>{symbol}</b>{price_str}")
-
+        # All bands on one line: EURUSD 1.08430 | 🟣04Jul 3p | 🔵28Jun 130p
+        parts = []
         for r in d:
-            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
-            lines.append(f"  🟣{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            parts.append(f"🟣{_short_date(r[0])} {dp}")
         for r in w:
-            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
-            lines.append(f"  🔵{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            parts.append(f"🔵{_short_date(r[0])} {dp}")
         for r in m:
-            dp = f" Δ<b>{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p</b>" if price else ""
-            lines.append(f"  🟠{_short_date(r[0])} {r[1]:.5f}–{r[2]:.5f}{dp}")
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            parts.append(f"🟠{_short_date(r[0])} {dp}")
+
+        price_str = f" {price:.5f}" if price is not None else ""
+        lines.append(f"<b>{symbol}</b>{price_str} | " + " | ".join(parts))
 
     if d_total + w_total + m_total == 0:
         return f"🌅👻 <b>Virgin CPR</b> · {ts}\nNo active VCPR bands found."
 
     lines += [
         "────────────────────",
-        f"📊 D:{d_total} W:{w_total} M:{m_total}  ⚡confirm before entry",
+        f"D:{d_total} W:{w_total} M:{m_total}",
     ]
     return "\n".join(lines)
 
