@@ -72,18 +72,20 @@ def _fetch_current_prices(symbols: list[str], exchange: str = "FX",
     return prices
 
 
-def _band_pip_distance(price: float, bcpr: float, tcpr: float,
+def _band_pip_distance(price: float | None, bcpr: float, tcpr: float,
                        pip: float) -> tuple[float, float, str]:
     """Return (dist_raw, dist_pips, direction_label) for a band."""
+    if price is None:
+        return 0.0, 0.0, ""
     if price < bcpr:
         dist_raw = bcpr - price
-        direction = "🔼 below band"
+        direction = "below"
     elif price > tcpr:
         dist_raw = price - tcpr
-        direction = "🔽 above band"
+        direction = "above"
     else:
         dist_raw = 0.0
-        direction = "↔ inside band"
+        direction = "inside"
     return dist_raw, dist_raw / pip, direction
 
 
@@ -143,8 +145,8 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         pip   = _pip_size(symbol)
 
         d = daily.get(symbol, [])
-        w = weekly.get(symbol, [])
-        m = monthly.get(symbol, [])
+        w = weekly.get(symbol, [])[-2:]   # latest 2 only
+        m = monthly.get(symbol, [])[-2:]  # latest 2 only
         if not d and not w and not m:
             continue
 
@@ -155,13 +157,13 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         # All bands on one line: EURUSD 1.08430 | 🟣04Jul 3p | 🔵28Jun 130p
         parts = []
         for r in d:
-            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
             parts.append(f"{_short_date(r[0])} {dp}")
         for r in w:
-            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
             parts.append(f"{_short_date(r[0])} {dp}")
         for r in m:
-            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
+            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
             parts.append(f"{_short_date(r[0])} {dp}")
 
         price_str = f" {price:.5f}" if price is not None else ""
