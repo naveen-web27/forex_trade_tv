@@ -104,15 +104,20 @@ def _short_date(date_val) -> str:
         return s
 
 
+def _tg_len(text: str) -> int:
+    """Telegram counts UTF-16 code units (emojis = 2 units each), not code points."""
+    return len(text.encode("utf-16-le")) // 2
+
+
 def _send_chunked(text: str) -> None:
-    """Split on newlines and send in ≤4096-char chunks."""
-    if len(text) <= TG_LIMIT:
+    """Split on newlines and send in ≤4096 UTF-16-unit chunks."""
+    if _tg_len(text) <= TG_LIMIT:
         telegram_notify.send(text)
         return
     chunk, lines = "", text.split("\n")
     for line in lines:
         candidate = chunk + "\n" + line if chunk else line
-        if len(candidate) > TG_LIMIT:
+        if _tg_len(candidate) > TG_LIMIT:
             telegram_notify.send(chunk)
             chunk = line
         else:
@@ -151,13 +156,13 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         parts = []
         for r in d:
             dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
-            parts.append(f"🟣{_short_date(r[0])} {dp}")
+            parts.append(f"{_short_date(r[0])} {dp}")
         for r in w:
             dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
-            parts.append(f"🔵{_short_date(r[0])} {dp}")
+            parts.append(f"{_short_date(r[0])} {dp}")
         for r in m:
             dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p" if price else "?"
-            parts.append(f"🟠{_short_date(r[0])} {dp}")
+            parts.append(f"{_short_date(r[0])} {dp}")
 
         price_str = f" {price:.5f}" if price is not None else ""
         lines.append(f"<b>{symbol}</b>{price_str} | " + " | ".join(parts))
@@ -169,7 +174,6 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         "────────────────────",
         f"D:{d_total} W:{w_total} M:{m_total}",
     ]
-    print(lines)
     return "\n".join(lines)
 
 # ─────────────────────────────────────────────────────────────────────────────
