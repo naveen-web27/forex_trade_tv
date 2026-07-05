@@ -159,12 +159,12 @@ def _format_vcpr_message(daily: dict, weekly: dict, monthly: dict,
         for r in d:
             dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
             parts.append(f"{_short_date(r[0])} {dp}")
-        for r in w:
-            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
-            parts.append(f"{_short_date(r[0])} {dp}")
-        for r in m:
-            dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
-            parts.append(f"{_short_date(r[0])} {dp}")
+        # for r in w:
+        #     dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
+        #     parts.append(f"{_short_date(r[0])} {dp}")
+        # for r in m:
+        #     dp = f"{_band_pip_distance(price, r[1], r[2], pip)[1]:.0f}p"
+        #     parts.append(f"{_short_date(r[0])} {dp}")
 
         price_str = f" {price:.5f}" if price is not None else ""
         lines.append(f"<b>{symbol}</b>{price_str} | " + " | ".join(parts))
