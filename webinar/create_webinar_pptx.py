@@ -325,7 +325,95 @@ content_slide(prs, "What You Will Learn Today (Agenda)", [
     "✅ Recording shared within 24 hours",
 ], note="Keep your TradingView chart open throughout the session")
 
-# Slide 3 — Prerequisites
+# Slide 3 — Why This Webinar
+content_slide(prs, "Why This Webinar? — Not Like the Others", [
+    "## What most forex webinars give you:",
+    "❌ 10+ strategies → you are confused, you don't master any one",
+    "❌ ₹10,000–₹50,000 fees → no bot, no tools, no follow-up",
+    "❌ Theory-heavy → no real chart walkthroughs, no entry rules",
+    "──────────────────────────────────────────",
+    "## What you get here:",
+    "✅ ONE strategy — Virgin CPR — mastered completely in 5 hours",
+    "✅ Covers 12 currency pairs every single day — systematic, not guesswork",
+    "✅ A working Telegram Bot that scans all 12 pairs and sends you alerts — FREE",
+    "✅ Real charts, real numbers, real entry/SL/TP — nothing hidden",
+    "──────────────────────────────────────────",
+    "→  You don't need 10 strategies. You need ONE strategy done right.",
+], note="\"One method, executed perfectly on 12 pairs, beats 10 half-understood methods.\"")
+
+# Slide 4 — 12 pairs + Free Bot
+content_slide(prs, "12 Pairs. 1 Strategy. Every Day. + Free Bot", [
+    "## The 12 pairs we scan every morning:",
+    "XAUUSD  |  EURUSD  |  GBPUSD  |  USDJPY  |  AUDUSD  |  USDCAD",
+    "USDCHF  |  NZDUSD  |  EURJPY  |  GBPJPY  |  EURGBP  |  GBPAUD",
+    "──────────────────────────────────────────",
+    "## Manual scan takes only 15 minutes every morning.",
+    "→  For each pair: calculate CPR, check virgin status, note band width",
+    "→  Shortlist the 2–3 best setups to watch during London open",
+    "──────────────────────────────────────────",
+    "## FREE Telegram Bot (included with this webinar):",
+    "✅ Bot scans all 12 pairs automatically every morning",
+    "✅ Sends you a Telegram message: which pairs have active Virgin CPR today",
+    "✅ Saves you 15 minutes every single day",
+    "✅ Bot code is open — you can see exactly how it works",
+], note="The bot does not tell you to trade — it tells you WHERE to look. You make the decision.")
+
+# Slide 5 — Indian Trader Trap
+content_slide(prs, "The Indian Trader's Trap — Nifty & BankNifty Options", [
+    "## Why most Indian traders lose money on options:",
+    "❌ Time Decay (Theta) — your option LOSES value every single day, even if price doesn't move",
+    "❌ Expiry pressure — every Thursday, options go to zero if out of money",
+    "❌ Premium crush after news — IV drops, your option loses value even if direction was right",
+    "❌ Market makers know your expiry date — they pin price to hurt max retail holders",
+    "──────────────────────────────────────────",
+    "## Real example:",
+    "→  You buy BankNifty 51000 CE at ₹200. Nifty goes sideways for 2 days.",
+    "→  Your option is now worth ₹80 — you lost 60% even though you were not wrong.",
+    "→  This is Theta eating your premium. You cannot stop it.",
+    "──────────────────────────────────────────",
+    "⚠️  In options, TIME is your enemy. The clock is always running against buyers.",
+], note="This is not a criticism of options. It is a fact of how options are priced.")
+
+# Slide 6 — Why Forex
+content_slide(prs, "Why Forex? — No Time Decay. No Expiry. Full Flexibility.", [
+    "## What Forex gives you that options don't:",
+    "✅ NO time decay — a trade does not lose value just by sitting there",
+    "✅ NO expiry — you hold a trade 1 hour or 1 week, your choice",
+    "✅ NO theta, NO gamma, NO vega — pure price action, no Greek complexity",
+    "✅ Market open 24 hours, 5 days a week — trade around your job",
+    "──────────────────────────────────────────",
+    "## Comparison:",
+    "→  Options: Buy at ₹200, sit 2 days → ₹80 (lost ₹120 without moving)",
+    "→  Forex:   Buy XAUUSD, sit 2 days → same price = same P&L (no decay)",
+    "──────────────────────────────────────────",
+    "## For salaried Indians especially:",
+    "✅ London open is 12:30 PM IST — lunch break trade",
+    "✅ NY open is 6:30 PM IST — after office trade",
+    "✅ No need to sit in front of screen all day",
+], note="You don't need to quit your job to trade forex. Two sessions. One hour each. That is enough.")
+
+# Slide 7 — Funded Account Challenge
+content_slide(prs, "Start Smart — Funded Account Challenge First", [
+    "## What is a Funded Account (Prop Firm)?",
+    "→  You pay a one-time fee (₹5,000–₹15,000) to attempt a trading challenge",
+    "→  You pass the challenge using the rules you learn today",
+    "→  The firm gives you ₹5 Lakh – ₹40 Lakh of THEIR money to trade",
+    "→  You keep 80–90% of all profits. You risk ZERO of your savings.",
+    "──────────────────────────────────────────",
+    "## Examples of prop firms:",
+    "✅ FTMO  |  FundedNext  |  The5ers  |  MyFundedFX",
+    "──────────────────────────────────────────",
+    "## The smart path for a new trader:",
+    "Step 1  →  Learn Virgin CPR strategy (today)",
+    "Step 2  →  Paper trade for 30 days — prove it to yourself",
+    "Step 3  →  Attempt a funded account challenge with small fee",
+    "Step 4  →  Pass → trade firm's money → keep profits",
+    "Step 5  →  Only THEN consider putting your own money at risk",
+    "──────────────────────────────────────────",
+    "✅ This is the safest way to go from learner to paid trader.",
+], note="Many of my students passed their FTMO challenge within 60 days of learning this strategy.")
+
+# Slide 8 — Prerequisites
 content_slide(prs, "Before We Begin — Are You Ready?", [
     "## You need to know these basics:",
     "→  Read a candlestick chart (bullish, bearish, pin bar, engulfing)",
