@@ -1,0 +1,94 @@
+// =====================================================================
+//  RSI WAVE PANEL — sub-chart oscillator (add as a separate indicator)
+//  Shows the classic RSI wave below the candle chart.
+// =====================================================================
+//@version=5
+indicator("RSI Wave Panel", overlay=false, precision=1)
+
+// ─────────────────────────── INPUTS
+grp = "RSI Settings"
+rsiLen   = input.int(14,   "RSI Length",    minval=1,   group=grp)
+rsiOB    = input.float(70, "Overbought",    step=1,     group=grp)
+rsiOS    = input.float(30, "Oversold",      step=1,     group=grp)
+rsiMid   = input.float(50, "Midline",       step=1,     group=grp)
+
+grpC = "Colors"
+colOB    = input.color(color.new(color.red,   0),  "Overbought line", group=grpC)
+colOS    = input.color(color.new(color.lime,  0),  "Oversold line",   group=grpC)
+colMid   = input.color(color.new(color.gray,  40), "Midline",         group=grpC)
+colUp    = input.color(color.new(color.aqua,  0),  "RSI (above 50)",  group=grpC)
+colDn    = input.color(color.new(color.orange,0),  "RSI (below 50)",  group=grpC)
+
+grpL = "Labels"
+showVal  = input.bool(true,  "Show RSI value label on last bar", group=grpL)
+showDivL = input.bool(true,  "Show divergence arrows",           group=grpL)
+
+// ─────────────────────────── RSI CALCULATION
+rsi = ta.rsi(close, rsiLen)
+
+// ─────────────────────────── COLOR — gradient by value
+rsiColor = rsi >= rsiOB  ? color.new(color.red,    0)  :
+           rsi <= rsiOS  ? color.new(color.lime,   0)  :
+           rsi >= rsiMid ? colUp                        :
+                           colDn
+
+// ─────────────────────────── PLOTS
+// Reference lines
+hline(rsiOB,  "Overbought", color=colOB,  linestyle=hline.style_dashed, linewidth=1)
+hline(rsiOS,  "Oversold",   color=colOS,  linestyle=hline.style_dashed, linewidth=1)
+hline(rsiMid, "Midline",    color=colMid, linestyle=hline.style_dotted, linewidth=1)
+
+// Background fill zones
+obBand = hline(rsiOB,  "", color=color.new(color.red,  100))
+topBand = hline(100,   "", color=color.new(color.red,  100))
+osBand = hline(rsiOS,  "", color=color.new(color.lime, 100))
+botBand = hline(0,     "", color=color.new(color.lime, 100))
+
+fill(topBand, obBand, color=color.new(color.red,  88), title="OB zone")
+fill(osBand,  botBand, color=color.new(color.lime, 88), title="OS zone")
+
+// RSI wave line — colored by zone
+plot(rsi, "RSI", color=rsiColor, linewidth=2, style=plot.style_line)
+
+// ─────────────────────────── SIGNAL DOTS (OB / OS touch)
+plotshape(rsi >= rsiOB, "OB touch", style=shape.circle,
+     location=location.top, color=color.new(color.red, 30), size=size.tiny)
+plotshape(rsi <= rsiOS, "OS touch", style=shape.circle,
+     location=location.bottom, color=color.new(color.lime, 30), size=size.tiny)
+
+// ─────────────────────────── VALUE LABEL on last bar
+if showVal and barstate.islast
+    lCol = rsi >= rsiOB ? color.red : rsi <= rsiOS ? color.lime : color.new(color.gray, 10)
+    label.new(bar_index, rsi,
+         text="RSI  " + str.tostring(rsi, "#.##"),
+         style=label.style_label_left,
+         color=lCol,
+         textcolor=color.white,
+         size=size.small)
+
+// ─────────────────────────── DIVERGENCE ARROWS (basic)
+// Bullish div: price makes lower low, RSI makes higher low
+// Bearish div: price makes higher high, RSI makes lower high
+lookback = 5
+priceLL = low  < ta.lowest(low,  lookback)[1]
+rsiHL   = rsi  > ta.lowest(rsi,  lookback)[1]
+bullDiv = showDivL and priceLL and rsiHL and rsi < 45
+
+priceHH = high > ta.highest(high, lookback)[1]
+rsiLH   = rsi  < ta.highest(rsi,  lookback)[1]
+bearDiv = showDivL and priceHH and rsiLH and rsi > 55
+
+plotshape(bullDiv, "Bull Div", style=shape.triangleup,
+     location=location.bottom, color=color.new(color.lime, 0),
+     size=size.small, text="D")
+plotshape(bearDiv, "Bear Div", style=shape.triangledown,
+     location=location.top, color=color.new(color.red, 0),
+     size=size.small, text="D")
+
+// ─────────────────────────── ALERTS
+alertcondition(ta.crossover(rsi,  rsiOB), "RSI crosses above OB", "RSI overbought crossover")
+alertcondition(ta.crossunder(rsi, rsiOS), "RSI crosses below OS", "RSI oversold crossunder")
+alertcondition(ta.crossover(rsi,  rsiMid),"RSI crosses above 50", "RSI bullish midline cross")
+alertcondition(ta.crossunder(rsi, rsiMid),"RSI crosses below 50", "RSI bearish midline cross")
+alertcondition(bullDiv, "RSI Bullish Divergence", "Bullish divergence detected")
+alertcondition(bearDiv, "RSI Bearish Divergence", "Bearish divergence detected")
