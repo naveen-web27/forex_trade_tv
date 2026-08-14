@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<link rel="stylesheet" href="./core/admin.css"/>
+</head>
+<body>
+
+<!-- ══ PIN ══ -->
+<div id="pin-screen">
+  <div class="pin-box">
+    <div class="pin-logo">Admin <span>Panel</span></div>
+    <div class="pin-sub" id="pin-sub-brand">Management Portal</div>
+    <div class="pin-label">Enter Admin PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key" style="visibility:hidden" disabled></button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-error" id="pin-err"></div>
+    <div style="margin-top:14px;font-size:.68rem;color:rgba(255,255,255,.15)">Default PIN: 1234</div>
+  </div>
+</div>
+
+<!-- ══ ADMIN APP ══ -->
+<div id="admin">
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="ham-btn" onclick="toggleSidebar()">☰</button>
+    <div class="top-logo" id="admin-top-logo">🍽️ Admin <span>Panel</span></div>
+    <div class="top-spacer"></div>
+    <span class="top-status loading" id="conn-status">Connecting…</span>
+    <button class="top-btn" onclick="refreshAll()">⟳ Refresh</button>
+    <button class="top-btn" onclick="lockAdmin()">🔒 Lock</button>
+  </div>
+
+  <div class="body-area">
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+          <span class="ni">📊</span> Dashboard
+        </div>
+        <div class="nav-item" onclick="showPage('menu')" id="nav-menu">
+          <span class="ni">🍽️</span> Menu Manager
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Orders</div>
+        <div class="nav-item" onclick="showPage('orders')" id="nav-orders">
+          <span class="ni">🧾</span> Orders
+        </div>
+        <div class="nav-item" onclick="showPage('inventory')" id="nav-inventory">
+          <span class="ni">📦</span> Inventory
+        </div>
+        <div class="nav-item" onclick="showPage('analytics')" id="nav-analytics">
+          <span class="ni">📈</span> Analytics
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Settings</div>
+        <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
+          <span class="ni">⚙️</span> Settings
+        </div>
+      </div>
+      <div class="sidebar-bottom">
+        <div style="font-size:.62rem;color:rgba(255,255,255,.25);margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase">Apps Script URL</div>
+        <input class="script-input" id="script-url-input" placeholder="Paste URL here…" oninput="markUnsaved()"/>
+        <button class="script-save-btn" onclick="saveScriptUrl()">💾 Save & Connect</button>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main" id="main">
+
+      <!-- ════ DASHBOARD ════ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-hdr">
+          <h1>Dashboard</h1>
+          <p id="dash-date">Loading…</p>
+        </div>
+        <div class="page-body">
+          <div class="stat-grid">
+            <div class="stat-card gold">
+              <div class="sc-label">Today's Revenue</div>
+              <div class="sc-val" id="d-today-rev">₹0</div>
+              <div class="sc-sub" id="d-today-orders">0 orders today</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="sc-label">This Month</div>
+              <div class="sc-val" id="d-month-rev">₹0</div>
+              <div class="sc-sub" id="d-month-orders">0 orders this month</div>
+            </div>
+            <div class="stat-card green">
+              <div class="sc-label">Total Orders</div>
+              <div class="sc-val" id="d-total-orders">0</div>
+              <div class="sc-sub" id="d-avg-order">Avg: ₹0 / order</div>
+            </div>
+            <div class="stat-card red">
+              <div class="sc-label">Menu Items</div>
+              <div class="sc-val" id="d-menu-count">0</div>
+              <div class="sc-sub" id="d-menu-avail">0 available</div>
+            </div>
+          </div>
+          <!-- Recent orders mini -->
+          <div class="tbl-wrap" style="max-height:300px">
+            <div class="tbl-toolbar">
+              <span class="tbl-title">Recent Orders</span>
+              <div class="tbl-spacer"></div>
+              <button class="btn-outline" onclick="showPage('orders')">View All →</button>
+            </div>
+            <div class="tbl-scroll">
+              <table id="dash-orders-tbl">
+                <thead><tr>
+                  <th>Order #</th><th>Date & Time</th><th>Customer</th><th>Items</th><th>Total</th>
+                </tr></thead>
+                <tbody id="dash-orders-body">
+                  <tr class="loading-row"><td colspan="5">Loading orders…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ MENU MANAGER ════ -->
+      <div class="page" id="page-menu">
+        <div class="page-hdr">
+          <h1>Menu Manager</h1>
+          <p>Add, edit or delete dishes. Changes go live on the website immediately.</p>
+        </div>
+        <div class="page-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="tbl-wrap" style="flex:1">
+            <div class="tbl-toolbar">
+              <span class="tbl-title">All Dishes</span>
+              <input class="tbl-search" id="menu-search" placeholder="🔍 Search dishes…" oninput="renderMenuTable()"/>
+              <select class="tbl-filter" id="menu-cat-filter" onchange="renderMenuTable()">
+                <option value="">All Categories</option>
+              </select>
+              <select class="tbl-filter" id="menu-type-filter" onchange="renderMenuTable()">
+                <option value="">All Types</option>
+                <option value="Veg">Veg</option>
+                <option value="NonVeg">Non-Veg</option>
+              </select>
+              <div class="tbl-spacer"></div>
+              <button class="btn-add" onclick="openAddDish()">+ Add Dish</button>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead><tr>
+                  <th>#</th>
+                  <th class="sortable" onclick="sortMenu('Category')">Category ↕</th>
+                  <th class="sortable" onclick="sortMenu('Name')">Name ↕</th>
+                  <th>Description</th>
+                  <th class="sortable" onclick="sortMenu('Price')">Price ↕</th>
+                  <th>Type</th>
+                  <th>Badge</th>
+                  <th>Available</th>
+                  <th>Image</th>
+                  <th>Actions</th>
+                </tr></thead>
+                <tbody id="menu-tbl-body">
+                  <tr class="loading-row"><td colspan="10">Loading menu…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tbl-footer">
+              <span id="menu-count">0 dishes</span>
+              <button class="btn-export" onclick="exportMenuCSV()">⬇ Export CSV</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ORDERS ════ -->
+      <div class="page" id="page-orders">
+        <div class="page-hdr">
+          <h1>Orders</h1>
+          <p>All orders with filters. Edit the sheet directly for status changes.</p>
+        </div>
+        <div class="page-body" style="display:flex;flex-direction:column;gap:14px">
+          <!-- filter bar -->
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <div class="date-filters" id="date-quick-btns">
+              <div class="dfl on" onclick="setDateFilter('today',this)">Today</div>
+              <div class="dfl" onclick="setDateFilter('yesterday',this)">Yesterday</div>
+              <div class="dfl" onclick="setDateFilter('week',this)">This Week</div>
+              <div class="dfl" onclick="setDateFilter('month',this)">This Month</div>
+              <div class="dfl" onclick="setDateFilter('all',this)">All Time</div>
+            </div>
+            <div class="date-range">
+              <input class="date-inp" type="date" id="ord-from" onchange="setDateFilter('custom',null)"/>
+              <span style="color:var(--muted);font-size:.8rem">to</span>
+              <input class="date-inp" type="date" id="ord-to" onchange="setDateFilter('custom',null)"/>
+            </div>
+            <input class="tbl-search" id="ord-search" placeholder="🔍 Search orders…" oninput="renderOrdersTable()" style="width:180px"/>
+            <select class="tbl-filter" id="ord-dish-filter" onchange="renderOrdersTable()">
+              <option value="">All Dishes</option>
+            </select>
+          </div>
+
+          <!-- summary strip -->
+          <div class="summary-strip">
+            <div class="sum-item"><div class="sv" id="ord-total-rev">₹0</div><div class="sl">Total Revenue</div></div>
+            <div class="sum-item"><div class="sv" id="ord-count">0</div><div class="sl">Total Orders</div></div>
+            <div class="sum-item"><div class="sv" id="ord-avg">₹0</div><div class="sl">Avg Order Value</div></div>
+          </div>
+
+          <div class="tbl-wrap" style="flex:1">
+            <div class="tbl-toolbar">
+              <span class="tbl-title">Order History</span>
+              <div class="tbl-spacer"></div>
+              <button class="btn-export" onclick="exportOrdersCSV()">⬇ Export CSV</button>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead><tr>
+                  <th>Order #</th>
+                  <th class="sortable" onclick="sortOrders('Timestamp')">Date & Time ↕</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Subtotal</th>
+                  <th>GST</th>
+                  <th>Discount</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr></thead>
+                <tbody id="orders-tbl-body">
+                  <tr class="loading-row"><td colspan="9">Loading orders…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tbl-footer">
+              <span id="orders-showing">Showing 0 orders</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ANALYTICS ════ -->
+      <div class="page" id="page-inventory">
+        <div class="page-hdr">
+          <h1>Inventory</h1>
+          <p>Track stock levels and monitor low-stock items.</p>
+        </div>
+        <div class="page-body" style="display:flex;flex-direction:column;gap:14px">
+          <div class="summary-strip">
+            <div class="sum-item"><div class="sv" id="inv-total">0</div><div class="sl">Total Items</div></div>
+            <div class="sum-item"><div class="sv" id="inv-low">0</div><div class="sl">Low Stock</div></div>
+            <div class="sum-item"><div class="sv" id="inv-out">0</div><div class="sl">Out Of Stock</div></div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <input class="tbl-search" id="inv-search" placeholder="🔍 Search inventory…" oninput="renderInventoryTable()" style="width:220px"/>
+            <select class="tbl-filter" id="inv-cat-filter" onchange="renderInventoryTable()">
+              <option value="">All Categories</option>
+            </select>
+            <select class="tbl-filter" id="inv-status-filter" onchange="renderInventoryTable()">
+              <option value="">All Status</option>
+              <option value="ok">In Stock</option>
+              <option value="low">Low Stock</option>
+              <option value="out">Out Of Stock</option>
+            </select>
+            <div class="tbl-spacer"></div>
+            <a class="btn-outline" href="inventory.html" target="_blank">Open Full Inventory Page ↗</a>
+          </div>
+
+          <div class="tbl-wrap" style="flex:1">
+            <div class="tbl-toolbar">
+              <span class="tbl-title">Inventory Items</span>
+              <div class="tbl-spacer"></div>
+              <button class="btn-export" onclick="exportInventoryCSV()">⬇ Export CSV</button>
+            </div>
+            <div class="tbl-scroll">
+              <table>
+                <thead><tr>
+                  <th>Item ID</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Unit</th>
+                  <th>Stock Qty</th>
+                  <th>Min Qty</th>
+                  <th>Unit Cost</th>
+                  <th>Supplier</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                </tr></thead>
+                <tbody id="inventory-tbl-body">
+                  <tr class="loading-row"><td colspan="10">Loading inventory…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tbl-footer">
+              <span id="inventory-showing">Showing 0 items</span>
+              <span id="inventory-value">Inventory Value: ₹0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ANALYTICS ════ -->
+      <div class="page" id="page-analytics">
+        <div class="page-hdr">
+          <h1>Analytics</h1>
+          <p>Revenue trends and dish performance insights.</p>
+        </div>
+        <div class="page-body">
+          <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+            <div class="dfl on" onclick="setAnalyticsPeriod('7d',this)">Last 7 Days</div>
+            <div class="dfl" onclick="setAnalyticsPeriod('30d',this)">Last 30 Days</div>
+            <div class="dfl" onclick="setAnalyticsPeriod('6m',this)">Last 6 Months</div>
+            <div class="dfl" onclick="setAnalyticsPeriod('all',this)">All Time</div>
+          </div>
+          <div class="stat-grid" style="margin-bottom:18px">
+            <div class="stat-card gold"><div class="sc-label">Period Revenue</div><div class="sc-val" id="an-rev">₹0</div></div>
+            <div class="stat-card blue"><div class="sc-label">Period Orders</div><div class="sc-val" id="an-ords">0</div></div>
+            <div class="stat-card green"><div class="sc-label">Avg / Day</div><div class="sc-val" id="an-avg-day">₹0</div></div>
+            <div class="stat-card red"><div class="sc-label">Best Day Revenue</div><div class="sc-val" id="an-best">₹0</div></div>
+          </div>
+          <div class="analytics-grid">
+            <div class="chart-card">
+              <h3>Revenue by Day <span id="rev-chart-title"></span></h3>
+              <div class="bar-chart" id="rev-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Orders by Day <span id="ord-chart-title"></span></h3>
+              <div class="bar-chart" id="ord-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Top 10 Dishes by Orders</h3>
+              <div class="hbar-list" id="top-dishes-chart"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Revenue by Category</h3>
+              <div class="hbar-list" id="cat-chart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ SETTINGS ════ -->
+      <div class="page" id="page-settings">
+        <div class="page-hdr">
+          <h1>Settings</h1>
+          <p>Configure connections and preferences.</p>
+        </div>
+        <div class="page-body">
+          <div style="max-width:520px;display:flex;flex-direction:column;gap:16px">
+            <div class="tbl-wrap">
+              <div class="tbl-toolbar"><span class="tbl-title">Google Apps Script URL</span></div>
+              <div style="padding:18px">
+                <div class="f-group">
+                  <label>Script URL (same URL for all operations)</label>
+                  <input id="settings-url" placeholder="https://script.google.com/macros/s/…/exec" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:#fff;padding:9px 12px;border-radius:7px;font-size:.82rem;outline:none;width:100%"/>
+                </div>
+                <button class="btn-save" onclick="saveFromSettings()">💾 Save & Connect</button>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-toolbar"><span class="tbl-title">Admin PIN</span></div>
+              <div style="padding:18px">
+                <div class="f-group">
+                  <label>Change Admin PIN (4 digits)</label>
+                  <input id="new-pin" type="password" maxlength="4" placeholder="Enter new 4-digit PIN" style="background:rgba(255,255,255,.07);border:1px solid var(--border);color:#fff;padding:9px 12px;border-radius:7px;font-size:.82rem;outline:none;width:200px"/>
+                </div>
+                <button class="btn-save" onclick="changePin()">🔑 Update PIN</button>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <div class="tbl-toolbar"><span class="tbl-title">Sheet Setup Guide</span></div>
+              <div style="padding:18px;font-size:.82rem;color:rgba(255,255,255,.5);line-height:2">
+                <b style="color:#fff">Menu Sheet headers (Row 1):</b><br/>
+                <code style="color:var(--gold2);font-family:'DM Mono',monospace">Category | Name | Description | Price | Type | ImageURL | Badge | Available</code><br/><br/>
+                <b style="color:#fff">Orders Sheet headers (Row 1):</b><br/>
+                <code style="color:var(--gold2);font-family:'DM Mono',monospace">Timestamp | Bill No | Customer | Items | Subtotal | GST | Discount | Total | Status | Customer Type | Phone | Address | Pay Mode | Order ID | Table No</code><br/><br/>
+                <b style="color:#fff">Inventory Sheet name (tab):</b> <code style="color:var(--gold2);font-family:'DM Mono',monospace">Inventory</code><br/>
+                <b style="color:#fff">Inventory headers (Row 1):</b><br/>
+                <code style="color:var(--gold2);font-family:'DM Mono',monospace">Item ID | Item Name | Category | Unit | Stock Qty | Min Qty | Unit Cost | Supplier | Status | Last Updated</code><br/><br/>
+                <b style="color:#fff">Deploy Apps Script as:</b> Web App → Execute as Me → Anyone can access
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /body-area -->
+</div><!-- /admin -->
+
+<!-- ══ ADD/EDIT DISH MODAL ══ -->
+<div class="modal-bg" id="dish-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2 id="modal-title">Add Dish</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-row-idx"/>
+      <div class="f-row">
+        <div class="f-group">
+          <label>Category *</label>
+          <input id="f-category" placeholder="Biryani, Starters…" list="cat-suggestions"/>
+          <datalist id="cat-suggestions"></datalist>
+        </div>
+        <div class="f-group">
+          <label>Type *</label>
+          <select id="f-type">
+            <option value="Veg">Veg</option>
+            <option value="NonVeg">NonVeg</option>
+          </select>
+        </div>
+      </div>
+      <div class="f-group">
+        <label>Dish Name *</label>
+        <input id="f-name" placeholder="e.g. Chicken Dum Biryani"/>
+      </div>
+      <div class="f-group">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Short description of the dish…" rows="2"></textarea>
+      </div>
+      <div class="f-row">
+        <div class="f-group">
+          <label>Price (₹) *</label>
+          <input id="f-price" type="number" min="0" placeholder="380"/>
+        </div>
+        <div class="f-group">
+          <label>Badge</label>
+          <select id="f-badge">
+            <option value="">None</option>
+            <option value="Bestseller">Bestseller</option>
+            <option value="New">New</option>
+            <option value="Chef Special">Chef Special</option>
+          </select>
+        </div>
+      </div>
+      <div class="f-group">
+        <label>Image URL</label>
+        <input id="f-image" placeholder="https://… or leave blank for emoji"/>
+      </div>
+      <div class="f-group">
+        <label>Available</label>
+        <select id="f-avail">
+          <option value="Yes">Yes — Visible on website</option>
+          <option value="No">No — Hidden / Sold Out</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="modal-save-btn" onclick="saveDish()">Save Dish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DELETE CONFIRM MODAL ══ -->
+<div class="modal-bg" id="del-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hdr">
+      <h2>Delete Dish?</h2>
+      <button class="modal-close" onclick="closeDelModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:rgba(255,255,255,.6);font-size:.9rem">Are you sure you want to delete <strong id="del-dish-name" style="color:#fff"></strong>? This cannot be undone.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="closeDelModal()">Cancel</button>
+      <button class="act-btn act-del" style="padding:9px 20px;font-size:.82rem" onclick="confirmDelete()">🗑 Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script src="./core/admin.js"></script>
+</body>
+</html>

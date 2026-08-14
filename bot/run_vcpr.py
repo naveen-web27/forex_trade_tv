@@ -16,7 +16,7 @@ import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from src import data, news, telegram_notify, state, trade_log, position_size
+from src import data, news, telegram_notify, state, trade_log, position_size, sheets_sync
 from src.config import CFG, PAIRS
 from src.formatters import signal_message
 
@@ -235,6 +235,14 @@ def _save_vcpr_active(daily: dict, weekly: dict, monthly: dict) -> None:
     )
 
 
+def _sheet_bands(reports: list) -> list[dict]:
+    return [
+        {"date": str(r[0])[:10], "bcpr": float(r[1]),
+         "tcpr": float(r[2]), "width": float(r[3])}
+        for r in reports
+    ]
+
+
 def main() -> int:
     daily:   dict[str, list] = {}
     weekly:  dict[str, list] = {}
@@ -249,6 +257,14 @@ def main() -> int:
     _save_vcpr_active(daily, weekly, monthly)
 
     prices = _fetch_current_prices(PAIRS_LIST)
+    sheets_sync.sync_rows(
+        sheets_sync.build_rows({
+            "daily": {s: _sheet_bands(v) for s, v in daily.items()},
+            "weekly": {s: _sheet_bands(v) for s, v in weekly.items()},
+            "monthly": {s: _sheet_bands(v) for s, v in monthly.items()},
+        }, prices),
+        datetime.now(IST).isoformat(),
+    )
     _send_chunked(_format_vcpr_message(daily, weekly, monthly, prices))
     return 0
 

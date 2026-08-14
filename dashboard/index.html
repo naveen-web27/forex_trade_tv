@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VCPR Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="."><span class="brand-mark">V</span><span>VCPR <b>Desk</b></span></a>
+    <div class="top-actions"><span class="status" id="connection"><i></i> Waiting for data</span><span id="last-refresh">Not refreshed</span><button class="button button-primary" id="refresh">Refresh data</button></div>
+  </header>
+  <main class="shell">
+    <section class="hero"><div><p class="eyebrow">Market preparation / 12 instruments</p><h1>Trade the level,<br><em>not the noise.</em></h1><p class="hero-copy">A compact view of active Virgin CPR zones, live distance, and the next decision worth making.</p></div><div class="hero-note"><span class="pulse"></span><strong>Alert window</strong><span>5 to 20 pips from a band</span></div></section>
+    <section class="stats" aria-label="Dashboard summary"><div><span>Pairs with zones</span><strong id="stat-pairs">--</strong></div><div><span>Active bands</span><strong id="stat-bands">--</strong></div><div class="stat-alert"><span>Near reaction</span><strong id="stat-near">--</strong></div><div><span>Latest scan</span><strong id="stat-scan">--</strong></div></section>
+    <section class="toolbar"><div class="tabs" role="tablist"><button class="tab active" data-timeframe="all">All zones</button><button class="tab" data-timeframe="daily">Daily</button><button class="tab" data-timeframe="weekly">Weekly</button><button class="tab" data-timeframe="monthly">Monthly</button></div><label class="search"><span>Search</span><input id="pair-search" type="search" placeholder="Pair, e.g. EURUSD"></label><label class="toggle"><input id="near-only" type="checkbox"><span>Near only</span></label></section>
+    <section id="pair-grid" class="pair-grid" aria-live="polite"><div class="empty">Connect the Apps Script URL in <code>dashboard/config.js</code> to load your market board.</div></section>
+    <section class="journal-section"><div class="section-heading"><div><p class="eyebrow">Execution notes</p><h2>Trade journal</h2></div><button class="button" id="export-journal">Export CSV</button></div><form id="trade-form" class="trade-form"><input name="pair" required placeholder="Pair"><select name="direction"><option>Long</option><option>Short</option></select><input name="entry" type="number" step="any" placeholder="Entry"><input name="stop" type="number" step="any" placeholder="Stop"><input name="target" type="number" step="any" placeholder="Target"><input name="note" placeholder="Setup note"><button class="button button-primary" type="submit">Add trade</button></form><div class="journal-wrap"><table><thead><tr><th>Pair</th><th>Side</th><th>Entry</th><th>Stop</th><th>Target</th><th>Note</th><th></th></tr></thead><tbody id="journal-body"><tr><td colspan="7" class="empty">No paper trades logged.</td></tr></tbody></table></div></section>
+  </main>
+  <footer>VCPR Desk <span>·</span> Data refreshes from Google Sheets when you reload or press Refresh.</footer>
+  <script src="config.js"></script><script src="app.js"></script>
+</body>
+</html>

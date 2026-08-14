@@ -23,7 +23,7 @@
 
 **Details Box:**
 - 🗓️ 5-Hour Live Workshop
-- 💰 Only ₹4,999
+- 💰 Only ₹1,999
 - 📲 Free Telegram Bot Included
 
 **CTA Button:**

@@ -34,7 +34,7 @@ from pathlib import Path
 
 from tvDatafeed import TvDatafeed, Interval
 
-from src import telegram_notify
+from src import telegram_notify, sheets_sync
 from src.config import CFG
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -213,12 +213,14 @@ def main() -> int:
 
     # ── 4. Check each symbol × each timeframe, collect all hits ──────────────
     all_hits: list[dict] = []
+    prices: dict[str, float] = {}
 
     for symbol in sorted(all_symbols):
         price = _fetch_current_price(symbol)
         if price is None:
             log.warning("[%s] skipping — could not fetch current price", symbol)
             continue
+        prices[symbol] = price
 
         pip = _pip_size(symbol)
 
@@ -262,6 +264,11 @@ def main() -> int:
                     log.debug("[%s/%s] %s already alerted recently", symbol, timeframe, b["date"])
 
         log.info("[%s] price=%.5f checked", symbol, price)
+
+    sheets_sync.sync_rows(
+        sheets_sync.build_rows(tf_data, prices),
+        scan_time,
+    )
 
     # ── 5. Send ONE consolidated alert if there are any hits ─────────────────
     if all_hits:
