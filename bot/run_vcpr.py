@@ -262,6 +262,7 @@ def main() -> int:
         "weekly": {s: _sheet_bands(v) for s, v in weekly.items()},
         "monthly": {s: _sheet_bands(v) for s, v in monthly.items()},
     }, prices)
+    print(f"[SHEETS] Prepared {len(sheet_rows)} VCPR row(s) for Google Sheets")
     log.info("Prepared %d VCPR rows for Google Sheets", len(sheet_rows))
     sheets_sync.sync_rows(sheet_rows, datetime.now(IST).isoformat())
     _send_chunked(_format_vcpr_message(daily, weekly, monthly, prices))

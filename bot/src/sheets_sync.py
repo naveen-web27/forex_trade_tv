@@ -66,10 +66,19 @@ def build_rows(tf_data: dict[str, dict[str, list[dict[str, Any]]]],
 
 def sync_rows(rows: list[dict[str, Any]], scan_time: str) -> bool:
     """Send a batch to Apps Script; no-op when GitHub secrets are not configured."""
+    print(f"[SHEETS] Preparing to update Google Sheet: {len(rows)} row(s)")
     if not SHEETS_URL:
+        print("[SHEETS] STOP: VCPR_SHEETS_WEBHOOK_URL is empty")
         log.info("Google Sheets sync skipped: VCPR webhook URL is not configured")
         return False
+    for row in rows:
+        print(
+            "[SHEETS] Sending row: "
+            f"{row['symbol']} | {row['timeframe']} | {row['vcprDate']} | "
+            f"price={row['price']} | alert={row['alert']}"
+        )
     try:
+        print(f"[SHEETS] POST {SHEETS_URL} action=syncVcpr")
         response = requests.post(
             SHEETS_URL,
             json={"action": "syncVcpr", "scanTime": scan_time, "rows": rows},
@@ -79,8 +88,10 @@ def sync_rows(rows: list[dict[str, Any]], scan_time: str) -> bool:
         result = response.json()
         if result.get("status") != "ok":
             raise RuntimeError(result.get("message", "unknown Sheets error"))
+        print(f"[SHEETS] SUCCESS: Apps Script reported {result.get('rows', 0)} row(s) written")
         log.info("Synced %d VCPR rows to Google Sheets", len(rows))
         return True
     except (requests.RequestException, ValueError, RuntimeError) as exc:
+        print(f"[SHEETS] ERROR: {exc}")
         log.error("Google Sheets sync failed: %s", exc)
         return False

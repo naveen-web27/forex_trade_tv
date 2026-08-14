@@ -68,6 +68,7 @@ function readVcpr() {
 function syncVcpr(body) {
   var target = sheet();
   var incoming = Array.isArray(body.rows) ? body.rows : [];
+  Logger.log("[SHEETS] syncVcpr received " + incoming.length + " row(s)");
   var now = new Date().toISOString();
   var lastRow = target.getLastRow();
   var existing = lastRow > 1 ? target.getRange(2, 1, lastRow - 1, HEADERS.length).getValues() : [];
@@ -78,6 +79,7 @@ function syncVcpr(body) {
     if (existingKey) rowByKey[existingKey] = i + 2;
     target.getRange(i + 2, 14).setValue(false);
   }
+  Logger.log("[SHEETS] marked " + existing.length + " existing row(s) inactive");
 
   incoming.forEach(function(item) {
     var key = String(item.symbol || "") + "|" + String(item.timeframe || "") + "|" + String(item.vcprDate || "");
@@ -90,11 +92,14 @@ function syncVcpr(body) {
 
     if (rowByKey[key]) {
       target.getRange(rowByKey[key], 1, 1, HEADERS.length).setValues(row);
+      Logger.log("[SHEETS] updated row " + rowByKey[key] + ": " + key);
     } else {
       target.appendRow(row[0]);
+      Logger.log("[SHEETS] appended row: " + key);
     }
   });
 
+  Logger.log("[SHEETS] syncVcpr finished: " + incoming.length + " row(s)");
   return output({ status: "ok", rows: incoming.length, updatedAt: now });
 }
 
