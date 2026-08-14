@@ -257,14 +257,13 @@ def main() -> int:
     _save_vcpr_active(daily, weekly, monthly)
 
     prices = _fetch_current_prices(PAIRS_LIST)
-    sheets_sync.sync_rows(
-        sheets_sync.build_rows({
-            "daily": {s: _sheet_bands(v) for s, v in daily.items()},
-            "weekly": {s: _sheet_bands(v) for s, v in weekly.items()},
-            "monthly": {s: _sheet_bands(v) for s, v in monthly.items()},
-        }, prices),
-        datetime.now(IST).isoformat(),
-    )
+    sheet_rows = sheets_sync.build_rows({
+        "daily": {s: _sheet_bands(v) for s, v in daily.items()},
+        "weekly": {s: _sheet_bands(v) for s, v in weekly.items()},
+        "monthly": {s: _sheet_bands(v) for s, v in monthly.items()},
+    }, prices)
+    log.info("Prepared %d VCPR rows for Google Sheets", len(sheet_rows))
+    sheets_sync.sync_rows(sheet_rows, datetime.now(IST).isoformat())
     _send_chunked(_format_vcpr_message(daily, weekly, monthly, prices))
     return 0
 

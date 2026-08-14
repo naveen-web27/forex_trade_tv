@@ -42,6 +42,9 @@ def build_rows(tf_data: dict[str, dict[str, list[dict[str, Any]]]],
             price = prices.get(symbol)
             pip = _pip_size(symbol)
             for band in bands:
+                if not isinstance(band, dict):
+                    log.warning("Skipping malformed %s/%s VCPR band: %r", timeframe, symbol, band)
+                    continue
                 distance, direction = _distance(
                     price, float(band["bcpr"]), float(band["tcpr"]), pip
                 )
