@@ -6,9 +6,6 @@ on:
     - cron: "*/30 6-22 * * 1-5"
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 concurrency:
   group: news
   cancel-in-progress: false
@@ -31,15 +28,3 @@ jobs:
           PYTHONPATH: bot
         run: python bot/run_news_watcher.py
 
-      - name: Commit news state
-        if: always()
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain bot/state)" ]]; then
-            git add bot/state
-            git commit -m "chore: update news state [skip ci]"
-            git push
-          else
-            echo "No state changes."
-          fi

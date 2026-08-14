@@ -6,9 +6,6 @@ on:
     - cron: "30 17 * * 1-5"
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 concurrency:
   group: eod
   cancel-in-progress: false
@@ -32,15 +29,3 @@ jobs:
           PYTHONPATH: bot
         run: python bot/run_eod_report.py
 
-      - name: Commit updated trade log
-        if: always()
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain data/)" ]]; then
-            git add data/
-            git commit -m "chore: EOD update trade log [skip ci]"
-            git push
-          else
-            echo "No trade log changes."
-          fi

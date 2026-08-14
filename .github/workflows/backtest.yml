@@ -6,9 +6,6 @@ on:
     - cron: "30 14 * * 0"
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   backtest:
     runs-on: ubuntu-latest
@@ -28,13 +25,3 @@ jobs:
           PYTHONPATH: bot
         run: python bot/run_backtest.py
 
-      - name: Commit backtest report
-        if: always()
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain data/)" ]]; then
-            git add data/
-            git commit -m "chore: weekly backtest report [skip ci]"
-            git push
-          fi

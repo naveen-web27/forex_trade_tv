@@ -6,9 +6,6 @@ on:
     - cron: "30 14 * * 1-5"
   workflow_dispatch:   # allow manual run from Actions tab
 
-permissions:
-  contents: write      # needed to commit state files (signals_seen.json + vcpr_seen.json)
-
 concurrency:
   group: signals
   cancel-in-progress: false
@@ -35,16 +32,3 @@ jobs:
           PYTHONPATH: bot
           VCPR_SHEETS_WEBHOOK_URL: ${{ secrets.VCPR_SHEETS_WEBHOOK_URL }}
         run: python bot/run_vcpr.py
-
-      - name: Commit dedupe state (if changed)
-        if: always()
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain bot/state)" ]]; then
-            git add bot/state
-            git commit -m "chore: update signal state [skip ci]"
-            git push
-          else
-            echo "No state changes."
-          fi
