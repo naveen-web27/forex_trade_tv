@@ -9,7 +9,10 @@ import requests
 
 log = logging.getLogger(__name__)
 
-SHEETS_URL = os.getenv("VCPR_SHEETS_WEBHOOK_URL", "").strip()
+# Paste the Apps Script Web App URL here. It must end with /exec.
+HARDCODED_SHEETS_URL = ""
+SHEETS_URL = (os.getenv("VCPR_SHEETS_WEBHOOK_URL", "").strip()
+              or HARDCODED_SHEETS_URL.strip())
 PROXIMITY_MIN_PIPS = 5.0
 PROXIMITY_MAX_PIPS = 20.0
 
