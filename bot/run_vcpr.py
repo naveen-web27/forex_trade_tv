@@ -235,12 +235,17 @@ def _save_vcpr_active(daily: dict, weekly: dict, monthly: dict) -> None:
     )
 
 
-def _sheet_bands(reports: list) -> list[dict]:
-    return [
+def _sheet_bands(reports: list, max_age_days: int, latest_only: bool = False) -> list[dict]:
+    cutoff = (datetime.now(IST).date() - timedelta(days=max_age_days)).isoformat()
+    recent = [
         {"date": str(r[0])[:10], "bcpr": float(r[1]),
          "tcpr": float(r[2]), "width": float(r[3])}
         for r in reports
+        if str(r[0])[:10] >= cutoff
     ]
+    if latest_only and recent:
+        return [max(recent, key=lambda row: row["date"])]
+    return recent
 
 
 def main() -> int:
@@ -258,9 +263,9 @@ def main() -> int:
 
     prices = _fetch_current_prices(PAIRS_LIST)
     sheet_rows = sheets_sync.build_rows({
-        "daily": {s: _sheet_bands(v) for s, v in daily.items()},
-        "weekly": {s: _sheet_bands(v) for s, v in weekly.items()},
-        "monthly": {s: _sheet_bands(v) for s, v in monthly.items()},
+        "daily": {s: _sheet_bands(v, 15) for s, v in daily.items()},
+        "weekly": {s: _sheet_bands(v, 31, latest_only=True) for s, v in weekly.items()},
+        "monthly": {s: _sheet_bands(v, 31, latest_only=True) for s, v in monthly.items()},
     }, prices)
     print(f"[SHEETS] Prepared {len(sheet_rows)} VCPR row(s) for Google Sheets")
     log.info("Prepared %d VCPR rows for Google Sheets", len(sheet_rows))
