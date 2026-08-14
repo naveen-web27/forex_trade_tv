@@ -10,7 +10,7 @@ import requests
 log = logging.getLogger(__name__)
 
 # Paste the Apps Script Web App URL here. It must end with /exec.
-HARDCODED_SHEETS_URL = ""
+HARDCODED_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyyADs_KVACi-3LFilybTbN_ZcwDTJgLvqnbVxqFFl4q49BbSZxdnpMvUcrpiNyJBLNMg/exec"
 SHEETS_URL = (os.getenv("VCPR_SHEETS_WEBHOOK_URL", "").strip()
               or HARDCODED_SHEETS_URL.strip())
 PROXIMITY_MIN_PIPS = 5.0
