@@ -33,6 +33,7 @@ jobs:
       - name: Run signal scanner
         env:
           PYTHONPATH: bot
+          VCPR_SHEETS_WEBHOOK_URL: ${{ secrets.VCPR_SHEETS_WEBHOOK_URL }}
         run: python bot/run_vcpr.py
 
       - name: Commit dedupe state (if changed)

@@ -10,7 +10,6 @@ import requests
 log = logging.getLogger(__name__)
 
 SHEETS_URL = os.getenv("VCPR_SHEETS_WEBHOOK_URL", "").strip()
-SHEETS_API_KEY = os.getenv("VCPR_SHEETS_API_KEY", "").strip()
 PROXIMITY_MIN_PIPS = 5.0
 PROXIMITY_MAX_PIPS = 20.0
 
@@ -64,14 +63,13 @@ def build_rows(tf_data: dict[str, dict[str, list[dict[str, Any]]]],
 
 def sync_rows(rows: list[dict[str, Any]], scan_time: str) -> bool:
     """Send a batch to Apps Script; no-op when GitHub secrets are not configured."""
-    if not SHEETS_URL or not SHEETS_API_KEY:
-        log.info("Google Sheets sync skipped: VCPR webhook secrets are not configured")
+    if not SHEETS_URL:
+        log.info("Google Sheets sync skipped: VCPR webhook URL is not configured")
         return False
     try:
         response = requests.post(
             SHEETS_URL,
-            json={"action": "syncVcpr", "apiKey": SHEETS_API_KEY,
-                  "scanTime": scan_time, "rows": rows},
+            json={"action": "syncVcpr", "scanTime": scan_time, "rows": rows},
             timeout=30,
         )
         response.raise_for_status()

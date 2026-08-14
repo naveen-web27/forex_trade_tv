@@ -32,6 +32,7 @@ jobs:
       - name: Run VCPR proximity monitor
         env:
           PYTHONPATH: bot
+          VCPR_SHEETS_WEBHOOK_URL: ${{ secrets.VCPR_SHEETS_WEBHOOK_URL }}
         run: python bot/run_vcpr_monitor.py
 
       - name: Commit proximity dedup state (if changed)

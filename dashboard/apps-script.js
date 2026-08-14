@@ -4,13 +4,11 @@
  * Setup:
  * 1. Open the destination Google Sheet.
  * 2. Extensions -> Apps Script -> paste this file.
- * 3. Project Settings -> Script properties -> add VCPR_API_KEY.
- * 4. Deploy as Web app: execute as you, access anyone with the URL.
- * 5. Put the deployment URL in dashboard/config.js.
+ * 3. Deploy as Web app: execute as you, access anyone with the URL.
+ * 4. Put the deployment URL in dashboard/config.js and GitHub Actions secrets.
  */
 
 var SHEET_NAME = "VCPR";
-var API_KEY_PROPERTY = "VCPR_API_KEY";
 var HEADERS = [
   "Key", "Symbol", "Timeframe", "VCPR Date", "BCPR", "TCPR", "Width",
   "Current Price", "Distance Pips", "Direction", "Alert", "Scan Time",
@@ -68,11 +66,6 @@ function readVcpr() {
 }
 
 function syncVcpr(body) {
-  var expected = PropertiesService.getScriptProperties().getProperty(API_KEY_PROPERTY);
-  if (!expected || String(body.apiKey || "") !== expected) {
-    return output({ status: "error", code: "AUTH_REQUIRED", message: "Invalid VCPR API key" });
-  }
-
   var target = sheet();
   var incoming = Array.isArray(body.rows) ? body.rows : [];
   var now = new Date().toISOString();

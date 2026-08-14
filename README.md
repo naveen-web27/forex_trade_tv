@@ -119,12 +119,11 @@ Then GitHub → **Actions** → enable any newly-added workflows.
 The static dashboard lives in `dashboard/` and is ready for GitHub Pages. It reads the `VCPR` tab through the Apps Script web app whenever the page is refreshed.
 
 1. Copy `reference/apps-script.js` into the Google Sheet Apps Script project and deploy it as a Web App that executes as you and is accessible to anyone with the URL.
-2. In Apps Script project settings, add a Script Property named `VCPR_API_KEY` with a long random value.
-3. Publish the dashboard Sheet as the same Apps Script project, then set that web app URL in `dashboard/config.js` as `scriptUrl`.
-4. Add GitHub Actions secrets `VCPR_SHEETS_WEBHOOK_URL` and `VCPR_SHEETS_API_KEY` with the web app URL and the same Script Property value.
+2. Set the web app access to anyone, then copy its URL into `dashboard/config.js` as `scriptUrl`.
+3. Add the GitHub Actions secret `VCPR_SHEETS_WEBHOOK_URL` with the same web app URL.
 5. Enable GitHub Pages from the repository root. The root `index.html` forwards visitors to `dashboard/`.
 
-The two VCPR jobs upsert one stable row per `symbol + timeframe + VCPR date`; they do not append duplicates. The 15-minute monitor refreshes prices and proximity status, while the twice-daily scanner refreshes the active bands. The dashboard's trade journal is browser-local until a trade-sheet write endpoint is added.
+The two VCPR jobs upsert one stable row per `symbol + timeframe + VCPR date`; they do not append duplicates. The 15-minute monitor refreshes prices and proximity status, while the twice-daily scanner refreshes the active bands. This no-auth endpoint is suitable for a private spreadsheet/dashboard only because anyone who discovers the URL can write to the sheet.
 
 **Test it now:** Actions → 🏁 EOD Report → Run workflow. Should send an empty summary to Telegram.
 
