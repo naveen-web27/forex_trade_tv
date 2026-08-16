@@ -265,9 +265,6 @@ function ensureVcprHeaders(sheet) {
 }
 
 function syncVcpr(body) {
-  var expected = PropertiesService.getScriptProperties().getProperty("VCPR_API_KEY");
-  if (!expected || String(body.apiKey || "") !== expected) return authError("Invalid VCPR API key");
-
   var sheet = getVcprSheet();
   var rows = Array.isArray(body.rows) ? body.rows : [];
   var now = new Date().toISOString();
