@@ -9,6 +9,18 @@
   var dateKey = function (value) { var text = String(value == null ? "" : value).trim(); var match = text.match(/(\d{4})[-/]([01]\d)[-/]([0-3]\d)/); return match ? match[1] + "-" + match[2] + "-" + match[3] : ""; };
   var dateLabel = function (value) { var key = dateKey(value); if (!key) return "--"; var parts = key.split("-"); var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])); return isNaN(date.getTime()) ? "--" : date.toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
   var wideLabel = function (row, pair) { var width = Number(row.Width || 0); var price = Number(row["Current Price"] || 0); if (!width || !price) return "--"; return width / price >= (pair === "XAUUSD" ? 0.004 : 0.002) ? "Wide band" : "Normal band"; };
+  var pipSize = function (pair) { if (pair.indexOf("JPY") >= 0) return 0.01; if (pair.indexOf("XAU") >= 0) return 0.10; return 0.0001; };
+  function computeGap(row, pair) {
+    var price = Number(row["Current Price"]);
+    var bcpr = Number(row.BCPR); var tcpr = Number(row.TCPR);
+    if (!price || isNaN(price) || isNaN(bcpr) || isNaN(tcpr)) {
+      return { pips: Number(row["Distance Pips"] || 0), direction: row.Direction || "unknown", stale: true };
+    }
+    var pip = pipSize(pair);
+    if (price < bcpr) return { pips: (bcpr - price) / pip, direction: "below", stale: false };
+    if (price > tcpr) return { pips: (price - tcpr) / pip, direction: "above", stale: false };
+    return { pips: 0, direction: "inside", stale: false };
+  }
   var parsePair = function (pair) { if (pair.indexOf("XAU") === 0) return { base: "XAU", quote: pair.slice(3) }; return { base: pair.slice(0, 3), quote: pair.slice(3) }; };
   var trendEffect = function (trend) { if (trend === "hiking") return 1; if (trend === "cutting") return -1; return 0; };
   function macroBias(pair) {
@@ -72,22 +84,26 @@
     return daily.concat(Object.keys(latest).map(function (key) { return latest[key]; }));
   }
   function rowsForPair(pair) { return state.rows.filter(function (row) { return row.Symbol === pair && (state.timeframe === "all" || String(row.Timeframe).toLowerCase() === state.timeframe); }); }
+  function isNear(row, pair) { var pips = computeGap(row, pair).pips; return pips >= 5 && pips <= 20; }
   function render() {
     var query = $("#pair-search").value.trim().toUpperCase(); var nearOnly = $("#near-only").checked;
     var pairs = pairOrder.filter(function (pair) { return !query || pair.indexOf(query) >= 0; });
-    var nearCount = state.rows.filter(function (row) { return String(row.Alert).toUpperCase() === "NEAR"; }).length;
+    var nearCount = state.rows.filter(function (row) { return isNear(row, row.Symbol); }).length;
     $("#stat-pairs").textContent = new Set(state.rows.map(function (row) { return row.Symbol; })).size;
     $("#stat-bands").textContent = state.rows.length; $("#stat-near").textContent = nearCount;
     $("#stat-scan").textContent = state.rows.length ? String(state.rows[0]["Scan Time"] || "--").slice(11, 16) : "--";
     var visibleRows = [];
     pairs.forEach(function (pair) {
-      var rows = rowsForPair(pair).filter(function (row) { return !nearOnly || String(row.Alert).toUpperCase() === "NEAR"; });
-      rows.sort(function (a, b) { return (String(a.Alert).toUpperCase() === "NEAR" ? -1 : 1) - (String(b.Alert).toUpperCase() === "NEAR" ? -1 : 1); });
+      var rows = rowsForPair(pair).filter(function (row) { return !nearOnly || isNear(row, pair); });
+      rows.sort(function (a, b) { return (isNear(a, pair) ? -1 : 1) - (isNear(b, pair) ? -1 : 1); });
       rows.forEach(function (row) { visibleRows.push({ pair: pair, row: row }); });
     });
     var html = [];
     visibleRows.forEach(function (item, index) {
-      var row = item.row, pair = item.pair, near = String(row.Alert).toUpperCase() === "NEAR", distance = Number(row["Distance Pips"] || 0);
+      var row = item.row, pair = item.pair;
+      var gap = computeGap(row, pair);
+      var near = gap.pips >= 5 && gap.pips <= 20;
+      var distance = gap.pips;
       var parts = parsePair(pair);
       var newsItems = newsForPair(pair);
       var newsHtml = newsItems.length
@@ -99,7 +115,7 @@
         '<div class="row-details-grid">' +
         '<div><b>VCPR zone</b><span>' + fmt(row.BCPR, pair) + ' to ' + fmt(row.TCPR, pair) + '</span></div>' +
         '<div><b>Band width</b><span>' + fmt(row.Width, pair) + ' (' + wideLabel(row, pair) + ')</span></div>' +
-        '<div><b>Gap to zone</b><span>' + distance.toFixed(1) + ' pips, approaching from ' + esc(row.Direction || "unknown") + '</span></div>' +
+        '<div><b>Gap to zone</b><span>' + distance.toFixed(1) + ' pips, approaching from ' + esc(gap.direction || "unknown") + (gap.stale ? " (last known price)" : "") + '</span></div>' +
         '<div><b>Meaning</b><span>A VCPR band is a price area where a reaction may happen. The gap is the distance from the current price to the nearest band edge. A wide band covers a larger price range and needs slower confirmation.</span></div>' +
         '</div>' +
         '<div class="row-subsection"><h4>Macro / interest rates</h4><div class="rate-grid">' + rateRow(parts.base) + rateRow(parts.quote === parts.base ? "" : parts.quote) + '</div><p class="macro-note">' + esc(macroBias(pair)) + '</p></div>' +
@@ -141,10 +157,52 @@
   function journal() { try { return JSON.parse(localStorage.getItem("vcpr-desk-journal") || "[]"); } catch (_) { return []; } }
   function saveJournal(items) { localStorage.setItem("vcpr-desk-journal", JSON.stringify(items)); renderJournal(); }
   function renderJournal() { var items = journal(); $("#journal-body").innerHTML = items.length ? items.map(function (item, index) { return '<tr><td>' + esc(item.pair) + '</td><td>' + esc(item.direction) + '</td><td>' + esc(item.entry) + '</td><td>' + esc(item.stop) + '</td><td>' + esc(item.target) + '</td><td>' + esc(item.note) + '</td><td><button class="delete" data-delete="' + index + '" title="Delete trade">x</button></td></tr>'; }).join("") : '<tr><td colspan="7" class="empty">No paper trades logged.</td></tr>'; }
+  function contractSize(pair) { return pair.indexOf("XAU") >= 0 ? 100 : 100000; }
+  function latestPrice(pair) { var row = state.rows.filter(function (r) { return r.Symbol === pair; })[0]; return row ? Number(row["Current Price"]) : NaN; }
+  function pipValueInUsd(pair, lots) {
+    var parts = parsePair(pair);
+    var pipInQuote = pipSize(pair) * contractSize(pair) * lots;
+    if (parts.quote === "USD") return { usd: pipInQuote, note: "" };
+    var directPrice = latestPrice("USD" + parts.quote);
+    if (directPrice) return { usd: pipInQuote / directPrice, note: "converted via USD" + parts.quote };
+    var inversePrice = latestPrice(parts.quote + "USD");
+    if (inversePrice) return { usd: pipInQuote * inversePrice, note: "converted via " + parts.quote + "USD" };
+    return { usd: null, note: "no live " + parts.quote + "/USD rate available; showing pips only" };
+  }
+  function initCalcPairs() {
+    var select = $("#calc-pair");
+    if (!select || select.options.length) return;
+    select.innerHTML = pairOrder.map(function (pair) { return '<option value="' + esc(pair) + '">' + esc(pair) + '</option>'; }).join("");
+  }
+  function runCalculator(event) {
+    event.preventDefault();
+    var form = new FormData(event.target);
+    var pair = form.get("pair"), direction = form.get("direction");
+    var entry = Number(form.get("entry")), exit = Number(form.get("exit")), lots = Number(form.get("lots")) || 1;
+    var result = $("#calc-result");
+    if (!pair || isNaN(entry) || isNaN(exit)) { result.className = "calc-result show"; result.innerHTML = '<p class="calc-note">Enter a valid entry and exit price.</p>'; return; }
+    var pip = pipSize(pair);
+    var pips = (direction === "Short" ? (entry - exit) : (exit - entry)) / pip;
+    var value = pipValueInUsd(pair, lots);
+    var usdPl = value.usd == null ? null : value.usd * pips;
+    var pipsClass = pips >= 0 ? "profit" : "loss";
+    var usdHtml = usdPl == null
+      ? '<div><b>Estimated P/L</b><span>--</span></div>'
+      : '<div><b>Estimated P/L</b><span class="' + (usdPl >= 0 ? "profit" : "loss") + '">' + (usdPl >= 0 ? "+" : "") + "$" + usdPl.toFixed(2) + '</span></div>';
+    result.className = "calc-result show";
+    result.innerHTML =
+      '<div><b>Pips</b><span class="' + pipsClass + '">' + (pips >= 0 ? "+" : "") + pips.toFixed(1) + '</span></div>' +
+      usdHtml +
+      '<div><b>Lot size</b><span>' + lots.toFixed(2) + '</span></div>' +
+      (value.note ? '<p class="calc-note">' + esc(value.note) + '</p>' : '');
+  }
   $("#refresh").addEventListener("click", load); $("#pair-search").addEventListener("input", render); $("#near-only").addEventListener("change", render);
   document.querySelectorAll(".tab").forEach(function (tab) { tab.addEventListener("click", function () { document.querySelectorAll(".tab").forEach(function (item) { item.classList.remove("active"); }); tab.classList.add("active"); state.timeframe = tab.dataset.timeframe; render(); }); });
   $("#trade-form").addEventListener("submit", function (event) { event.preventDefault(); var form = new FormData(event.target); var items = journal(); items.unshift(Object.fromEntries(form.entries())); saveJournal(items); event.target.reset(); });
   $("#journal-body").addEventListener("click", function (event) { if (event.target.dataset.delete) { var items = journal(); items.splice(Number(event.target.dataset.delete), 1); saveJournal(items); } });
   $("#export-journal").addEventListener("click", function () { var items = journal(); var csv = "Pair,Direction,Entry,Stop,Target,Note\n" + items.map(function (item) { return [item.pair, item.direction, item.entry, item.stop, item.target, item.note].map(function (value) { return '"' + String(value || "").replace(/"/g, '""') + '"'; }).join(","); }).join("\n"); var link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); link.download = "vcpr-trade-journal.csv"; link.click(); });
+  $("#calc-form").addEventListener("submit", runCalculator);
+  $("#calc-use-live").addEventListener("click", function () { var pair = $("#calc-pair").value; var price = latestPrice(pair); if (!isNaN(price)) { $("#calc-form").entry.value = price; $("#calc-form").exit.value = price; } });
+  initCalcPairs();
   renderJournal(); load();
 }());
