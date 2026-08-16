@@ -102,35 +102,17 @@ def _save_json(path: Path, data: dict) -> None:
 
 
 def _fetch_current_price(symbol: str, exchange: str = EXCHANGE, retries: int = 5) -> float | None:
-    """Return the close price of the most recent completed 15-min candle."""
+    """Return the close price of the most recent 1-minute candle."""
     for attempt in range(retries):
         try:
             df = _tv.get_hist(symbol=symbol, exchange=exchange,
-                              interval=Interval.in_15_minutes, n_bars=3)
+                              interval=Interval.in_1_minute, n_bars=3)
             if df is None or df.empty:
                 raise ValueError("empty response")
-            # Last row may be the still-forming candle; use second-to-last to be safe
-            return float(df["close"].iloc[-2])
+            return float(df["close"].iloc[-1])
         except Exception as exc:
             log.warning("[%s] price fetch attempt %d/%d failed: %s", symbol, attempt + 1, retries, exc)
-    fallback = _fetch_yf_price(symbol)
-    if fallback is not None:
-        print(f"[PRICE] {symbol}: tvDatafeed failed, used yfinance fallback")
-    return fallback
-
-
-def _fetch_yf_price(symbol: str) -> float | None:
-    """Fallback when tvDatafeed is blocked/rate-limited (common on CI runners)."""
-    try:
-        import yfinance as yf
-        df = yf.download(f"{symbol}=X", period="5d", interval="15m",
-                         progress=False, auto_adjust=False)
-        if df is None or df.empty:
-            return None
-        return float(df["Close"].iloc[-1])
-    except Exception as exc:
-        log.warning("[%s] yfinance fallback failed: %s", symbol, exc)
-        return None
+    return None
 
 
 def _should_alert(seen: dict, key: str, cooldown_hours: int) -> bool:
