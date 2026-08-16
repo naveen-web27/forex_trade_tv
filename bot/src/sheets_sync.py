@@ -98,3 +98,45 @@ def sync_rows(rows: list[dict[str, Any]], scan_time: str) -> bool:
         print(f"[SHEETS] ERROR: {exc}")
         log.error("Google Sheets sync failed: %s", exc)
         return False
+
+
+def build_news_rows(items: list) -> list[dict[str, Any]]:
+    """Flatten NewsItem objects (see src/news.py) into the News sheet row contract."""
+    return [
+        {
+            "country": item.country,
+            "title": item.title,
+            "date": item.date.isoformat(),
+            "impact": item.impact,
+            "forecast": item.forecast,
+            "previous": item.previous,
+            "actual": item.actual,
+        }
+        for item in items
+    ]
+
+
+def sync_news(rows: list[dict[str, Any]], scan_time: str) -> bool:
+    """Send the current week's high/medium-impact calendar rows to the News sheet."""
+    print(f"[SHEETS] Preparing to update News sheet: {len(rows)} row(s)")
+    if not SHEETS_URL:
+        print("[SHEETS] STOP: webhook URL is empty (action=syncNews)")
+        log.info("Google Sheets news sync skipped: webhook URL is not configured")
+        return False
+    try:
+        print(f"[SHEETS] POST {SHEETS_URL} action=syncNews")
+        response = requests.post(
+            SHEETS_URL,
+            json={"action": "syncNews", "scanTime": scan_time, "rows": rows},
+            timeout=30,
+        )
+        response.raise_for_status()
+        result = response.json()
+        if result.get("status") != "ok":
+            raise RuntimeError(result.get("message", "unknown Sheets error"))
+        print(f"[SHEETS] SUCCESS (news): Apps Script reported {result.get('rows', 0)} row(s) written")
+        return True
+    except (requests.RequestException, ValueError, RuntimeError) as exc:
+        print(f"[SHEETS] ERROR (news): {exc}")
+        log.error("Google Sheets news sync failed: %s", exc)
+        return False

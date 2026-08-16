@@ -26,5 +26,6 @@ jobs:
       - name: Run news watcher
         env:
           PYTHONPATH: bot
+          VCPR_SHEETS_WEBHOOK_URL: ${{ secrets.VCPR_SHEETS_WEBHOOK_URL }}
         run: python bot/run_news_watcher.py
 

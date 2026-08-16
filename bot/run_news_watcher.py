@@ -4,9 +4,13 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
-from src import news, telegram_notify
+import pytz
+
+from src import news, telegram_notify, sheets_sync
+from src.config import CFG
 from src.formatters import news_warning
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -14,9 +18,35 @@ log = logging.getLogger("news_watcher")
 
 SEEN_FILE = Path("bot/state/news_seen.json")
 
+# Currencies covered by the dashboard's macro/news view.
+RELEVANT_COUNTRIES = {"USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF"}
+
+
+def _sync_calendar_to_sheet() -> None:
+    """Push this week's high/medium-impact events so the dashboard can show upcoming news per pair."""
+    try:
+        items = news.fetch_calendar()
+    except Exception as e:
+        log.warning("Calendar fetch for sheet sync failed: %s", e)
+        return
+
+    ist = pytz.timezone(CFG.timezone)
+    now = datetime.now(ist)
+    window_start = now - timedelta(hours=6)
+    window_end = now + timedelta(days=7)
+    relevant = [
+        n for n in items
+        if n.country in RELEVANT_COUNTRIES
+        and n.impact in ("High", "Medium")
+        and window_start <= n.date <= window_end
+    ]
+    rows = sheets_sync.build_news_rows(relevant)
+    sheets_sync.sync_news(rows, now.isoformat())
+
 
 def main() -> int:
     log.info("=== News watcher start ===")
+    _sync_calendar_to_sheet()
     try:
         upcoming = news.upcoming_red_news(within_minutes=90)
     except Exception as e:
