@@ -69,7 +69,30 @@ def _fetch_current_prices(symbols: list[str], exchange: str = "FX",
             except Exception as e:
                 log.warning("[%s] price fetch attempt %d/%d: %s",
                             symbol, attempt + 1, retries, e)
+        if symbol not in prices:
+            fallback = _fetch_yf_price(symbol)
+            if fallback is not None:
+                prices[symbol] = fallback
+    print(f"[PRICE] Fetched {len(prices)}/{len(symbols)} current prices "
+          f"(tvDatafeed + yfinance fallback)")
+    missing = [s for s in symbols if s not in prices]
+    if missing:
+        print(f"[PRICE] No price for: {', '.join(missing)}")
     return prices
+
+
+def _fetch_yf_price(symbol: str) -> float | None:
+    """Fallback when tvDatafeed is blocked/rate-limited (common on CI runners)."""
+    try:
+        import yfinance as yf
+        df = yf.download(f"{symbol}=X", period="5d", interval="15m",
+                         progress=False, auto_adjust=False)
+        if df is None or df.empty:
+            return None
+        return float(df["Close"].iloc[-1])
+    except Exception as e:
+        log.warning("[%s] yfinance fallback failed: %s", symbol, e)
+        return None
 
 
 def _band_pip_distance(price: float | None, bcpr: float, tcpr: float,

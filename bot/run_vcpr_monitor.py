@@ -113,7 +113,24 @@ def _fetch_current_price(symbol: str, exchange: str = EXCHANGE, retries: int = 5
             return float(df["close"].iloc[-2])
         except Exception as exc:
             log.warning("[%s] price fetch attempt %d/%d failed: %s", symbol, attempt + 1, retries, exc)
-    return None
+    fallback = _fetch_yf_price(symbol)
+    if fallback is not None:
+        print(f"[PRICE] {symbol}: tvDatafeed failed, used yfinance fallback")
+    return fallback
+
+
+def _fetch_yf_price(symbol: str) -> float | None:
+    """Fallback when tvDatafeed is blocked/rate-limited (common on CI runners)."""
+    try:
+        import yfinance as yf
+        df = yf.download(f"{symbol}=X", period="5d", interval="15m",
+                         progress=False, auto_adjust=False)
+        if df is None or df.empty:
+            return None
+        return float(df["Close"].iloc[-1])
+    except Exception as exc:
+        log.warning("[%s] yfinance fallback failed: %s", symbol, exc)
+        return None
 
 
 def _should_alert(seen: dict, key: str, cooldown_hours: int) -> bool:
@@ -264,6 +281,11 @@ def main() -> int:
                     log.debug("[%s/%s] %s already alerted recently", symbol, timeframe, b["date"])
 
         log.info("[%s] price=%.5f checked", symbol, price)
+
+    print(f"[PRICE] Fetched {len(prices)}/{len(all_symbols)} current prices")
+    missing = sorted(all_symbols - set(prices))
+    if missing:
+        print(f"[PRICE] No price for: {', '.join(missing)}")
 
     sheets_sync.sync_rows(
         sheets_sync.build_rows(tf_data, prices),
