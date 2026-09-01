@@ -41,7 +41,75 @@
     .calc-result span{font:16px 'DM Mono',monospace;color:var(--ink)}
     .calc-result span.loss{color:var(--red)}.calc-result span.profit{color:var(--green)}
     .calc-note{grid-column:1/-1;font-size:11px;color:var(--muted);margin:0}
-    @media(max-width:700px){.market-header{display:none}.market-row{grid-template-columns:1fr 1fr 1fr 24px;gap:8px;padding:14px}.market-row>span:nth-child(2),.market-row>span:nth-child(5),.market-row>span:nth-child(6),.market-row>span:nth-child(7){display:none}.row-details{padding:14px}.row-details-grid{grid-template-columns:1fr 1fr}.row-details-grid div:last-child{grid-column:1/-1}.rate-grid{grid-template-columns:1fr}.news-item{grid-template-columns:1fr;gap:4px}.calc-form{grid-template-columns:repeat(2,1fr)}.calc-form button{grid-column:span 2}.calc-result{grid-template-columns:1fr}}
+    .gold-section{margin-top:34px}
+    .gold-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+    .gold-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+    .gold-card h4{margin:0 0 12px;font:10px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+    .gold-bands-list{display:flex;flex-direction:column;gap:10px;font:12px 'DM Mono',monospace}
+    .gold-band-row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:8px}
+    .gold-band-row:first-child{border-top:0;padding-top:0}
+    .gold-band-row b{color:var(--ink);font-weight:500}
+    .gold-band-row span{color:var(--muted)}
+    .gold-band-row span.near{color:var(--amber);font-weight:700}
+    .gold-news-card{margin-bottom:18px}
+    .gold-news-card .news-list{max-height:420px;overflow-y:auto}
+    .news-item.impact-high{box-shadow:inset 3px 0 var(--red)}
+    .news-item.impact-medium{box-shadow:inset 3px 0 var(--amber)}
+    .news-item.impact-low{box-shadow:inset 3px 0 var(--line)}
+    .news-impact{font:9px 'DM Mono',monospace;text-transform:uppercase;color:var(--muted)}
+    .news-meta{font:10px 'DM Mono',monospace;color:var(--muted);white-space:nowrap}
+    .ai-prompt-wrap{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+    .ai-prompt-wrap textarea{width:100%;min-height:260px;resize:vertical;border:1px solid var(--line);border-radius:6px;padding:12px;font:12px 'DM Mono',monospace;color:var(--ink);background:#f7faf7}
+    .page-tab-nav{display:flex;gap:0;margin:28px 0 0;border-bottom:2px solid var(--line)}
+    .page-tab-btn{border:0;border-bottom:2px solid transparent;background:none;padding:11px 22px;margin-bottom:-2px;font:700 13px Manrope,sans-serif;color:var(--muted);cursor:pointer;transition:color .15s}
+    .page-tab-btn:hover{color:var(--ink)}
+    .page-tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+    .page-tab-btn .tab-badge{display:inline-block;background:var(--mint);color:var(--green);font:700 9px 'DM Mono',monospace;padding:1px 5px;border-radius:3px;margin-left:6px;vertical-align:middle}
+    .page-tab-panel{display:none;padding-top:28px}
+    .page-tab-panel.active{display:block}
+    .mi-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow);margin-top:14px}
+    .mi-card:first-of-type{margin-top:0}
+    .mi-card h4{margin:0 0 12px;font:10px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+    .mi-table{display:flex;flex-direction:column}
+    .mi-head,.mi-row{display:grid;grid-template-columns:2.2fr .85fr .85fr 1fr .85fr 58px;gap:8px;align-items:center;padding:8px 6px}
+    .mi-head{background:#f7faf7;border-radius:5px;font:9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+    .mi-row{border-bottom:1px solid var(--line)}.mi-row:last-child{border-bottom:0}.mi-row:hover{background:#f7faf7}
+    .mi-event{display:flex;flex-direction:column;gap:2px}
+    .mi-name{font:600 12px Manrope,sans-serif;color:var(--ink)}
+    .mi-hint{font:9px 'DM Mono',monospace;color:var(--muted)}
+    .mi-field{width:100%;border:1px solid var(--line);border-radius:4px;padding:5px 7px;font:11px 'DM Mono',monospace;color:var(--ink);background:var(--white)}
+    .mi-field:focus{outline:none;border-color:var(--green)}
+    .mi-actual{border-color:var(--green)!important;background:#f0fff6}
+    .mi-actual:focus{background:var(--white)}
+    .mi-bias{font:10px 'DM Mono',monospace;font-weight:700;text-align:center;padding:3px 5px;border-radius:3px;white-space:nowrap}
+    .mi-bias.bullish{background:#d9eee2;color:var(--green)}
+    .mi-bias.bearish{background:#fdecea;color:var(--red)}
+    .mi-bias.neutral{background:#f3f3f3;color:var(--muted)}
+    .mi-src{display:inline-flex;align-items:center;justify-content:center;font:700 10px 'DM Mono',monospace;color:var(--green);text-decoration:none;border:1px solid var(--mint);border-radius:4px;padding:4px 6px;background:var(--mint);white-space:nowrap}
+    .mi-src:hover{background:var(--green);color:#fff;border-color:var(--green)}
+    .mi-two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+    .mi-levels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .mi-level-block{display:flex;flex-direction:column;gap:5px}
+    .mi-level-label{font:9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .mi-level-link{font:9px 'DM Mono',monospace;color:var(--green);text-decoration:none;margin-top:2px}
+    .mi-level-link:hover{text-decoration:underline}
+    .mi-select{width:100%;border:1px solid var(--line);border-radius:4px;padding:6px 8px;font:11px 'DM Mono',monospace;color:var(--ink);background:var(--white)}
+    .mi-select:focus{outline:none;border-color:var(--green)}
+    .mi-fed-notes{width:100%;border:1px solid var(--line);border-radius:4px;padding:7px 8px;font:11px 'DM Mono',monospace;color:var(--ink);resize:vertical;min-height:58px;margin-top:8px}
+    .mi-fed-notes:focus{outline:none;border-color:var(--green)}
+    .mi-geo-options{display:flex;flex-wrap:wrap;gap:7px}
+    .mi-geo-tag{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:4px;padding:5px 9px;font:10px 'DM Mono',monospace;cursor:pointer;background:var(--white);user-select:none}
+    .mi-geo-tag:hover{border-color:var(--green)}
+    .mi-geo-tag.checked{background:var(--mint);border-color:var(--green);color:var(--green)}
+    .mi-geo-tag input{display:none}
+    .micro-checklist{display:flex;flex-direction:column;gap:7px}
+    .micro-check-item{display:flex;align-items:flex-start;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:5px;padding:10px 12px;font:11px 'DM Mono',monospace;cursor:pointer;transition:background .1s}
+    .micro-check-item.done{background:#f0fff6;border-color:var(--green)}
+    .micro-check-item input[type=checkbox]{margin-top:1px;accent-color:var(--green);flex-shrink:0}
+    .micro-check-label{display:flex;flex-direction:column;gap:2px}
+    .micro-check-name{color:var(--ink);font:600 11px Manrope,sans-serif}
+    .micro-check-sub{color:var(--muted);font-size:9px}
+    @media(max-width:700px){.market-header{display:none}.market-row{grid-template-columns:1fr 1fr 1fr 24px;gap:8px;padding:14px}.market-row>span:nth-child(2),.market-row>span:nth-child(5),.market-row>span:nth-child(6),.market-row>span:nth-child(7){display:none}.row-details{padding:14px}.row-details-grid{grid-template-columns:1fr 1fr}.row-details-grid div:last-child{grid-column:1/-1}.rate-grid{grid-template-columns:1fr}.news-item{grid-template-columns:1fr;gap:4px}.calc-form{grid-template-columns:repeat(2,1fr)}.calc-form button{grid-column:span 2}.calc-result{grid-template-columns:1fr}.gold-grid{grid-template-columns:1fr}.mi-head{display:none}.mi-row{grid-template-columns:1fr .8fr .8fr;gap:5px;font-size:10px}.mi-row .mi-src{display:none}.mi-row .mi-bias{display:none}.mi-two-col{grid-template-columns:1fr}.mi-levels-grid{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
@@ -52,8 +120,276 @@
   <main class="shell">
     <section class="hero"><div><p class="eyebrow">Market preparation / 12 instruments</p><h1>Trade the level,<br><em>not the noise.</em></h1><p class="hero-copy">A compact view of active Virgin CPR zones, live distance, and the next decision worth making.</p></div><div class="hero-note"><span class="pulse"></span><strong>Alert window</strong><span>5 to 20 pips from a band</span></div></section>
     <section class="stats" aria-label="Dashboard summary"><div><span>Pairs with zones</span><strong id="stat-pairs">--</strong></div><div><span>Active bands</span><strong id="stat-bands">--</strong></div><div class="stat-alert"><span>Near reaction</span><strong id="stat-near">--</strong></div><div><span>Latest scan</span><strong id="stat-scan">--</strong></div></section>
+    <nav class="page-tab-nav" role="tablist" aria-label="Instrument view">
+      <button class="page-tab-btn" id="ptab-pairs" role="tab" aria-selected="false" aria-controls="tab-panel-pairs">Other Pairs</button>
+      <button class="page-tab-btn active" id="ptab-gold" role="tab" aria-selected="true" aria-controls="tab-panel-gold">Gold (XAUUSD)<span class="tab-badge">XAU</span></button>
+    </nav>
+    <div id="tab-panel-pairs" class="page-tab-panel" role="tabpanel">
     <section class="toolbar"><div class="tabs" role="tablist"><button class="tab active" data-timeframe="all">All zones</button><button class="tab" data-timeframe="daily">Daily</button><button class="tab" data-timeframe="weekly">Weekly</button><button class="tab" data-timeframe="monthly">Monthly</button></div><label class="search"><span>Search</span><input id="pair-search" type="search" placeholder="Pair, e.g. EURUSD"></label><label class="toggle"><input id="near-only" type="checkbox"><span>Near only</span></label></section>
     <section id="pair-grid" class="pair-table-wrap" aria-live="polite"><div class="empty">Connect the Apps Script URL in <code>dashboard/config.js</code> to load your market board.</div></section>
+    </div>
+    <div id="tab-panel-gold" class="page-tab-panel active" role="tabpanel">
+    <section class="gold-section" id="gold-section">
+      <div class="section-heading"><div><p class="eyebrow">Gold focus</p><h2>XAUUSD news &amp; macro detail</h2></div><button class="button button-primary" id="gold-generate-prompt">Generate AI prompt</button></div>
+      <div class="gold-grid">
+        <div class="gold-card"><h4>VCPR / CPR bands</h4><div class="gold-bands-list" id="gold-bands">--</div></div>
+        <div class="gold-card"><h4>Macro / rates (USD)</h4><div id="gold-macro"><p class="macro-note">--</p></div></div>
+      </div>
+      <div class="gold-card gold-news-card"><h4>Macro &amp; micro economic news moving gold (all USD events)</h4><div class="news-list" id="gold-news-list"><div class="news-item empty-inline">Loading news…</div></div></div>
+      <div class="ai-prompt-wrap" id="ai-prompt-wrap" style="display:none">
+        <div class="section-heading"><div><p class="eyebrow">Copy / paste</p><h2 style="font-family:inherit;font-size:16px">AI analysis prompt</h2></div><button class="button" id="copy-ai-prompt">Copy prompt</button></div>
+        <textarea id="ai-prompt-output" readonly></textarea>
+      </div>
+    </section>
+
+    <!-- ── Macro & Micro Input Panel ─────────────────────────── -->
+    <section id="macro-input-section" style="margin-top:28px">
+      <div class="section-heading" style="margin-bottom:16px">
+        <div><p class="eyebrow">Enter before / after each data release</p><h2>Macro &amp; micro input panel</h2></div>
+        <div style="display:flex;gap:8px">
+          <button class="button button-primary" id="mi-generate-btn">Generate AI prompt</button>
+          <button class="button" id="mi-clear-btn">Clear all</button>
+        </div>
+      </div>
+
+      <div class="mi-card" style="margin-top:0">
+        <h4>🔴 High impact economic data — fill Actual after each release</h4>
+        <div class="mi-table">
+          <div class="mi-head"><span>Event</span><span>Previous</span><span>Forecast</span><span>Actual ✏️</span><span>Gold bias</span><span>Source</span></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">Core PCE m/m</span><span class="mi-hint">Main inflation gauge · month-end · #1 for gold</span></div><input class="mi-field" data-mi="pce_prev" placeholder="e.g. 0.1%"><input class="mi-field" data-mi="pce_fc" placeholder="e.g. 0.2%"><input class="mi-field mi-actual" data-mi="pce_act" data-bias-id="pce" data-bias-rule="standard" data-fc-key="pce_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-pce">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">Prelim GDP q/q</span><span class="mi-hint">Economy growth · quarterly · beat=bearish gold</span></div><input class="mi-field" data-mi="gdp_prev" placeholder="e.g. 1.5%"><input class="mi-field" data-mi="gdp_fc" placeholder="e.g. 1.5%"><input class="mi-field mi-actual" data-mi="gdp_act" data-bias-id="gdp" data-bias-rule="standard" data-fc-key="gdp_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-gdp">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">NFP (Non-Farm Payrolls)</span><span class="mi-hint">Jobs created · 1st Friday monthly</span></div><input class="mi-field" data-mi="nfp_prev" placeholder="e.g. 147K"><input class="mi-field" data-mi="nfp_fc" placeholder="e.g. 180K"><input class="mi-field mi-actual" data-mi="nfp_act" data-bias-id="nfp" data-bias-rule="standard" data-fc-key="nfp_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-nfp">--</span><a class="mi-src" href="https://www.bls.gov/news.release/empsit.nr0.htm" target="_blank" rel="noopener">BLS ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">Unemployment Rate %</span><span class="mi-hint">Higher = weak jobs = gold bullish</span></div><input class="mi-field" data-mi="unemp_prev" placeholder="e.g. 4.1%"><input class="mi-field" data-mi="unemp_fc" placeholder="e.g. 4.1%"><input class="mi-field mi-actual" data-mi="unemp_act" data-bias-id="unemp" data-bias-rule="inverse" data-fc-key="unemp_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-unemp">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">CPI m/m</span><span class="mi-hint">Consumer inflation · mid-month</span></div><input class="mi-field" data-mi="cpi_prev" placeholder="e.g. 0.3%"><input class="mi-field" data-mi="cpi_fc" placeholder="e.g. 0.3%"><input class="mi-field mi-actual" data-mi="cpi_act" data-bias-id="cpi" data-bias-rule="standard" data-fc-key="cpi_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-cpi">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">Payrolls Revision</span><span class="mi-hint">Large negative = labor weak = gold bullish</span></div><input class="mi-field" data-mi="payrev_prev" placeholder="e.g. -911K"><input class="mi-field" data-mi="payrev_fc" placeholder="Forecast"><input class="mi-field mi-actual" data-mi="payrev_act" data-bias-id="payrev" data-bias-rule="inverse" data-fc-key="payrev_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-payrev">--</span><a class="mi-src" href="https://www.bls.gov/news.release/cewqtr.nr0.htm" target="_blank" rel="noopener">BLS ↗</a></div>
+        </div>
+      </div>
+
+      <div class="mi-card">
+        <h4>🟠 Medium impact data</h4>
+        <div class="mi-table">
+          <div class="mi-head"><span>Event</span><span>Previous</span><span>Forecast</span><span>Actual ✏️</span><span>Gold bias</span><span>Source</span></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">Unemployment Claims</span><span class="mi-hint">Weekly · higher claims = weaker economy = gold bullish</span></div><input class="mi-field" data-mi="claims_prev" placeholder="e.g. 206K"><input class="mi-field" data-mi="claims_fc" placeholder="e.g. 208K"><input class="mi-field mi-actual" data-mi="claims_act" data-bias-id="claims" data-bias-rule="inverse" data-fc-key="claims_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-claims">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+          <div class="mi-row"><div class="mi-event"><span class="mi-name">CB Consumer Confidence</span><span class="mi-hint">Low confidence = fear = gold safe haven demand</span></div><input class="mi-field" data-mi="conf_prev" placeholder="e.g. 90.8"><input class="mi-field" data-mi="conf_fc" placeholder="e.g. 90.3"><input class="mi-field mi-actual" data-mi="conf_act" data-bias-id="conf" data-bias-rule="standard" data-fc-key="conf_fc" placeholder="Enter actual"><span class="mi-bias" id="mi-bias-conf">--</span><a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a></div>
+        </div>
+      </div>
+
+      <div class="mi-two-col">
+        <div class="mi-card" style="margin-top:0">
+          <h4>📊 Live market levels — check &amp; enter now</h4>
+          <div class="mi-levels-grid">
+            <div class="mi-level-block">
+              <label class="mi-level-label">DXY (Dollar Index)</label>
+              <input class="mi-field" data-mi="dxy_val" placeholder="e.g. 102.5">
+              <select class="mi-select" data-mi="dxy_dir" style="margin-top:5px">
+                <option value="">Direction --</option>
+                <option value="rising">Rising ↑ (gold bearish)</option>
+                <option value="falling">Falling ↓ (gold bullish)</option>
+                <option value="flat">Flat / sideways</option>
+              </select>
+              <a class="mi-level-link" href="https://www.tradingview.com/chart/?symbol=TVC%3ADXY" target="_blank" rel="noopener">Open TradingView DXY ↗</a>
+            </div>
+            <div class="mi-level-block">
+              <label class="mi-level-label">US10Y Bond Yield</label>
+              <input class="mi-field" data-mi="us10y_val" placeholder="e.g. 4.25%">
+              <select class="mi-select" data-mi="us10y_dir" style="margin-top:5px">
+                <option value="">Direction --</option>
+                <option value="rising">Rising ↑ (gold bearish)</option>
+                <option value="falling">Falling ↓ (gold bullish)</option>
+                <option value="flat">Flat / sideways</option>
+              </select>
+              <a class="mi-level-link" href="https://www.tradingview.com/chart/?symbol=TVC%3AUS10Y" target="_blank" rel="noopener">Open TradingView US10Y ↗</a>
+            </div>
+            <div class="mi-level-block">
+              <label class="mi-level-label">VIX (Fear Index)</label>
+              <input class="mi-field" data-mi="vix_val" placeholder="e.g. 18">
+              <span id="mi-vix-hint" style="font:9px 'DM Mono',monospace;color:var(--muted)">&lt;20 calm · 20–30 caution · &gt;30 high fear</span>
+              <a class="mi-level-link" href="https://www.tradingview.com/chart/?symbol=CBOE%3AVIX" target="_blank" rel="noopener">Open TradingView VIX ↗</a>
+            </div>
+          </div>
+        </div>
+        <div class="mi-card" style="margin-top:0">
+          <h4>🏛️ Fed Chair — latest speech tone</h4>
+          <select class="mi-select" data-mi="fed_tone" id="mi-fed-tone">
+            <option value="">-- Select tone --</option>
+            <option value="hawkish">🔴 Hawkish — "no rush to cut, inflation concern"</option>
+            <option value="dovish">🟢 Dovish — "cuts on table, inflation improving"</option>
+            <option value="neutral">➡️ Neutral / Mixed — balanced tone</option>
+            <option value="none">No recent speech</option>
+          </select>
+          <span class="mi-bias" id="mi-bias-fed" style="display:inline-block;margin-top:8px">--</span>
+          <textarea class="mi-fed-notes" data-mi="fed_notes" placeholder="Key phrases e.g. 'patient', 'appropriate to ease', 'labor market cooling'…"></textarea>
+          <a class="mi-level-link" href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener">Fed FOMC calendar ↗</a>
+        </div>
+      </div>
+
+      <div class="mi-card">
+        <h4>🌍 Geopolitical / safe haven factors — tick any active right now</h4>
+        <div class="mi-geo-options">
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_me"> Middle East tension</label>
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_ru"> Russia-Ukraine escalation</label>
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_cn"> China-Taiwan tension</label>
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_rec"> Global recession fear</label>
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_bank"> Banking crisis</label>
+          <label class="mi-geo-tag"><input type="checkbox" data-mi="geo_calm"> No active tension (calm)</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="journal-section" id="macro-checklist-section">
+      <div class="section-heading"><div><p class="eyebrow">Pre-trade routine</p><h2>Daily macro checklist</h2></div></div>
+      <style>
+        .checklist-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+        .checklist-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow)}
+        .checklist-card h4{margin:0 0 12px;font:10px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+        .checklist-links{display:flex;flex-direction:column;gap:8px}
+        .checklist-link{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;background:#f7faf7;border:1px solid var(--line);border-radius:5px;padding:9px 12px;font-size:12px;text-decoration:none;color:var(--ink)}
+        .checklist-link:hover{border-color:var(--green);background:var(--mint)}
+        .checklist-link-num{font:10px 'DM Mono',monospace;color:var(--green);font-weight:700}
+        .checklist-link-label{font-weight:600}
+        .checklist-link-sub{font:10px 'DM Mono',monospace;color:var(--muted)}
+        .checklist-link-arrow{color:var(--green);font-size:14px}
+        .today-events-list{display:flex;flex-direction:column;gap:8px}
+        .today-event{display:grid;grid-template-columns:90px 1fr 80px 80px 80px;gap:10px;align-items:center;background:var(--white);border:1px solid var(--line);border-radius:5px;padding:9px 12px;font:11px 'DM Mono',monospace}
+        .today-event.impact-high{box-shadow:inset 3px 0 var(--red)}
+        .today-event.impact-medium{box-shadow:inset 3px 0 var(--amber)}
+        .today-event-time{color:var(--green);font-weight:700}
+        .today-event-name{color:var(--ink);font-size:11px}
+        .today-event-val{text-align:center;color:var(--muted)}
+        .today-event-val.actual-beat{color:var(--red);font-weight:700}
+        .today-event-val.actual-miss{color:var(--green);font-weight:700}
+        .today-event-header{display:grid;grid-template-columns:90px 1fr 80px 80px 80px;gap:10px;padding:0 12px 6px;font:9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+        .impact-badge{font:9px 'DM Mono',monospace;text-transform:uppercase;padding:2px 5px;border-radius:3px}
+        .impact-badge.high{background:#fdecea;color:var(--red)}
+        .impact-badge.medium{background:#fdf5e6;color:var(--amber)}
+        @media(max-width:700px){.checklist-grid{grid-template-columns:1fr}.today-event{grid-template-columns:70px 1fr 60px 60px 60px;gap:6px;font-size:10px}}
+      </style>
+
+      <div class="checklist-grid">
+        <!-- Quick links card -->
+        <div class="checklist-card">
+          <h4>Quick links — open before trading</h4>
+          <div class="checklist-links">
+            <a class="checklist-link" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">
+              <span class="checklist-link-num">1</span>
+              <span><span class="checklist-link-label">ForexFactory Calendar</span><br><span class="checklist-link-sub">Today's news events + IST time</span></span>
+              <span class="checklist-link-arrow">↗</span>
+            </a>
+            <a class="checklist-link" href="https://www.tradingview.com/chart/?symbol=TVC%3ADXY" target="_blank" rel="noopener">
+              <span class="checklist-link-num">2</span>
+              <span><span class="checklist-link-label">TradingView — DXY</span><br><span class="checklist-link-sub">Dollar direction → Gold inverse</span></span>
+              <span class="checklist-link-arrow">↗</span>
+            </a>
+            <a class="checklist-link" href="https://www.tradingview.com/chart/?symbol=CBOE%3AVIX" target="_blank" rel="noopener">
+              <span class="checklist-link-num">3</span>
+              <span><span class="checklist-link-label">TradingView — VIX</span><br><span class="checklist-link-sub">Fear index · &gt;20 fear · &gt;30 high fear</span></span>
+              <span class="checklist-link-arrow">↗</span>
+            </a>
+            <a class="checklist-link" href="https://www.tradingview.com/chart/?symbol=TVC%3AUS10Y" target="_blank" rel="noopener">
+              <span class="checklist-link-num">4</span>
+              <span><span class="checklist-link-label">TradingView — US10Y</span><br><span class="checklist-link-sub">Bond yield ↓ = Gold ↑ (strongest driver)</span></span>
+              <span class="checklist-link-arrow">↗</span>
+            </a>
+            <a class="checklist-link" href="https://www.reuters.com/markets/" target="_blank" rel="noopener">
+              <span class="checklist-link-num">5</span>
+              <span><span class="checklist-link-label">Reuters Markets</span><br><span class="checklist-link-sub">Breaking geopolitical + macro news</span></span>
+              <span class="checklist-link-arrow">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- This week key events card -->
+        <div class="checklist-card">
+          <h4>This week — key events (IST) &amp; levels</h4>
+          <div class="today-event-header">
+            <span>Time (IST)</span><span>Event</span><span style="text-align:center">Previous</span><span style="text-align:center">Forecast</span><span style="text-align:center">Actual</span>
+          </div>
+          <div class="today-events-list">
+            <div class="today-event impact-medium">
+              <span class="today-event-time">Aug 25<br>11:30 PM</span>
+              <span class="today-event-name">CB Consumer Confidence <span class="impact-badge medium">Med</span></span>
+              <span class="today-event-val">90.8</span>
+              <span class="today-event-val">90.3</span>
+              <span class="today-event-val">--</span>
+            </div>
+            <div class="today-event impact-high">
+              <span class="today-event-time">Aug 26<br>6:00 PM ⚠️</span>
+              <span class="today-event-name">Core PCE m/m <span class="impact-badge high">High</span></span>
+              <span class="today-event-val">0.1%</span>
+              <span class="today-event-val">0.2%</span>
+              <span class="today-event-val">--</span>
+            </div>
+            <div class="today-event impact-high">
+              <span class="today-event-time">Aug 26<br>6:00 PM ⚠️</span>
+              <span class="today-event-name">Prelim GDP q/q <span class="impact-badge high">High</span></span>
+              <span class="today-event-val">1.5%</span>
+              <span class="today-event-val">1.5%</span>
+              <span class="today-event-val">--</span>
+            </div>
+            <div class="today-event impact-medium">
+              <span class="today-event-time">Aug 27<br>6:00 PM</span>
+              <span class="today-event-name">Unemployment Claims <span class="impact-badge medium">Med</span></span>
+              <span class="today-event-val">206K</span>
+              <span class="today-event-val">208K</span>
+              <span class="today-event-val">--</span>
+            </div>
+            <div class="today-event impact-high">
+              <span class="today-event-time">Aug 28<br>9:00 PM</span>
+              <span class="today-event-name">Fed Chair Warsh Speaks <span class="impact-badge high">High</span></span>
+              <span class="today-event-val">--</span>
+              <span class="today-event-val">--</span>
+              <span class="today-event-val">--</span>
+            </div>
+            <div class="today-event impact-high">
+              <span class="today-event-time">Aug 28<br>9:00 PM</span>
+              <span class="today-event-name">Payrolls Revision <span class="impact-badge high">High</span></span>
+              <span class="today-event-val">-911K</span>
+              <span class="today-event-val">--</span>
+              <span class="today-event-val">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PCE decision rule reminder -->
+      <div class="checklist-card" style="background:#f7faf7;margin-bottom:18px">
+        <h4>Aug 26 — PCE result action plan (6:00 PM IST)</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;font:11px 'DM Mono',monospace">
+          <div style="background:#fdecea;border-radius:6px;padding:12px">
+            <b style="color:var(--red);display:block;margin-bottom:6px">Actual &gt; 0.2% (Beat)</b>
+            Inflation high → Fed no cut<br>USD Strong → <b>Gold ↓ SELL</b><br><span style="color:var(--muted)">Wait 5-10 min after spike</span>
+          </div>
+          <div style="background:#f7faf7;border:1px solid var(--line);border-radius:6px;padding:12px">
+            <b style="color:var(--muted);display:block;margin-bottom:6px">Actual = 0.2% (Same)</b>
+            Already priced in<br>No surprise → <b>Flat / No trade</b><br><span style="color:var(--muted)">Wait for next event</span>
+          </div>
+          <div style="background:#edf7f2;border-radius:6px;padding:12px">
+            <b style="color:var(--green);display:block;margin-bottom:6px">Actual &lt; 0.2% (Miss)</b>
+            Inflation low → Fed cut likely<br>USD Weak → <b>Gold ↑ BUY</b><br><span style="color:var(--muted)">Wait 5-10 min after spike</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Micro pre-trade checklist -->
+      <div class="checklist-card" style="margin-bottom:0">
+        <h4>Micro checklist — XAUUSD trade setup (tick before entering)</h4>
+        <div class="micro-checklist">
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">VCPR band proximity confirmed (5–20 pips)</span><span class="micro-check-sub">Check the Gold VCPR bands section above — price must be approaching a Daily / Weekly / Monthly band</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">No high-impact news in the next 30 min</span><span class="micro-check-sub">ForexFactory → red events · avoid trading 15 min before/after · check the AI news list above</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Session timing is correct (London / NY overlap)</span><span class="micro-check-sub">Best moves: London open 13:30 IST · NY open 18:30 IST · Overlap 18:30–22:30 IST — avoid Asian session for breakouts</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">DXY direction aligned with trade direction</span><span class="micro-check-sub">DXY rising ↑ → gold bearish (sell) · DXY falling ↓ → gold bullish (buy) · Enter DXY value above in inputs</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">US10Y yield direction aligned</span><span class="micro-check-sub">Yield rising ↑ → real rates up → gold bearish · Yield falling ↓ → gold bullish · Enter above in inputs</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">VIX level noted and safe haven demand assessed</span><span class="micro-check-sub">VIX &lt;20 calm · 20–30 caution · &gt;30 high fear — above 30 gold may rise even if USD is strong</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">PDH / PDL checked — side of price confirmed</span><span class="micro-check-sub">Above PDH = continuation long bias · Below PDL = continuation short bias · At PDH/PDL = reaction zone</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Asian session range identified</span><span class="micro-check-sub">Asian high/low = key liquidity levels · London break of Asian range = strong directional signal for the day</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Spread is acceptable (&lt;5 pips for XAUUSD)</span><span class="micro-check-sub">Spread widens during news time and thin sessions — check broker platform before entry</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Risk:Reward ratio is ≥ 2:1</span><span class="micro-check-sub">Use the P/L calculator below — minimum 2:1 before entering any trade</span></div></label>
+          <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Macro bias and VCPR setup are aligned (same direction)</span><span class="micro-check-sub">Macro inputs above and the VCPR band reaction zone must both point the same way — if conflict, no trade</span></div></label>
+        </div>
+      </div>
+    </section>
+    </div>
+
     <section class="journal-section"><div class="section-heading"><div><p class="eyebrow">Quick maths</p><h2>Pips &amp; P/L calculator</h2></div></div><form id="calc-form" class="trade-form calc-form"><select name="pair" id="calc-pair"></select><select name="direction"><option>Long</option><option>Short</option></select><input name="entry" type="number" step="any" placeholder="Entry price" required><input name="exit" type="number" step="any" placeholder="Exit price" required><input name="lots" type="number" step="any" value="1" placeholder="Lot size"><button class="button" type="button" id="calc-use-live">Use live price</button><button class="button button-primary" type="submit">Calculate</button></form><div id="calc-result" class="calc-result"></div></section>
     <section class="journal-section"><div class="section-heading"><div><p class="eyebrow">Execution notes</p><h2>Trade journal</h2></div><button class="button" id="export-journal">Export CSV</button></div><form id="trade-form" class="trade-form"><input name="pair" required placeholder="Pair"><select name="direction"><option>Long</option><option>Short</option></select><input name="entry" type="number" step="any" placeholder="Entry"><input name="stop" type="number" step="any" placeholder="Stop"><input name="target" type="number" step="any" placeholder="Target"><input name="note" placeholder="Setup note"><button class="button button-primary" type="submit">Add trade</button></form><div class="journal-wrap"><table><thead><tr><th>Pair</th><th>Side</th><th>Entry</th><th>Stop</th><th>Target</th><th>Note</th><th></th></tr></thead><tbody id="journal-body"><tr><td colspan="7" class="empty">No paper trades logged.</td></tr></tbody></table></div></section>
   </main>

@@ -32,7 +32,8 @@ def _sync_calendar_to_sheet() -> None:
 
     ist = pytz.timezone(CFG.timezone)
     now = datetime.now(ist)
-    window_start = now - timedelta(hours=6)
+    # Look back the full week so past events retain their Actual values in the sheet
+    window_start = now - timedelta(days=7)
     window_end = now + timedelta(days=7)
     relevant = [
         n for n in items
