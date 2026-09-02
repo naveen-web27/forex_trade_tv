@@ -59,12 +59,17 @@
     var base = config.scriptUrl + (config.scriptUrl.indexOf("?") >= 0 ? "&" : "?");
     Promise.all([
       fetch(base + "action=vcpr&t=" + Date.now()).then(function (response) { if (!response.ok) throw new Error("Request failed"); return response.json(); }),
-      fetch(base + "action=news&t=" + Date.now()).then(function (response) { if (!response.ok) throw new Error("Request failed"); return response.json(); }).catch(function () { return { status: "ok", rows: [] }; })
+      fetch(base + "action=news&t=" + Date.now()).then(function (response) { if (!response.ok) throw new Error("Request failed"); return response.json(); }).catch(function () { return { status: "ok", rows: [] }; }),
+      fetch(base + "action=macro&t=" + Date.now()).then(function (response) { if (!response.ok) throw new Error("Request failed"); return response.json(); }).catch(function () { return { status: "ok", rows: [] }; })
     ]).then(function (results) {
-      var vcprData = results[0], newsData = results[1];
+      var vcprData = results[0], newsData = results[1], macroData = results[2];
       if (vcprData.status !== "ok") throw new Error(vcprData.message || "Sheet error");
       state.rows = normalizeRows((vcprData.rows || []).filter(function (row) { return String(row.Active).toLowerCase() !== "false"; }));
       state.news = newsData.rows || [];
+      if (macroData.status === "ok" && Array.isArray(macroData.rows)) {
+        caMacroSave(macroData.rows.map(macroRowFromSheet));
+        renderCaMacro();
+      }
       render();
       badge.className = "status ok"; badge.innerHTML = "<i></i> Sheets connected";
       $("#last-refresh").textContent = "Updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -312,6 +317,262 @@
   function journal() { try { return JSON.parse(localStorage.getItem("vcpr-desk-journal") || "[]"); } catch (_) { return []; } }
   function saveJournal(items) { localStorage.setItem("vcpr-desk-journal", JSON.stringify(items)); renderJournal(); }
   function renderJournal() { var items = journal(); $("#journal-body").innerHTML = items.length ? items.map(function (item, index) { return '<tr><td>' + esc(item.pair) + '</td><td>' + esc(item.direction) + '</td><td>' + esc(item.entry) + '</td><td>' + esc(item.stop) + '</td><td>' + esc(item.target) + '</td><td>' + esc(item.note) + '</td><td><button class="delete" data-delete="' + index + '" title="Delete trade">x</button></td></tr>'; }).join("") : '<tr><td colspan="7" class="empty">No paper trades logged.</td></tr>'; }
+
+  // ── Chart analysis journal ──────────────────────────────────────────
+  var CA_KEY = "vcpr-chart-analysis";
+  var CA_MATCH_FIELDS = [
+    { key: "pair", weight: 2 }, { key: "strategy", weight: 2 }, { key: "zone", weight: 2 },
+    { key: "direction", weight: 1 }, { key: "session", weight: 1 }, { key: "dxy", weight: 1 },
+    { key: "us10y", weight: 1 }, { key: "vix", weight: 1 }, { key: "fed", weight: 1 },
+    { key: "timeframe", weight: 1 }, { key: "rr", weight: 0.5 }, { key: "grade", weight: 0.5 },
+    { key: "pivotReaction", weight: 1.5 }, { key: "prevCprWidth", weight: 1 }, { key: "todayCprWidth", weight: 1 },
+    { key: "ydayType", weight: 1 }, { key: "todayType", weight: 1 }, { key: "fvgZone", weight: 1 }
+  ];
+  function caItems() { try { return JSON.parse(localStorage.getItem(CA_KEY) || "[]"); } catch (_) { return []; } }
+  function caSaveItems(items) { localStorage.setItem(CA_KEY, JSON.stringify(items)); }
+  function initCaPairs() {
+    var select = $("#ca-pair");
+    if (!select || select.options.length) return;
+    var list = pairOrder.indexOf("XAUUSD") >= 0 ? pairOrder : ["XAUUSD"].concat(pairOrder);
+    select.innerHTML = list.map(function (pair) { return '<option value="' + esc(pair) + '">' + esc(pair) + '</option>'; }).join("");
+  }
+  function caOutcomeClass(outcome) { return String(outcome || "").toLowerCase() === "win" ? "win" : String(outcome || "").toLowerCase() === "loss" ? "loss" : String(outcome || "").toLowerCase() === "breakeven" ? "breakeven" : "pending"; }
+  function caFormValues(form) {
+    var data = Object.fromEntries(new FormData(form).entries());
+    return data;
+  }
+  function caReadImage(form, callback) {
+    var mode = form.querySelector('input[name="imageMode"]:checked');
+    mode = mode ? mode.value : "link";
+    if (mode === "upload") {
+      var file = $("#ca-image-upload").files && $("#ca-image-upload").files[0];
+      if (!file) return callback("", "");
+      var reader = new FileReader();
+      reader.onload = function () { callback(reader.result, "upload"); };
+      reader.readAsDataURL(file);
+    } else if (mode === "imgbb") {
+      var key = ($("#ca-imgbb-key").value || "").trim();
+      var imgFile = $("#ca-image-imgbb").files && $("#ca-image-imgbb").files[0];
+      if (!key) { alert("Add your free ImgBB API key first (get one at api.imgbb.com)."); return callback("", ""); }
+      if (!imgFile) return callback("", "");
+      var body = new FormData(); body.append("image", imgFile);
+      fetch("https://api.imgbb.com/1/upload?key=" + encodeURIComponent(key), { method: "POST", body: body })
+        .then(function (res) { return res.json(); })
+        .then(function (json) { callback(json && json.data && json.data.url ? json.data.url : "", "imgbb"); })
+        .catch(function () { alert("ImgBB upload failed — check your API key or internet connection."); callback("", ""); });
+    } else {
+      callback(form.imageLink ? form.imageLink.value.trim() : "", form.imageLink && form.imageLink.value.trim() ? "link" : "");
+    }
+  }
+  function renderCaList() {
+    var items = caItems();
+    var search = ($("#ca-search") && $("#ca-search").value || "").toLowerCase().trim();
+    var outcomeFilter = $("#ca-filter-outcome") ? $("#ca-filter-outcome").value : "";
+    var filtered = items.filter(function (item) {
+      if (outcomeFilter && item.outcome !== outcomeFilter) return false;
+      if (!search) return true;
+      var hay = [item.pair, item.strategy, item.zone, item.notes].join(" ").toLowerCase();
+      return hay.indexOf(search) >= 0;
+    });
+    if ($("#ca-count")) $("#ca-count").textContent = items.length;
+    var list = $("#ca-list");
+    if (!list) return;
+    if (!filtered.length) { list.innerHTML = '<div class="empty">No chart analysis saved yet — fill the form above and hit Save.</div>'; return; }
+    list.innerHTML = filtered.map(function (item) {
+      var idx = items.indexOf(item);
+      var thumb = item.image
+        ? '<img class="ca-entry-thumb" src="' + esc(item.image) + '" data-view="' + idx + '" alt="chart">'
+        : '<div class="ca-entry-thumb placeholder">No image</div>';
+      var tags = [item.timeframe, item.session, item.zone, item.dxy, item.us10y, item.vix, item.fed, item.rr, item.grade]
+        .filter(Boolean).map(function (t) { return '<span class="ca-tag">' + esc(t) + '</span>'; }).join("");
+      return '<div class="ca-entry" data-index="' + idx + '">' + thumb +
+        '<div class="ca-entry-body">' +
+        '<div class="ca-entry-head"><div><div class="ca-entry-title">' + esc(item.pair) + ' · ' + esc(item.direction) + '</div><div class="ca-entry-sub">' + esc(item.strategy) + '</div></div><span class="ca-badge ' + caOutcomeClass(item.outcome) + '">' + esc(item.outcome || "Pending") + '</span></div>' +
+        '<div class="ca-tags">' + tags + '</div>' +
+        (item.notes ? '<div class="ca-entry-notes">' + esc(item.notes) + '</div>' : '') +
+        '<div class="ca-entry-actions"><button class="button" data-load="' + idx + '">Load</button><button class="button" data-delete-ca="' + idx + '">Delete</button></div>' +
+        '</div></div>';
+    }).join("");
+  }
+  function caScoreMatch(current, saved) {
+    var total = 0, max = 0;
+    CA_MATCH_FIELDS.forEach(function (f) {
+      max += f.weight;
+      if (current[f.key] && saved[f.key] && current[f.key] === saved[f.key]) total += f.weight;
+    });
+    return max ? Math.round((total / max) * 100) : 0;
+  }
+  function renderCaMatches(current) {
+    var items = caItems();
+    var scored = items.map(function (item) { return { item: item, score: caScoreMatch(current, item) }; })
+      .filter(function (row) { return row.score >= 40; })
+      .sort(function (a, b) { return b.score - a.score; })
+      .slice(0, 6);
+    var panel = $("#ca-match-panel"), list = $("#ca-match-list");
+    if (!panel || !list) return;
+    panel.style.display = "block";
+    if (!scored.length) { list.innerHTML = '<p class="calc-note">No similar past setup found yet — this looks like a fresh combination. Save it and build history.</p>'; return; }
+    list.innerHTML = scored.map(function (row) {
+      var item = row.item;
+      var thumb = item.image ? '<img class="ca-entry-thumb" style="height:52px;border-radius:4px" src="' + esc(item.image) + '" alt="chart">' : '<div class="ca-entry-thumb placeholder" style="height:52px;border-radius:4px">--</div>';
+      return '<div class="ca-match-item">' + thumb +
+        '<div class="ca-match-info"><b>' + esc(item.pair) + ' · ' + esc(item.direction) + ' · ' + esc(item.strategy) + '</b><span class="ca-match-tags">' + [item.timeframe, item.session, item.zone].filter(Boolean).join(" · ") + '</span></div>' +
+        '<div><span class="ca-match-score">' + row.score + '% match</span><br><span class="ca-badge ' + caOutcomeClass(item.outcome) + '">' + esc(item.outcome || "Pending") + '</span></div></div>';
+    }).join("");
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function caLoadIntoForm(item) {
+    var form = $("#ca-form");
+    if (!form || !item) return;
+    var keys = ["pair", "timeframe", "strategy", "direction", "session", "zone", "pivotReaction", "prevCprWidth", "todayCprWidth", "ydayType", "todayType", "fvgZone", "dxy", "dxyNote", "us10y", "us10yNote", "vix", "fed", "rr", "grade", "outcome", "entryPrice", "notes"];
+    keys.forEach(function (key) {
+      if (form.elements[key] != null && item[key] != null) form.elements[key].value = item[key];
+    });
+    if (item.image) {
+      form.querySelector('input[name="imageMode"][value="link"]').checked = true;
+      caSetImageMode("link");
+      $("#ca-image-link").value = item.imageType === "link" ? item.image : "";
+    }
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  // Monthly macro data (one row per month) — Previous/Forecast/Actual per metric + auto trend + source link + custom fields
+  var CA_MACRO_KEY = "vcpr-monthly-macro";
+  var CA_METRICS = [
+    { key: "inflation", prev: "ca-inf-prev", fc: "ca-inf-fc", act: "ca-inf-act", bias: "ca-inf-bias", keywords: ["pce", "cpi", "inflation"] },
+    { key: "fedRate", prev: "ca-fed-prev", fc: "ca-fed-fc", act: "ca-fed-act", bias: "ca-fed-bias", keywords: ["fed funds", "fomc", "interest rate", "fed rate"] },
+    { key: "employment", prev: "ca-emp-prev", fc: "ca-emp-fc", act: "ca-emp-act", bias: "ca-emp-bias", keywords: ["nfp", "payroll", "unemployment", "employment"] }
+  ];
+  function caMacroItems() { try { return JSON.parse(localStorage.getItem(CA_MACRO_KEY) || "[]"); } catch (_) { return []; } }
+  function caMacroSave(items) { localStorage.setItem(CA_MACRO_KEY, JSON.stringify(items)); }
+  function caMacroFind(month) { return caMacroItems().filter(function (row) { return row.month === month; })[0] || null; }
+  function macroRowFromSheet(row) {
+    var custom = []; try { custom = JSON.parse(row["Custom Fields"] || "[]"); } catch (_) { custom = []; }
+    return {
+      month: row.Month || "",
+      inflation: { previous: row["Inflation Previous"] || "", forecast: row["Inflation Forecast"] || "", actual: row["Inflation Actual"] || "" },
+      fedRate: { previous: row["Fed Rate Previous"] || "", forecast: row["Fed Rate Forecast"] || "", actual: row["Fed Rate Actual"] || "" },
+      employment: { previous: row["Employment Previous"] || "", forecast: row["Employment Forecast"] || "", actual: row["Employment Actual"] || "" },
+      custom: custom, notes: row.Notes || ""
+    };
+  }
+  function caMacroSyncToSheet(data) {
+    if (!config.scriptUrl) return;
+    fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "syncMacro", month: data.month, inflation: data.inflation, fedRate: data.fedRate, employment: data.employment, custom: data.custom, notes: data.notes }) })
+      .then(function (response) { return response.json(); })
+      .then(function (result) { if (result.status !== "ok") alert("Saved locally, but the sheet sync failed: " + (result.message || "unknown error")); })
+      .catch(function () { alert("Saved locally, but could not reach the Google Sheet to sync this month."); });
+  }
+  function caMacroDeleteFromSheet(month) {
+    if (!config.scriptUrl) return;
+    fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "deleteMacro", month: month }) }).catch(function () {});
+  }
+  function caTrend(actual, previous) {
+    var a = parseFloat(actual), p = parseFloat(previous);
+    if (isNaN(a) || isNaN(p)) return { label: "--", cls: "neutral" };
+    if (a > p) return { label: "Increased", cls: "bullish" };
+    if (a < p) return { label: "Decreased", cls: "bearish" };
+    return { label: "Hold", cls: "neutral" };
+  }
+  function caUpdateTrend(metric) {
+    var badge = document.getElementById(metric.bias);
+    if (!badge) return;
+    var actual = document.getElementById(metric.act).value;
+    var previous = document.getElementById(metric.prev).value;
+    var trend = caTrend(actual, previous);
+    badge.textContent = trend.label;
+    badge.className = "mi-bias " + trend.cls;
+  }
+  function caAddCustomField(label, value) {
+    var row = document.createElement("div");
+    row.className = "ca-custom-row";
+    row.innerHTML = '<input class="ca-select ca-custom-label" placeholder="Field name (e.g. GDP q/q)">' +
+      '<input class="ca-select ca-custom-value" placeholder="Value">' +
+      '<button class="delete" type="button" title="Remove field">x</button>';
+    row.querySelector(".ca-custom-label").value = label || "";
+    row.querySelector(".ca-custom-value").value = value || "";
+    row.querySelector(".delete").addEventListener("click", function () { row.remove(); });
+    $("#ca-macro-custom").appendChild(row);
+  }
+  function caMacroClearForm(keepMonth) {
+    if (!keepMonth) $("#ca-macro-month").value = "";
+    CA_METRICS.forEach(function (m) {
+      document.getElementById(m.prev).value = ""; document.getElementById(m.fc).value = "";
+      document.getElementById(m.act).value = "";
+      var badge = document.getElementById(m.bias); badge.textContent = "--"; badge.className = "mi-bias neutral";
+    });
+    $("#ca-macro-notes").value = "";
+    $("#ca-macro-custom").innerHTML = "";
+  }
+  function caMacroFillForm(item) {
+    caMacroClearForm(true);
+    CA_METRICS.forEach(function (m) {
+      var data = item[m.key] || {};
+      document.getElementById(m.prev).value = data.previous || ""; document.getElementById(m.fc).value = data.forecast || "";
+      document.getElementById(m.act).value = data.actual || "";
+      caUpdateTrend(m);
+    });
+    $("#ca-macro-notes").value = item.notes || "";
+    (item.custom || []).forEach(function (field) { caAddCustomField(field.label, field.value); });
+  }
+  function caMacroReadForm() {
+    var data = { month: $("#ca-macro-month").value, notes: $("#ca-macro-notes").value, custom: [] };
+    CA_METRICS.forEach(function (m) {
+      data[m.key] = {
+        previous: document.getElementById(m.prev).value.trim(),
+        forecast: document.getElementById(m.fc).value.trim(),
+        actual: document.getElementById(m.act).value.trim()
+      };
+    });
+    document.querySelectorAll("#ca-macro-custom .ca-custom-row").forEach(function (row) {
+      var label = row.querySelector(".ca-custom-label").value.trim();
+      var value = row.querySelector(".ca-custom-value").value.trim();
+      if (label || value) data.custom.push({ label: label, value: value });
+    });
+    return data;
+  }
+  function caNewsMonthKey(value) { var key = dateKey(value); return key ? key.slice(0, 7) : ""; }
+  function caMacroFetchFromSheet() {
+    var month = $("#ca-macro-month").value;
+    if (!month) { alert("Pick a month first."); return; }
+    var filled = [], missed = [];
+    CA_METRICS.forEach(function (m) {
+      var matches = state.news.filter(function (row) {
+        if (caNewsMonthKey(row.Date) !== month) return false;
+        var title = String(row.Title || "").toLowerCase();
+        return m.keywords.some(function (k) { return title.indexOf(k) >= 0; });
+      }).sort(function (a, b) { return new Date(a.Date) - new Date(b.Date); });
+      var match = matches[0];
+      if (match) {
+        document.getElementById(m.prev).value = match.Previous || "";
+        document.getElementById(m.fc).value = match.Forecast || "";
+        document.getElementById(m.act).value = match.Actual || "";
+        caUpdateTrend(m);
+        filled.push(m.key);
+      } else {
+        missed.push(m.key);
+      }
+    });
+    if (!filled.length) alert("No matching news events found in the sheet for " + month + ". Hit \"Refresh data\" at the top first, or enter values manually.");
+    else if (missed.length) alert("Filled from sheet: " + filled.join(", ") + ". No match found for: " + missed.join(", ") + " \u2014 enter those manually.");
+  }
+  function renderCaMacro() {
+    var raw = caMacroItems();
+    var sorted = raw.slice().sort(function (a, b) { return b.month.localeCompare(a.month); });
+    var body = $("#ca-macro-body");
+    if (!body) return;
+    if (!sorted.length) { body.innerHTML = '<tr><td colspan="6" class="empty">No monthly macro data saved yet.</td></tr>'; return; }
+    body.innerHTML = sorted.map(function (item) {
+      var idx = raw.indexOf(item);
+      var cell = function (m) {
+        var d = item[m.key] || {}; var trend = caTrend(d.actual, d.previous);
+        return '<div class="ca-macro-cell"><b>' + esc(d.actual || "--") + '</b><span class="ca-badge ' + (trend.cls === "bullish" ? "win" : trend.cls === "bearish" ? "loss" : "breakeven") + '">' + trend.label + '</span></div>';
+      };
+      var customSummary = (item.custom || []).map(function (f) { return esc(f.label) + ": " + esc(f.value); }).join(", ") || "--";
+      return "<tr><td>" + esc(item.month) + "</td><td>" + cell(CA_METRICS[0]) + "</td><td>" + cell(CA_METRICS[1]) + "</td><td>" + cell(CA_METRICS[2]) + "</td><td>" + customSummary +
+        '</td><td><button class="button" data-edit-macro="' + idx + '" title="Edit">Edit</button> <button class="delete" data-delete-macro="' + idx + '" title="Delete">x</button></td></tr>';
+    }).join("");
+  }
   function contractSize(pair) { return pair.indexOf("XAU") >= 0 ? 100 : 100000; }
   function latestPrice(pair) { var row = state.rows.filter(function (r) { return r.Symbol === pair; })[0]; return row ? Number(row["Current Price"]) : NaN; }
   function pipValueInUsd(pair, lots) {
@@ -353,9 +614,9 @@
   }
   $("#refresh").addEventListener("click", load); $("#pair-search").addEventListener("input", render); $("#near-only").addEventListener("change", render);
   (function () {
-    var tabs = [$("#ptab-pairs"), $("#ptab-gold")];
-    var panels = [$("#tab-panel-pairs"), $("#tab-panel-gold")];
-    var tabKeys = ["pairs", "gold"];
+    var tabs = [$("#ptab-pairs"), $("#ptab-gold"), $("#ptab-analysis")];
+    var panels = [$("#tab-panel-pairs"), $("#tab-panel-gold"), $("#tab-panel-analysis")];
+    var tabKeys = ["pairs", "gold", "analysis"];
     tabs.forEach(function (btn, i) {
       if (!btn) return;
       btn.addEventListener("click", function () {
@@ -432,6 +693,96 @@
       : Promise.resolve(document.execCommand("copy"))
     ).then(function () { button.textContent = "Copied!"; setTimeout(reset, 1500); }).catch(function () { button.textContent = "Copy failed"; setTimeout(reset, 1500); });
   });
+  // ── Chart analysis journal bindings ─────────────────────────────────
+  function caSetImageMode(mode) {
+    document.querySelectorAll(".ca-image-toggle .mi-geo-tag").forEach(function (t) { t.classList.toggle("checked", t.dataset.caMode === mode); });
+    $("#ca-image-link").style.display = mode === "link" ? "" : "none";
+    $("#ca-image-upload").style.display = mode === "upload" ? "" : "none";
+    $("#ca-imgbb-row").style.display = mode === "imgbb" ? "flex" : "none";
+  }
+  document.querySelectorAll(".ca-image-toggle .mi-geo-tag").forEach(function (tag) {
+    tag.addEventListener("click", function () { caSetImageMode(tag.dataset.caMode); });
+  });
+  try { $("#ca-imgbb-key").value = localStorage.getItem("vcpr-imgbb-key") || ""; } catch (_) {}
+  $("#ca-imgbb-key").addEventListener("input", function () { try { localStorage.setItem("vcpr-imgbb-key", $("#ca-imgbb-key").value.trim()); } catch (_) {} });
+  $("#ca-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var form = event.target;
+    var data = caFormValues(form);
+    caReadImage(form, function (image, imageType) {
+      data.image = image; data.imageType = imageType;
+      data.id = Date.now(); data.date = new Date().toISOString();
+      delete data.imageMode; delete data.imageLink;
+      var items = caItems(); items.unshift(data); caSaveItems(items);
+      renderCaList();
+      form.reset();
+      caSetImageMode("link");
+    });
+  });
+  $("#ca-find-similar").addEventListener("click", function () { renderCaMatches(caFormValues($("#ca-form"))); });
+  $("#ca-form").addEventListener("reset", function () {
+    setTimeout(function () { caSetImageMode("link"); $("#ca-match-panel").style.display = "none"; }, 0);
+  });
+  $("#ca-list").addEventListener("click", function (event) {
+    var loadIdx = event.target.dataset.load, delIdx = event.target.dataset.deleteCa, viewIdx = event.target.dataset.view;
+    if (loadIdx != null && loadIdx !== "") caLoadIntoForm(caItems()[Number(loadIdx)]);
+    if (delIdx != null && delIdx !== "") { var items = caItems(); items.splice(Number(delIdx), 1); caSaveItems(items); renderCaList(); }
+    if (viewIdx != null && viewIdx !== "") { var item = caItems()[Number(viewIdx)]; if (item && item.image) window.open(item.image, "_blank"); }
+  });
+  $("#ca-search").addEventListener("input", renderCaList);
+  $("#ca-filter-outcome").addEventListener("change", renderCaList);
+  $("#ca-export").addEventListener("click", function () {
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(caItems(), null, 2)], { type: "application/json" }));
+    link.download = "vcpr-chart-analysis.json"; link.click();
+  });
+  $("#ca-import-btn").addEventListener("click", function () { $("#ca-import-file").click(); });
+  $("#ca-import-file").addEventListener("change", function (event) {
+    var file = event.target.files && event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var incoming = JSON.parse(reader.result);
+        if (!Array.isArray(incoming)) throw new Error("invalid");
+        caSaveItems(caItems().concat(incoming)); renderCaList();
+      } catch (_) { alert("Invalid JSON file."); }
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+  $("#ca-macro-month").addEventListener("change", function () {
+    var month = $("#ca-macro-month").value;
+    var existing = month ? caMacroFind(month) : null;
+    if (existing) caMacroFillForm(existing); else caMacroClearForm(true);
+  });
+  $("#ca-macro-fetch").addEventListener("click", caMacroFetchFromSheet);
+  CA_METRICS.forEach(function (m) {
+    document.getElementById(m.act).addEventListener("input", function () { caUpdateTrend(m); });
+    document.getElementById(m.prev).addEventListener("input", function () { caUpdateTrend(m); });
+  });
+  $("#ca-macro-add-field").addEventListener("click", function () { caAddCustomField("", ""); });
+  $("#ca-macro-save").addEventListener("click", function () {
+    var data = caMacroReadForm();
+    if (!data.month) { alert("Pick a month first."); return; }
+    var items = caMacroItems().filter(function (row) { return row.month !== data.month; });
+    items.push(data); caMacroSave(items); renderCaMacro();
+    caMacroSyncToSheet(data);
+  });
+  $("#ca-macro-clear").addEventListener("click", function () { caMacroClearForm(false); });
+  $("#ca-macro-body").addEventListener("click", function (event) {
+    var delIdx = event.target.dataset.deleteMacro, editIdx = event.target.dataset.editMacro;
+    if (delIdx != null && delIdx !== "") {
+      var items = caMacroItems(); var removed = items.splice(Number(delIdx), 1)[0];
+      caMacroSave(items); renderCaMacro();
+      if (removed) caMacroDeleteFromSheet(removed.month);
+    }
+    if (editIdx != null && editIdx !== "") {
+      var item = caMacroItems()[Number(editIdx)];
+      if (item) { $("#ca-macro-month").value = item.month; caMacroFillForm(item); $("#ca-macro-month").scrollIntoView({ behavior: "smooth", block: "start" }); }
+    }
+  });
   initCalcPairs();
-  renderJournal(); load();
+  initCaPairs();
+  renderJournal(); renderCaList(); renderCaMacro(); load();
 }());

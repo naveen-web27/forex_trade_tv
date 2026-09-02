@@ -110,6 +110,51 @@
     .micro-check-name{color:var(--ink);font:600 11px Manrope,sans-serif}
     .micro-check-sub{color:var(--muted);font-size:9px}
     @media(max-width:700px){.market-header{display:none}.market-row{grid-template-columns:1fr 1fr 1fr 24px;gap:8px;padding:14px}.market-row>span:nth-child(2),.market-row>span:nth-child(5),.market-row>span:nth-child(6),.market-row>span:nth-child(7){display:none}.row-details{padding:14px}.row-details-grid{grid-template-columns:1fr 1fr}.row-details-grid div:last-child{grid-column:1/-1}.rate-grid{grid-template-columns:1fr}.news-item{grid-template-columns:1fr;gap:4px}.calc-form{grid-template-columns:repeat(2,1fr)}.calc-form button{grid-column:span 2}.calc-result{grid-template-columns:1fr}.gold-grid{grid-template-columns:1fr}.mi-head{display:none}.mi-row{grid-template-columns:1fr .8fr .8fr;gap:5px;font-size:10px}.mi-row .mi-src{display:none}.mi-row .mi-bias{display:none}.mi-two-col{grid-template-columns:1fr}.mi-levels-grid{grid-template-columns:1fr 1fr}}
+    .ca-intro{margin:0 0 16px;font-size:12px;color:var(--muted);line-height:1.55;max-width:780px}
+    .ca-card{background:var(--white);border:1px solid var(--line);border-radius:8px;padding:16px 18px;box-shadow:var(--shadow);margin-bottom:18px}
+    .ca-card h4{margin:0 0 12px;font:10px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.08em}
+    .ca-field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+    .ca-field{display:flex;flex-direction:column;gap:5px}
+    .ca-field span{font:9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .ca-select{width:100%;border:1px solid var(--line);border-radius:4px;padding:6px 8px;font:11px 'DM Mono',monospace;color:var(--ink);background:var(--white)}
+    .ca-select:focus{outline:none;border-color:var(--green)}
+    .ca-image-row{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+    .ca-image-toggle{display:flex;gap:8px}
+    .ca-image-toggle .mi-geo-tag input{display:inline}
+    .ca-image-input{display:block}
+    .ca-actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+    .ca-match-list{display:flex;flex-direction:column;gap:8px}
+    .ca-match-item{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;background:#f7faf7;border:1px solid var(--line);border-radius:6px;padding:9px 12px}
+    .ca-match-score{font:700 12px 'DM Mono',monospace;color:var(--green);text-align:center}
+    .ca-match-info{font:11px 'DM Mono',monospace;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+    .ca-match-tags{color:var(--muted);font-size:10px}
+    .ca-toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+    .ca-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .ca-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .ca-entry{background:var(--white);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+    .ca-entry-thumb{width:100%;height:130px;object-fit:cover;background:#f3f3f3;cursor:pointer}
+    .ca-entry-thumb.placeholder{display:flex;align-items:center;justify-content:center;color:var(--muted);font:10px 'DM Mono',monospace}
+    .ca-entry-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .ca-entry-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .ca-entry-title{font:700 13px Manrope,sans-serif;color:var(--ink)}
+    .ca-entry-sub{font:9px 'DM Mono',monospace;color:var(--muted)}
+    .ca-badge{font:9px 'DM Mono',monospace;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap}
+    .ca-badge.win{background:#d9eee2;color:var(--green)}
+    .ca-badge.loss{background:#fdecea;color:var(--red)}
+    .ca-badge.breakeven{background:#f3f3f3;color:var(--muted)}
+    .ca-badge.pending{background:#fdf5e6;color:var(--amber)}
+    .ca-tags{display:flex;flex-wrap:wrap;gap:5px}
+    .ca-tag{font:9px 'DM Mono',monospace;color:var(--ink);background:#f7faf7;border:1px solid var(--line);border-radius:3px;padding:2px 6px}
+    .ca-entry-notes{font:11px 'DM Mono',monospace;color:var(--muted);line-height:1.5;max-height:54px;overflow:hidden}
+    .ca-entry-actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+    .ca-entry-actions button{flex:1}
+    @media(max-width:700px){.ca-field-grid{grid-template-columns:repeat(2,1fr)}.ca-grid{grid-template-columns:1fr}}
+    .ca-macro-head,.ca-macro-row{grid-template-columns:2.2fr .85fr .85fr .95fr .85fr 60px}
+    .ca-custom-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+    .ca-custom-row{display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center}
+    .ca-macro-cell{display:flex;flex-direction:column;gap:2px}
+    .ca-macro-cell b{font:600 11px Manrope,sans-serif;color:var(--ink)}
+    .ca-macro-cell span{font:9px 'DM Mono',monospace;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -124,6 +169,7 @@
     <nav class="page-tab-nav" role="tablist" aria-label="Instrument view">
       <button class="page-tab-btn" id="ptab-pairs" role="tab" aria-selected="false" aria-controls="tab-panel-pairs">Other Pairs</button>
       <button class="page-tab-btn active" id="ptab-gold" role="tab" aria-selected="true" aria-controls="tab-panel-gold">Gold (XAUUSD)<span class="tab-badge">XAU</span></button>
+      <button class="page-tab-btn" id="ptab-analysis" role="tab" aria-selected="false" aria-controls="tab-panel-analysis">Analysis Journal<span class="tab-badge">NEW</span></button>
     </nav>
     <div id="tab-panel-pairs" class="page-tab-panel" role="tabpanel">
     <section class="toolbar"><div class="tabs" role="tablist"><button class="tab active" data-timeframe="all">All zones</button><button class="tab" data-timeframe="daily">Daily</button><button class="tab" data-timeframe="weekly">Weekly</button><button class="tab" data-timeframe="monthly">Monthly</button></div><label class="search"><span>Search</span><input id="pair-search" type="search" placeholder="Pair, e.g. EURUSD"></label><label class="toggle"><input id="near-only" type="checkbox"><span>Near only</span></label></section>
@@ -387,6 +433,145 @@
           <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Risk:Reward ratio is ≥ 2:1</span><span class="micro-check-sub">Use the P/L calculator below — minimum 2:1 before entering any trade</span></div></label>
           <label class="micro-check-item"><input type="checkbox"><div class="micro-check-label"><span class="micro-check-name">Macro bias and VCPR setup are aligned (same direction)</span><span class="micro-check-sub">Macro inputs above and the VCPR band reaction zone must both point the same way — if conflict, no trade</span></div></label>
         </div>
+      </div>
+    </section>
+    </div>
+
+    <div id="tab-panel-analysis" class="page-tab-panel" role="tabpanel">
+    <section class="ca-section">
+      <div class="section-heading"><div><p class="eyebrow">Save it once, reuse it forever</p><h2>Chart analysis journal</h2></div></div>
+      <p class="ca-intro">Log every chart read here with quick dropdowns — barely any typing. Save it, then hit <b>Find similar setups</b> to see how this exact combination played out before, so you can spot a repeating pattern before you risk the trade.</p>
+
+      <div class="ca-card">
+        <h4>Monthly macro data (one row per month) — re-select a month to load / edit its saved data</h4>
+        <div class="ca-field-grid" style="margin-bottom:14px;max-width:460px;align-items:flex-end">
+          <label class="ca-field"><span>Month</span><input class="ca-select" type="month" id="ca-macro-month"></label>
+          <label class="ca-field"><button class="button button-primary" type="button" id="ca-macro-fetch">Fetch from Sheet</button></label>
+        </div>
+        <div class="mi-table">
+          <div class="mi-head ca-macro-head"><span>Metric</span><span>Previous</span><span>Forecast</span><span>Actual</span><span>Trend</span><span>Source</span></div>
+          <div class="mi-row ca-macro-row">
+            <div class="mi-event"><span class="mi-name">Inflation (CPI/PCE)</span><span class="mi-hint">Monthly reading, enter as %</span></div>
+            <input class="mi-field" id="ca-inf-prev" placeholder="e.g. 0.2%">
+            <input class="mi-field" id="ca-inf-fc" placeholder="e.g. 0.2%">
+            <input class="mi-field mi-actual" id="ca-inf-act" placeholder="Actual">
+            <span class="mi-bias" id="ca-inf-bias">--</span>
+            <a class="mi-src" href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">FF ↗</a>
+          </div>
+          <div class="mi-row ca-macro-row">
+            <div class="mi-event"><span class="mi-name">Fed funds rate</span><span class="mi-hint">Target rate, enter as %</span></div>
+            <input class="mi-field" id="ca-fed-prev" placeholder="e.g. 5.25%">
+            <input class="mi-field" id="ca-fed-fc" placeholder="e.g. 5.25%">
+            <input class="mi-field mi-actual" id="ca-fed-act" placeholder="Actual">
+            <span class="mi-bias" id="ca-fed-bias">--</span>
+            <a class="mi-src" href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener">Fed ↗</a>
+          </div>
+          <div class="mi-row ca-macro-row">
+            <div class="mi-event"><span class="mi-name">Employment (NFP / unemployment)</span><span class="mi-hint">Jobs data for the month</span></div>
+            <input class="mi-field" id="ca-emp-prev" placeholder="e.g. 180K">
+            <input class="mi-field" id="ca-emp-fc" placeholder="e.g. 180K">
+            <input class="mi-field mi-actual" id="ca-emp-act" placeholder="Actual">
+            <span class="mi-bias" id="ca-emp-bias">--</span>
+            <a class="mi-src" href="https://www.bls.gov/news.release/empsit.nr0.htm" target="_blank" rel="noopener">BLS ↗</a>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div id="ca-macro-custom" class="ca-custom-list"></div>
+          <button class="button" type="button" id="ca-macro-add-field">+ Add custom field</button>
+        </div>
+
+        <textarea class="mi-fed-notes" id="ca-macro-notes" placeholder="Any additional monthly notes..." style="margin-top:12px;min-height:50px"></textarea>
+
+        <div class="ca-actions">
+          <button class="button button-primary" type="button" id="ca-macro-save">Save month</button>
+          <button class="button" type="button" id="ca-macro-clear">Clear form</button>
+        </div>
+
+        <div class="journal-wrap" style="margin-top:14px"><table><thead><tr><th>Month</th><th>Inflation</th><th>Fed rate</th><th>Employment</th><th>Custom</th><th></th></tr></thead><tbody id="ca-macro-body"><tr><td colspan="6" class="empty">No monthly macro data saved yet.</td></tr></tbody></table></div>
+      </div>
+
+      <div class="ca-card">
+        <h4>New analysis entry</h4>
+        <form id="ca-form">
+          <div class="ca-field-grid">
+            <label class="ca-field"><span>Pair</span><select class="ca-select" id="ca-pair" name="pair"></select></label>
+            <label class="ca-field"><span>Timeframe</span><select class="ca-select" name="timeframe"><option>M5</option><option>M15</option><option selected>M30</option><option>H1</option><option>H4</option><option>D1</option><option>W1</option><option>MN</option></select></label>
+            <label class="ca-field"><span>Strategy / setup</span><select class="ca-select" name="strategy">
+              <option>Asian Breakout + CPR</option>
+              <option>PDH/PDL Breakout + CPR</option>
+              <option>SMC Sweep + FVG</option>
+              <option>Opening Range Breakout</option>
+              <option>VWAP Bounce</option>
+              <option>Virgin CPR</option>
+              <option>TD Sequential VCPR</option>
+              <option>Weekly/Monthly VCPR</option>
+              <option>Other</option>
+            </select></label>
+            <label class="ca-field"><span>Direction</span><select class="ca-select" name="direction"><option>Long</option><option>Short</option></select></label>
+            <label class="ca-field"><span>Session</span><select class="ca-select" name="session"><option>Asian</option><option>London</option><option>New York</option><option>London/NY Overlap</option></select></label>
+            <label class="ca-field"><span>Zone / level</span><select class="ca-select" name="zone"><option>Daily CPR</option><option>Weekly CPR</option><option>Monthly CPR</option><option>Virgin CPR</option><option>PDH</option><option>PDL</option><option>VWAP</option><option>FVG</option><option>Other</option></select></label>
+            <label class="ca-field"><span>Monthly pivot reaction</span><select class="ca-select" name="pivotReaction"><option>Not tested</option><option>Approaching</option><option>Touched &amp; reversed</option><option>Touched &amp; broke through</option></select></label>
+            <label class="ca-field"><span>Previous day CPR</span><select class="ca-select" name="prevCprWidth"><option>Narrow</option><option>Wide</option></select></label>
+            <label class="ca-field"><span>Today CPR</span><select class="ca-select" name="todayCprWidth"><option>Narrow</option><option>Wide</option></select></label>
+            <label class="ca-field"><span>Yesterday day type</span><select class="ca-select" name="ydayType"><option>Trending</option><option>Non-trending / range</option><option>Inside day</option></select></label>
+            <label class="ca-field"><span>Today day type (so far)</span><select class="ca-select" name="todayType"><option>Pending / too early</option><option>Trending</option><option>Non-trending / range</option><option>Inside day</option></select></label>
+            <label class="ca-field"><span>FVG location</span><select class="ca-select" name="fvgZone"><option>None</option><option>Near R1</option><option>Near R2</option><option>Near S1</option><option>Near S2</option><option>Near Pivot</option></select></label>
+            <label class="ca-field"><span>DXY bias</span><select class="ca-select" name="dxy"><option>Not checked</option><option>Rising</option><option>Falling</option><option>Flat</option></select></label>
+            <label class="ca-field"><span>DXY note (optional)</span><input class="ca-select" name="dxyNote" placeholder="e.g. broke below 97"></label>
+            <label class="ca-field"><span>US10Y bias</span><select class="ca-select" name="us10y"><option>Not checked</option><option>Rising</option><option>Falling</option><option>Flat</option></select></label>
+            <label class="ca-field"><span>US10Y note (optional)</span><input class="ca-select" name="us10yNote" placeholder="e.g. rejected 4.30%"></label>
+            <label class="ca-field"><span>VIX zone</span><select class="ca-select" name="vix"><option>Not checked</option><option>Calm (&lt;20)</option><option>Caution (20-30)</option><option>High fear (&gt;30)</option></select></label>
+            <label class="ca-field"><span>Fed tone</span><select class="ca-select" name="fed"><option>None</option><option>Hawkish</option><option>Dovish</option><option>Neutral</option></select></label>
+            <label class="ca-field"><span>Planned R:R</span><select class="ca-select" name="rr"><option>1:1</option><option>1:1.5</option><option selected>1:2</option><option>1:3</option><option>1:4+</option></select></label>
+            <label class="ca-field"><span>Setup grade</span><select class="ca-select" name="grade"><option>A - Strong confluence</option><option>B - Medium confluence</option><option>C - Weak / experimental</option></select></label>
+            <label class="ca-field"><span>Outcome</span><select class="ca-select" name="outcome"><option>Pending</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></label>
+            <label class="ca-field"><span>Entry price (optional)</span><input class="ca-select" type="number" step="any" name="entryPrice" placeholder="e.g. 3450.50"></label>
+          </div>
+
+          <div class="ca-image-row">
+            <div class="ca-image-toggle">
+              <label class="mi-geo-tag" data-ca-mode="imgbb"><input type="radio" name="imageMode" value="imgbb"> Auto-upload (free, recommended)</label>
+              <label class="mi-geo-tag checked" data-ca-mode="link"><input type="radio" name="imageMode" value="link" checked> Image link (URL)</label>
+              <label class="mi-geo-tag" data-ca-mode="upload"><input type="radio" name="imageMode" value="upload"> Upload (store on this device)</label>
+            </div>
+            <div class="ca-image-input" id="ca-imgbb-row" style="display:none;gap:8px">
+              <input class="ca-select" id="ca-imgbb-key" placeholder="ImgBB free API key (one-time, saved locally)" style="max-width:320px;display:inline-block">
+              <a class="mi-level-link" href="https://api.imgbb.com/" target="_blank" rel="noopener">Get free key ↗</a>
+              <input class="ca-select ca-image-input" id="ca-image-imgbb" type="file" accept="image/*" style="margin-top:6px">
+            </div>
+            <input class="ca-select ca-image-input" id="ca-image-link" name="imageLink" placeholder="Paste chart screenshot URL (TradingView share link, imgur, etc.)">
+            <input class="ca-select ca-image-input" id="ca-image-upload" type="file" accept="image/*" style="display:none">
+          </div>
+
+
+          <textarea class="mi-fed-notes" name="notes" placeholder="What did you see on the chart? Confluences, hesitation, anything worth remembering..." style="margin-top:12px;min-height:70px"></textarea>
+
+          <div class="ca-actions">
+            <button class="button button-primary" type="submit">Save analysis</button>
+            <button class="button" type="button" id="ca-find-similar">Find similar setups</button>
+            <button class="button" type="reset" id="ca-reset">Clear form</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="ca-card ca-match-panel" id="ca-match-panel" style="display:none">
+        <h4>Similar setups found</h4>
+        <div id="ca-match-list" class="ca-match-list"></div>
+      </div>
+
+      <div class="ca-card">
+        <div class="ca-toolbar">
+          <h4 style="margin:0">Saved analyses (<span id="ca-count">0</span>)</h4>
+          <div class="ca-toolbar-actions">
+            <input class="ca-select" id="ca-search" placeholder="Search pair / strategy / notes" style="width:220px">
+            <select class="ca-select" id="ca-filter-outcome" style="width:140px"><option value="">All outcomes</option><option>Win</option><option>Loss</option><option>Breakeven</option><option>Pending</option></select>
+            <button class="button" id="ca-export">Export JSON</button>
+            <button class="button" id="ca-import-btn">Import JSON</button>
+            <input type="file" id="ca-import-file" accept="application/json" style="display:none">
+          </div>
+        </div>
+        <div class="ca-grid" id="ca-list"><div class="empty">No chart analysis saved yet — fill the form above and hit Save.</div></div>
       </div>
     </section>
     </div>
