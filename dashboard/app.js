@@ -700,7 +700,7 @@
     ).then(function () { button.textContent = "Copied!"; setTimeout(reset, 1500); }).catch(function () { button.textContent = "Copy failed"; setTimeout(reset, 1500); });
   });
   // ── Chart analysis journal bindings ─────────────────────────────────
-  try { $("#ca-imgbb-key").value = localStorage.getItem("vcpr-imgbb-key") || ""; } catch (_) {}
+  try { $("#ca-imgbb-key").value = localStorage.getItem("vcpr-imgbb-key") || config.imgbbKey || ""; } catch (_) {}
   $("#ca-imgbb-key").addEventListener("input", function () { try { localStorage.setItem("vcpr-imgbb-key", $("#ca-imgbb-key").value.trim()); } catch (_) {} });
   function caBindImageUpload(button) {
     var targetId = button.dataset.uploadFor;
