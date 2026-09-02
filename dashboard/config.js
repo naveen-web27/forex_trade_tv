@@ -1,7 +1,7 @@
 window.DASHBOARD_CONFIG = {
   scriptUrl: "https://script.google.com/macros/s/AKfycbyyADs_KVACi-3LFilybTbN_ZcwDTJgLvqnbVxqFFl4q49BbSZxdnpMvUcrpiNyJBLNMg/exec",
   // Free key from https://api.imgbb.com/ — used to auto-upload chart screenshots. Safe to hardcode (upload-only, no account access).
-  imgbbKey: "",
+  imgbbKey: "65a0fd02258d8658b941ea507fe0c8d7",
   pairs: ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD", "USDCHF", "EURJPY", "GBPJPY", "XAUUSD", "NZDCHF", "USDCAD", "AUDNZD", "AUDCAD"],
   proximityMaxPips: 20,
   // Reference only — update these whenever a central bank changes rates.
