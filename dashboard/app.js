@@ -414,6 +414,7 @@
     if (!config.scriptUrl || !day) return;
     fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "deleteChartAnalysis", day: day }) }).catch(function () {});
   }
+  var caLastFetchedDay = null;
   function caFetchAnalysisByDate() {
     var day = $("#ca-fetch-date").value;
     var result = $("#ca-fetch-date-result");
@@ -424,11 +425,13 @@
       .then(function (r) { return r.json(); })
       .then(function (json) {
         var match = (json.rows || []).filter(function (row) { return row.day === day; })[0];
+        caLastFetchedDay = match || null;
         result.innerHTML = match ? caRenderFetchedDay(match) : '<p class="calc-note">No saved analysis found in the sheet for ' + esc(day) + '.</p>';
       })
       .catch(function () { result.innerHTML = '<p class="calc-note">Could not reach the Google Sheet.</p>'; });
   }
   function caRenderFetchedDay(item) {
+    var loadBtn = '<div class="ca-actions" style="margin-top:0;margin-bottom:12px"><button class="button button-primary" type="button" id="ca-fetch-load-btn">Load into form (edit &amp; save)</button></div>';
     var fields = [
       ["Pair", item.pair], ["Timeframe", item.timeframe], ["Strategy", item.strategy], ["Direction", item.direction],
       ["Session", item.session], ["Prev day CPR", item.prevCprWidth], ["Today CPR", item.todayCprWidth],
@@ -445,7 +448,7 @@
       .map(function (f) { return '<span class="ca-tag">' + esc(f.label) + ": " + esc(f.value) + '</span>'; }).join(" ");
     var images = ["xauImage", "dxyImage", "us10yImage"].filter(function (k) { return item[k]; })
       .map(function (k) { return '<img src="' + esc(item[k]) + '" alt="' + k + '">'; }).join("");
-    return grid + notes + (custom ? '<div class="ca-tags">' + custom + '</div>' : "") + (images ? '<div class="ca-fetch-images">' + images + '</div>' : "");
+    return loadBtn + grid + notes + (custom ? '<div class="ca-tags">' + custom + '</div>' : "") + (images ? '<div class="ca-fetch-images">' + images + '</div>' : "");
   }
 
   // Monthly macro data (one row per month) — Previous/Forecast/Actual per metric + auto trend + source link + custom fields
@@ -775,6 +778,9 @@
     reader.readAsText(file);
   });
   $("#ca-fetch-date-btn").addEventListener("click", caFetchAnalysisByDate);
+  $("#ca-fetch-date-result").addEventListener("click", function (event) {
+    if (event.target.id === "ca-fetch-load-btn" && caLastFetchedDay) caLoadIntoForm(caLastFetchedDay);
+  });
   $("#ca-macro-month").addEventListener("change", function () {
     var month = $("#ca-macro-month").value;
     var existing = month ? caMacroFind(month) : null;
