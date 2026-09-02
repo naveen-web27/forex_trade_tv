@@ -189,6 +189,21 @@ function macroSheet() {
   return target;
 }
 
+// Sheets sometimes auto-converts a "2026-07" / "2026-09-02" looking string into a real Date cell.
+// Normalize both Date objects and plain strings back to a comparable text key so lookups never miss.
+function monthKey(value) {
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM");
+  }
+  return String(value == null ? "" : value).trim();
+}
+function dayKey(value) {
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM-dd");
+  }
+  return String(value == null ? "" : value).trim();
+}
+
 function readMacro() {
   var target = macroSheet();
   var values = target.getDataRange().getValues();
@@ -197,7 +212,7 @@ function readMacro() {
   var rows = values.slice(1).map(function(row) {
     var parsed = {};
     try { parsed = JSON.parse(row[1] || "{}"); } catch (e) { parsed = {}; }
-    parsed.month = row[0] || "";
+    parsed.month = monthKey(row[0]);
     parsed.updatedAt = row[2] || "";
     return parsed;
   }).filter(function(item) { return item.month; });
@@ -222,7 +237,7 @@ function syncMacro(body) {
   var values = target.getDataRange().getValues();
   var rowIndex = -1;
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === month) { rowIndex = i + 1; break; }
+    if (monthKey(values[i][0]) === month) { rowIndex = i + 1; break; }
   }
   if (rowIndex > 0) {
     target.getRange(rowIndex, 1, 1, MACRO_HEADERS.length).setValues([rowValues]);
@@ -240,7 +255,7 @@ function deleteMacro(body) {
 
   var values = target.getDataRange().getValues();
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === month) { target.deleteRow(i + 1); break; }
+    if (monthKey(values[i][0]) === month) { target.deleteRow(i + 1); break; }
   }
   Logger.log("[SHEETS] deleted Macro row for month " + month);
   return output({ status: "ok" });
@@ -269,7 +284,7 @@ function readChartAnalysis() {
   var rows = values.slice(1).map(function(row) {
     var parsed = {};
     try { parsed = JSON.parse(row[1] || "{}"); } catch (e) { parsed = {}; }
-    parsed.day = row[0] || "";
+    parsed.day = dayKey(row[0]);
     parsed.updatedAt = row[2] || "";
     return parsed;
   }).filter(function(item) { return item.day; });
@@ -288,7 +303,7 @@ function syncChartAnalysis(body) {
   var values = target.getDataRange().getValues();
   var rowIndex = -1;
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === day) { rowIndex = i + 1; break; }
+    if (dayKey(values[i][0]) === day) { rowIndex = i + 1; break; }
   }
   if (rowIndex > 0) {
     target.getRange(rowIndex, 1, 1, CHART_HEADERS.length).setValues([rowValues]);
@@ -306,7 +321,7 @@ function deleteChartAnalysis(body) {
 
   var values = target.getDataRange().getValues();
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === day) { target.deleteRow(i + 1); break; }
+    if (dayKey(values[i][0]) === day) { target.deleteRow(i + 1); break; }
   }
   Logger.log("[SHEETS] deleted ChartAnalysis row for day " + day);
   return output({ status: "ok" });
