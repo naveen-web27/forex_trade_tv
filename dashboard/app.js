@@ -321,49 +321,17 @@
   // ── Chart analysis journal ──────────────────────────────────────────
   var CA_KEY = "vcpr-chart-analysis";
   var CA_MATCH_FIELDS = [
-    { key: "pair", weight: 2 }, { key: "strategy", weight: 2 }, { key: "zone", weight: 2 },
-    { key: "direction", weight: 1 }, { key: "session", weight: 1 }, { key: "dxy", weight: 1 },
-    { key: "us10y", weight: 1 }, { key: "vix", weight: 1 }, { key: "fed", weight: 1 },
-    { key: "timeframe", weight: 1 }, { key: "rr", weight: 0.5 }, { key: "grade", weight: 0.5 },
-    { key: "pivotReaction", weight: 1.5 }, { key: "prevCprWidth", weight: 1 }, { key: "todayCprWidth", weight: 1 },
+    { key: "strategy", weight: 2 }, { key: "direction", weight: 1 }, { key: "session", weight: 1 },
+    { key: "dxy", weight: 1 }, { key: "us10y", weight: 1 }, { key: "vix", weight: 1 }, { key: "fed", weight: 1 },
+    { key: "rr", weight: 0.5 }, { key: "grade", weight: 0.5 },
+    { key: "prevCprWidth", weight: 1 }, { key: "todayCprWidth", weight: 1 },
     { key: "ydayType", weight: 1 }, { key: "todayType", weight: 1 }, { key: "fvgZone", weight: 1 }
   ];
   function caItems() { try { return JSON.parse(localStorage.getItem(CA_KEY) || "[]"); } catch (_) { return []; } }
   function caSaveItems(items) { localStorage.setItem(CA_KEY, JSON.stringify(items)); }
-  function initCaPairs() {
-    var select = $("#ca-pair");
-    if (!select || select.options.length) return;
-    var list = pairOrder.indexOf("XAUUSD") >= 0 ? pairOrder : ["XAUUSD"].concat(pairOrder);
-    select.innerHTML = list.map(function (pair) { return '<option value="' + esc(pair) + '">' + esc(pair) + '</option>'; }).join("");
-  }
   function caOutcomeClass(outcome) { return String(outcome || "").toLowerCase() === "win" ? "win" : String(outcome || "").toLowerCase() === "loss" ? "loss" : String(outcome || "").toLowerCase() === "breakeven" ? "breakeven" : "pending"; }
-  function caFormValues(form) {
-    var data = Object.fromEntries(new FormData(form).entries());
-    return data;
-  }
-  function caReadImage(form, callback) {
-    var mode = form.querySelector('input[name="imageMode"]:checked');
-    mode = mode ? mode.value : "link";
-    if (mode === "upload") {
-      var file = $("#ca-image-upload").files && $("#ca-image-upload").files[0];
-      if (!file) return callback("", "");
-      var reader = new FileReader();
-      reader.onload = function () { callback(reader.result, "upload"); };
-      reader.readAsDataURL(file);
-    } else if (mode === "imgbb") {
-      var key = ($("#ca-imgbb-key").value || "").trim();
-      var imgFile = $("#ca-image-imgbb").files && $("#ca-image-imgbb").files[0];
-      if (!key) { alert("Add your free ImgBB API key first (get one at api.imgbb.com)."); return callback("", ""); }
-      if (!imgFile) return callback("", "");
-      var body = new FormData(); body.append("image", imgFile);
-      fetch("https://api.imgbb.com/1/upload?key=" + encodeURIComponent(key), { method: "POST", body: body })
-        .then(function (res) { return res.json(); })
-        .then(function (json) { callback(json && json.data && json.data.url ? json.data.url : "", "imgbb"); })
-        .catch(function () { alert("ImgBB upload failed — check your API key or internet connection."); callback("", ""); });
-    } else {
-      callback(form.imageLink ? form.imageLink.value.trim() : "", form.imageLink && form.imageLink.value.trim() ? "link" : "");
-    }
-  }
+  function caFormValues(form) { return Object.fromEntries(new FormData(form).entries()); }
+  function caThumb(item) { return item.xauImage || item.dxyImage || item.us10yImage || ""; }
   function renderCaList() {
     var items = caItems();
     var search = ($("#ca-search") && $("#ca-search").value || "").toLowerCase().trim();
@@ -371,7 +339,7 @@
     var filtered = items.filter(function (item) {
       if (outcomeFilter && item.outcome !== outcomeFilter) return false;
       if (!search) return true;
-      var hay = [item.pair, item.strategy, item.zone, item.notes].join(" ").toLowerCase();
+      var hay = [item.pair, item.strategy, item.notes].join(" ").toLowerCase();
       return hay.indexOf(search) >= 0;
     });
     if ($("#ca-count")) $("#ca-count").textContent = items.length;
@@ -380,10 +348,11 @@
     if (!filtered.length) { list.innerHTML = '<div class="empty">No chart analysis saved yet — fill the form above and hit Save.</div>'; return; }
     list.innerHTML = filtered.map(function (item) {
       var idx = items.indexOf(item);
-      var thumb = item.image
-        ? '<img class="ca-entry-thumb" src="' + esc(item.image) + '" data-view="' + idx + '" alt="chart">'
+      var img = caThumb(item);
+      var thumb = img
+        ? '<img class="ca-entry-thumb" src="' + esc(img) + '" data-view="' + idx + '" alt="chart">'
         : '<div class="ca-entry-thumb placeholder">No image</div>';
-      var tags = [item.timeframe, item.session, item.zone, item.dxy, item.us10y, item.vix, item.fed, item.rr, item.grade]
+      var tags = [item.day, item.timeframe, item.session, item.dxy, item.us10y, item.vix, item.fed, item.rr, item.grade, item.sl ? "SL " + item.sl : ""]
         .filter(Boolean).map(function (t) { return '<span class="ca-tag">' + esc(t) + '</span>'; }).join("");
       return '<div class="ca-entry" data-index="' + idx + '">' + thumb +
         '<div class="ca-entry-body">' +
@@ -413,10 +382,10 @@
     panel.style.display = "block";
     if (!scored.length) { list.innerHTML = '<p class="calc-note">No similar past setup found yet — this looks like a fresh combination. Save it and build history.</p>'; return; }
     list.innerHTML = scored.map(function (row) {
-      var item = row.item;
-      var thumb = item.image ? '<img class="ca-entry-thumb" style="height:52px;border-radius:4px" src="' + esc(item.image) + '" alt="chart">' : '<div class="ca-entry-thumb placeholder" style="height:52px;border-radius:4px">--</div>';
+      var item = row.item; var img = caThumb(item);
+      var thumb = img ? '<img class="ca-entry-thumb" style="height:52px;border-radius:4px" src="' + esc(img) + '" alt="chart">' : '<div class="ca-entry-thumb placeholder" style="height:52px;border-radius:4px">--</div>';
       return '<div class="ca-match-item">' + thumb +
-        '<div class="ca-match-info"><b>' + esc(item.pair) + ' · ' + esc(item.direction) + ' · ' + esc(item.strategy) + '</b><span class="ca-match-tags">' + [item.timeframe, item.session, item.zone].filter(Boolean).join(" · ") + '</span></div>' +
+        '<div class="ca-match-info"><b>' + esc(item.pair) + ' · ' + esc(item.direction) + ' · ' + esc(item.strategy) + '</b><span class="ca-match-tags">' + [item.timeframe, item.session].filter(Boolean).join(" · ") + '</span></div>' +
         '<div><span class="ca-match-score">' + row.score + '% match</span><br><span class="ca-badge ' + caOutcomeClass(item.outcome) + '">' + esc(item.outcome || "Pending") + '</span></div></div>';
     }).join("");
     panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -424,16 +393,59 @@
   function caLoadIntoForm(item) {
     var form = $("#ca-form");
     if (!form || !item) return;
-    var keys = ["pair", "timeframe", "strategy", "direction", "session", "zone", "pivotReaction", "prevCprWidth", "todayCprWidth", "ydayType", "todayType", "fvgZone", "dxy", "dxyNote", "us10y", "us10yNote", "vix", "fed", "rr", "grade", "outcome", "entryPrice", "notes"];
+    var keys = ["day", "strategy", "direction", "session", "prevCprWidth", "todayCprWidth", "ydayType", "todayType",
+      "fvgZone", "dxy", "dxyNote", "us10y", "us10yNote", "vix", "fed", "rr", "grade", "outcome",
+      "entryPrice", "sl", "minSlWin", "maxSlLoss", "xauImage", "dxyImage", "us10yImage", "notes"];
     keys.forEach(function (key) {
       if (form.elements[key] != null && item[key] != null) form.elements[key].value = item[key];
     });
-    if (item.image) {
-      form.querySelector('input[name="imageMode"][value="link"]').checked = true;
-      caSetImageMode("link");
-      $("#ca-image-link").value = item.imageType === "link" ? item.image : "";
-    }
+    $("#ca-custom").innerHTML = "";
+    (item.custom || []).forEach(function (field) { caAddCustomField("ca-custom", field.label, field.value); });
     form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function caSyncToSheet(data) {
+    if (!config.scriptUrl) return;
+    fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "syncChartAnalysis", day: data.day, data: data }) })
+      .then(function (response) { return response.json(); })
+      .then(function (result) { if (result.status !== "ok") alert("Saved locally, but the sheet sync failed: " + (result.message || "unknown error")); })
+      .catch(function () { alert("Saved locally, but could not reach the Google Sheet to sync this day."); });
+  }
+  function caDeleteFromSheet(day) {
+    if (!config.scriptUrl || !day) return;
+    fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "deleteChartAnalysis", day: day }) }).catch(function () {});
+  }
+  function caFetchAnalysisByDate() {
+    var day = $("#ca-fetch-date").value;
+    var result = $("#ca-fetch-date-result");
+    if (!day) { alert("Pick a date first."); return; }
+    if (!config.scriptUrl) { result.innerHTML = '<p class="calc-note">Apps Script URL not configured in config.js.</p>'; return; }
+    result.innerHTML = '<p class="calc-note">Fetching…</p>';
+    fetch(config.scriptUrl + (config.scriptUrl.indexOf("?") >= 0 ? "&" : "?") + "action=chartAnalysis&t=" + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        var match = (json.rows || []).filter(function (row) { return row.day === day; })[0];
+        result.innerHTML = match ? caRenderFetchedDay(match) : '<p class="calc-note">No saved analysis found in the sheet for ' + esc(day) + '.</p>';
+      })
+      .catch(function () { result.innerHTML = '<p class="calc-note">Could not reach the Google Sheet.</p>'; });
+  }
+  function caRenderFetchedDay(item) {
+    var fields = [
+      ["Pair", item.pair], ["Timeframe", item.timeframe], ["Strategy", item.strategy], ["Direction", item.direction],
+      ["Session", item.session], ["Prev day CPR", item.prevCprWidth], ["Today CPR", item.todayCprWidth],
+      ["Yesterday type", item.ydayType], ["Today type", item.todayType], ["FVG zone", item.fvgZone],
+      ["DXY bias", item.dxy], ["DXY note", item.dxyNote], ["US10Y bias", item.us10y], ["US10Y note", item.us10yNote],
+      ["VIX", item.vix], ["Fed tone", item.fed], ["R:R", item.rr], ["Grade", item.grade], ["Outcome", item.outcome],
+      ["Entry", item.entryPrice], ["SL", item.sl], ["Min SL (win)", item.minSlWin], ["Max SL (loss)", item.maxSlLoss]
+    ];
+    var grid = '<div class="ca-fetch-grid">' + fields.filter(function (f) { return f[1]; }).map(function (f) {
+      return '<div><b>' + esc(f[0]) + '</b><span>' + esc(f[1]) + '</span></div>';
+    }).join("") + '</div>';
+    var notes = item.notes ? '<p class="calc-note">' + esc(item.notes) + '</p>' : '';
+    var custom = (item.custom || []).filter(function (f) { return f.label || f.value; })
+      .map(function (f) { return '<span class="ca-tag">' + esc(f.label) + ": " + esc(f.value) + '</span>'; }).join(" ");
+    var images = ["xauImage", "dxyImage", "us10yImage"].filter(function (k) { return item[k]; })
+      .map(function (k) { return '<img src="' + esc(item[k]) + '" alt="' + k + '">'; }).join("");
+    return grid + notes + (custom ? '<div class="ca-tags">' + custom + '</div>' : "") + (images ? '<div class="ca-fetch-images">' + images + '</div>' : "");
   }
 
   // Monthly macro data (one row per month) — Previous/Forecast/Actual per metric + auto trend + source link + custom fields
@@ -473,7 +485,7 @@
     badge.textContent = trend.label;
     badge.className = "mi-bias " + trend.cls;
   }
-  function caAddCustomField(label, value) {
+  function caAddCustomField(containerId, label, value) {
     var row = document.createElement("div");
     row.className = "ca-custom-row";
     row.innerHTML = '<input class="ca-select ca-custom-label" placeholder="Field name (e.g. GDP q/q)">' +
@@ -482,7 +494,16 @@
     row.querySelector(".ca-custom-label").value = label || "";
     row.querySelector(".ca-custom-value").value = value || "";
     row.querySelector(".delete").addEventListener("click", function () { row.remove(); });
-    $("#ca-macro-custom").appendChild(row);
+    document.getElementById(containerId).appendChild(row);
+  }
+  function caReadCustomFields(containerId) {
+    var custom = [];
+    document.querySelectorAll("#" + containerId + " .ca-custom-row").forEach(function (row) {
+      var label = row.querySelector(".ca-custom-label").value.trim();
+      var value = row.querySelector(".ca-custom-value").value.trim();
+      if (label || value) custom.push({ label: label, value: value });
+    });
+    return custom;
   }
   function caMacroClearForm(keepMonth) {
     if (!keepMonth) $("#ca-macro-month").value = "";
@@ -503,21 +524,16 @@
       caUpdateTrend(m);
     });
     $("#ca-macro-notes").value = item.notes || "";
-    (item.custom || []).forEach(function (field) { caAddCustomField(field.label, field.value); });
+    (item.custom || []).forEach(function (field) { caAddCustomField("ca-macro-custom", field.label, field.value); });
   }
   function caMacroReadForm() {
-    var data = { month: $("#ca-macro-month").value, notes: $("#ca-macro-notes").value, custom: [] };
+    var data = { month: $("#ca-macro-month").value, notes: $("#ca-macro-notes").value, custom: caReadCustomFields("ca-macro-custom") };
     CA_METRICS.forEach(function (m) {
       data[m.key] = {
         previous: document.getElementById(m.prev).value.trim(),
         forecast: document.getElementById(m.fc).value.trim(),
         actual: document.getElementById(m.act).value.trim()
       };
-    });
-    document.querySelectorAll("#ca-macro-custom .ca-custom-row").forEach(function (row) {
-      var label = row.querySelector(".ca-custom-label").value.trim();
-      var value = row.querySelector(".ca-custom-value").value.trim();
-      if (label || value) data.custom.push({ label: label, value: value });
     });
     return data;
   }
@@ -684,40 +700,57 @@
     ).then(function () { button.textContent = "Copied!"; setTimeout(reset, 1500); }).catch(function () { button.textContent = "Copy failed"; setTimeout(reset, 1500); });
   });
   // ── Chart analysis journal bindings ─────────────────────────────────
-  function caSetImageMode(mode) {
-    document.querySelectorAll(".ca-image-toggle .mi-geo-tag").forEach(function (t) { t.classList.toggle("checked", t.dataset.caMode === mode); });
-    $("#ca-image-link").style.display = mode === "link" ? "" : "none";
-    $("#ca-image-upload").style.display = mode === "upload" ? "" : "none";
-    $("#ca-imgbb-row").style.display = mode === "imgbb" ? "flex" : "none";
-  }
-  document.querySelectorAll(".ca-image-toggle .mi-geo-tag").forEach(function (tag) {
-    tag.addEventListener("click", function () { caSetImageMode(tag.dataset.caMode); });
-  });
   try { $("#ca-imgbb-key").value = localStorage.getItem("vcpr-imgbb-key") || ""; } catch (_) {}
   $("#ca-imgbb-key").addEventListener("input", function () { try { localStorage.setItem("vcpr-imgbb-key", $("#ca-imgbb-key").value.trim()); } catch (_) {} });
+  function caBindImageUpload(button) {
+    var targetId = button.dataset.uploadFor;
+    var textInput = document.getElementById(targetId);
+    var fileInput = document.getElementById(targetId + "-file");
+    button.addEventListener("click", function () { fileInput.click(); });
+    fileInput.addEventListener("change", function () {
+      var file = fileInput.files[0];
+      if (!file) return;
+      var key = ($("#ca-imgbb-key").value || "").trim();
+      if (!key) { alert("Add your free ImgBB API key first (get one at api.imgbb.com)."); fileInput.value = ""; return; }
+      var body = new FormData(); body.append("image", file);
+      button.textContent = "Uploading…"; button.disabled = true;
+      fetch("https://api.imgbb.com/1/upload?key=" + encodeURIComponent(key), { method: "POST", body: body })
+        .then(function (res) { return res.json(); })
+        .then(function (json) { if (json && json.data && json.data.url) textInput.value = json.data.url; else alert("Upload failed."); })
+        .catch(function () { alert("ImgBB upload failed — check your API key or internet connection."); })
+        .then(function () { button.textContent = "Upload"; button.disabled = false; fileInput.value = ""; });
+    });
+  }
+  document.querySelectorAll("[data-upload-for]").forEach(caBindImageUpload);
+  try { $("#ca-day").valueAsDate = new Date(); } catch (_) {}
+  $("#ca-add-field").addEventListener("click", function () { caAddCustomField("ca-custom", "", ""); });
   $("#ca-form").addEventListener("submit", function (event) {
     event.preventDefault();
     var form = event.target;
     var data = caFormValues(form);
-    caReadImage(form, function (image, imageType) {
-      data.image = image; data.imageType = imageType;
-      data.id = Date.now(); data.date = new Date().toISOString();
-      delete data.imageMode; delete data.imageLink;
-      var items = caItems(); items.unshift(data); caSaveItems(items);
-      renderCaList();
-      form.reset();
-      caSetImageMode("link");
-    });
+    data.custom = caReadCustomFields("ca-custom");
+    if (!data.day) data.day = new Date().toISOString().slice(0, 10);
+    data.id = Date.now();
+    var items = caItems(); items.unshift(data); caSaveItems(items);
+    renderCaList();
+    caSyncToSheet(data);
+    form.reset();
+    $("#ca-custom").innerHTML = "";
+    try { $("#ca-day").valueAsDate = new Date(); } catch (_) {}
   });
-  $("#ca-find-similar").addEventListener("click", function () { renderCaMatches(caFormValues($("#ca-form"))); });
+  $("#ca-find-similar").addEventListener("click", function () { var data = caFormValues($("#ca-form")); data.custom = caReadCustomFields("ca-custom"); renderCaMatches(data); });
   $("#ca-form").addEventListener("reset", function () {
-    setTimeout(function () { caSetImageMode("link"); $("#ca-match-panel").style.display = "none"; }, 0);
+    setTimeout(function () { $("#ca-match-panel").style.display = "none"; $("#ca-custom").innerHTML = ""; }, 0);
   });
   $("#ca-list").addEventListener("click", function (event) {
     var loadIdx = event.target.dataset.load, delIdx = event.target.dataset.deleteCa, viewIdx = event.target.dataset.view;
     if (loadIdx != null && loadIdx !== "") caLoadIntoForm(caItems()[Number(loadIdx)]);
-    if (delIdx != null && delIdx !== "") { var items = caItems(); items.splice(Number(delIdx), 1); caSaveItems(items); renderCaList(); }
-    if (viewIdx != null && viewIdx !== "") { var item = caItems()[Number(viewIdx)]; if (item && item.image) window.open(item.image, "_blank"); }
+    if (delIdx != null && delIdx !== "") {
+      var items = caItems(); var removed = items.splice(Number(delIdx), 1)[0];
+      caSaveItems(items); renderCaList();
+      if (removed) caDeleteFromSheet(removed.day);
+    }
+    if (viewIdx != null && viewIdx !== "") { var item = caItems()[Number(viewIdx)]; var img = caThumb(item); if (img) window.open(img, "_blank"); }
   });
   $("#ca-search").addEventListener("input", renderCaList);
   $("#ca-filter-outcome").addEventListener("change", renderCaList);
@@ -741,6 +774,7 @@
     };
     reader.readAsText(file);
   });
+  $("#ca-fetch-date-btn").addEventListener("click", caFetchAnalysisByDate);
   $("#ca-macro-month").addEventListener("change", function () {
     var month = $("#ca-macro-month").value;
     var existing = month ? caMacroFind(month) : null;
@@ -751,7 +785,7 @@
     document.getElementById(m.act).addEventListener("input", function () { caUpdateTrend(m); });
     document.getElementById(m.prev).addEventListener("input", function () { caUpdateTrend(m); });
   });
-  $("#ca-macro-add-field").addEventListener("click", function () { caAddCustomField("", ""); });
+  $("#ca-macro-add-field").addEventListener("click", function () { caAddCustomField("ca-macro-custom", "", ""); });
   $("#ca-macro-save").addEventListener("click", function () {
     var data = caMacroReadForm();
     if (!data.month) { alert("Pick a month first."); return; }
@@ -773,6 +807,5 @@
     }
   });
   initCalcPairs();
-  initCaPairs();
   renderJournal(); renderCaList(); renderCaMacro(); load();
 }());

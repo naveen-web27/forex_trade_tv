@@ -155,6 +155,14 @@
     .ca-macro-cell{display:flex;flex-direction:column;gap:2px}
     .ca-macro-cell b{font:600 11px Manrope,sans-serif;color:var(--ink)}
     .ca-macro-cell span{font:9px 'DM Mono',monospace;color:var(--muted)}
+    .ca-chart-image-row{display:grid;grid-template-columns:100px 1fr auto;gap:8px;align-items:center;margin-bottom:8px}
+    .ca-chart-image-label{font:600 11px Manrope,sans-serif;color:var(--ink)}
+    .ca-fetch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+    .ca-fetch-grid div{display:flex;flex-direction:column;gap:3px;background:#f7faf7;border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+    .ca-fetch-grid b{font:9px 'DM Mono',monospace;color:var(--green);text-transform:uppercase}
+    .ca-fetch-grid span{font:12px 'DM Mono',monospace;color:var(--ink)}
+    .ca-fetch-images{display:flex;gap:10px;flex-wrap:wrap}
+    .ca-fetch-images img{max-width:240px;border-radius:6px;border:1px solid var(--line)}
   </style>
 </head>
 <body>
@@ -495,9 +503,11 @@
         <h4>New analysis entry</h4>
         <form id="ca-form">
           <div class="ca-field-grid">
-            <label class="ca-field"><span>Pair</span><select class="ca-select" id="ca-pair" name="pair"></select></label>
-            <label class="ca-field"><span>Timeframe</span><select class="ca-select" name="timeframe"><option>M5</option><option>M15</option><option selected>M30</option><option>H1</option><option>H4</option><option>D1</option><option>W1</option><option>MN</option></select></label>
+            <label class="ca-field"><span>Date</span><input class="ca-select" type="date" id="ca-day" name="day"></label>
+            <label class="ca-field"><span>Pair</span><select class="ca-select" id="ca-pair" name="pair"><option>XAUUSD</option></select></label>
+            <label class="ca-field"><span>Timeframe</span><select class="ca-select" name="timeframe"><option selected>H1</option></select></label>
             <label class="ca-field"><span>Strategy / setup</span><select class="ca-select" name="strategy">
+              <option>VCPR Strategy</option>
               <option>Asian Breakout + CPR</option>
               <option>PDH/PDL Breakout + CPR</option>
               <option>SMC Sweep + FVG</option>
@@ -508,10 +518,8 @@
               <option>Weekly/Monthly VCPR</option>
               <option>Other</option>
             </select></label>
-            <label class="ca-field"><span>Direction</span><select class="ca-select" name="direction"><option>Long</option><option>Short</option></select></label>
+            <label class="ca-field"><span>Direction</span><select class="ca-select" name="direction"><option>Long</option><option>Short</option><option>Sideways</option></select></label>
             <label class="ca-field"><span>Session</span><select class="ca-select" name="session"><option>Asian</option><option>London</option><option>New York</option><option>London/NY Overlap</option></select></label>
-            <label class="ca-field"><span>Zone / level</span><select class="ca-select" name="zone"><option>Daily CPR</option><option>Weekly CPR</option><option>Monthly CPR</option><option>Virgin CPR</option><option>PDH</option><option>PDL</option><option>VWAP</option><option>FVG</option><option>Other</option></select></label>
-            <label class="ca-field"><span>Monthly pivot reaction</span><select class="ca-select" name="pivotReaction"><option>Not tested</option><option>Approaching</option><option>Touched &amp; reversed</option><option>Touched &amp; broke through</option></select></label>
             <label class="ca-field"><span>Previous day CPR</span><select class="ca-select" name="prevCprWidth"><option>Narrow</option><option>Wide</option></select></label>
             <label class="ca-field"><span>Today CPR</span><select class="ca-select" name="todayCprWidth"><option>Narrow</option><option>Wide</option></select></label>
             <label class="ca-field"><span>Yesterday day type</span><select class="ca-select" name="ydayType"><option>Trending</option><option>Non-trending / range</option><option>Inside day</option></select></label>
@@ -527,23 +535,40 @@
             <label class="ca-field"><span>Setup grade</span><select class="ca-select" name="grade"><option>A - Strong confluence</option><option>B - Medium confluence</option><option>C - Weak / experimental</option></select></label>
             <label class="ca-field"><span>Outcome</span><select class="ca-select" name="outcome"><option>Pending</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></label>
             <label class="ca-field"><span>Entry price (optional)</span><input class="ca-select" type="number" step="any" name="entryPrice" placeholder="e.g. 3450.50"></label>
+            <label class="ca-field"><span>Stop loss (SL)</span><input class="ca-select" type="number" step="any" name="sl" placeholder="e.g. 3440.00"></label>
+            <label class="ca-field"><span>Min SL needed (if win)</span><input class="ca-select" type="number" step="any" name="minSlWin" placeholder="Lowest point before it reversed"></label>
+            <label class="ca-field"><span>Max SL hit (if loss)</span><input class="ca-select" type="number" step="any" name="maxSlLoss" placeholder="How far it moved against you"></label>
           </div>
 
           <div class="ca-image-row">
-            <div class="ca-image-toggle">
-              <label class="mi-geo-tag" data-ca-mode="imgbb"><input type="radio" name="imageMode" value="imgbb"> Auto-upload (free, recommended)</label>
-              <label class="mi-geo-tag checked" data-ca-mode="link"><input type="radio" name="imageMode" value="link" checked> Image link (URL)</label>
-              <label class="mi-geo-tag" data-ca-mode="upload"><input type="radio" name="imageMode" value="upload"> Upload (store on this device)</label>
-            </div>
-            <div class="ca-image-input" id="ca-imgbb-row" style="display:none;gap:8px">
-              <input class="ca-select" id="ca-imgbb-key" placeholder="ImgBB free API key (one-time, saved locally)" style="max-width:320px;display:inline-block">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+              <input class="ca-select" id="ca-imgbb-key" placeholder="ImgBB free API key (one-time, saved locally, needed for the Upload buttons)" style="max-width:360px">
               <a class="mi-level-link" href="https://api.imgbb.com/" target="_blank" rel="noopener">Get free key ↗</a>
-              <input class="ca-select ca-image-input" id="ca-image-imgbb" type="file" accept="image/*" style="margin-top:6px">
             </div>
-            <input class="ca-select ca-image-input" id="ca-image-link" name="imageLink" placeholder="Paste chart screenshot URL (TradingView share link, imgur, etc.)">
-            <input class="ca-select ca-image-input" id="ca-image-upload" type="file" accept="image/*" style="display:none">
+            <div class="ca-chart-image-row">
+              <span class="ca-chart-image-label">XAUUSD chart</span>
+              <input class="ca-select" id="ca-xau-image" name="xauImage" placeholder="Paste image URL, or use Upload">
+              <button class="button" type="button" data-upload-for="ca-xau-image">Upload</button>
+              <input type="file" accept="image/*" id="ca-xau-image-file" style="display:none">
+            </div>
+            <div class="ca-chart-image-row">
+              <span class="ca-chart-image-label">DXY chart</span>
+              <input class="ca-select" id="ca-dxy-image" name="dxyImage" placeholder="Paste image URL, or use Upload">
+              <button class="button" type="button" data-upload-for="ca-dxy-image">Upload</button>
+              <input type="file" accept="image/*" id="ca-dxy-image-file" style="display:none">
+            </div>
+            <div class="ca-chart-image-row">
+              <span class="ca-chart-image-label">US10Y chart</span>
+              <input class="ca-select" id="ca-us10y-image" name="us10yImage" placeholder="Paste image URL, or use Upload">
+              <button class="button" type="button" data-upload-for="ca-us10y-image">Upload</button>
+              <input type="file" accept="image/*" id="ca-us10y-image-file" style="display:none">
+            </div>
           </div>
 
+          <div style="margin-top:14px">
+            <div id="ca-custom" class="ca-custom-list"></div>
+            <button class="button" type="button" id="ca-add-field">+ Add custom field</button>
+          </div>
 
           <textarea class="mi-fed-notes" name="notes" placeholder="What did you see on the chart? Confluences, hesitation, anything worth remembering..." style="margin-top:12px;min-height:70px"></textarea>
 
@@ -572,6 +597,15 @@
           </div>
         </div>
         <div class="ca-grid" id="ca-list"><div class="empty">No chart analysis saved yet — fill the form above and hit Save.</div></div>
+      </div>
+
+      <div class="ca-card">
+        <h4>Fetch analysis by date</h4>
+        <div class="ca-field-grid" style="max-width:340px;margin-bottom:12px">
+          <label class="ca-field"><span>Date</span><input class="ca-select" type="date" id="ca-fetch-date"></label>
+          <label class="ca-field"><button class="button button-primary" type="button" id="ca-fetch-date-btn">Fetch</button></label>
+        </div>
+        <div id="ca-fetch-date-result"><p class="calc-note">Pick a date and hit Fetch to pull that day's saved analysis from the sheet.</p></div>
       </div>
     </section>
     </div>

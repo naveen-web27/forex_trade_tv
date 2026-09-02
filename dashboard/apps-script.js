@@ -24,11 +24,15 @@ var NEWS_HEADERS = [
 var MACRO_SHEET_NAME = "Macro";
 var MACRO_HEADERS = ["Month", "Data", "Updated At"];
 
+var CHART_SHEET_NAME = "ChartAnalysis";
+var CHART_HEADERS = ["Date", "Data", "Updated At"];
+
 function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "";
   if (action === "vcpr") return readVcpr();
   if (action === "news") return readNews();
   if (action === "macro") return readMacro();
+  if (action === "chartAnalysis") return readChartAnalysis();
   return output({ status: "ok", message: "VCPR Desk API ready" });
 }
 
@@ -39,6 +43,8 @@ function doPost(e) {
     if (body.action === "syncNews") return syncNews(body);
     if (body.action === "syncMacro") return syncMacro(body);
     if (body.action === "deleteMacro") return deleteMacro(body);
+    if (body.action === "syncChartAnalysis") return syncChartAnalysis(body);
+    if (body.action === "deleteChartAnalysis") return deleteChartAnalysis(body);
     return output({ status: "error", message: "Unknown action" });
   } catch (error) {
     return output({ status: "error", message: error.message });
@@ -239,3 +245,70 @@ function deleteMacro(body) {
   Logger.log("[SHEETS] deleted Macro row for month " + month);
   return output({ status: "ok" });
 }
+
+function chartAnalysisSheet() {
+  var current = SpreadsheetApp.getActiveSpreadsheet();
+  var target = current.getSheetByName(CHART_SHEET_NAME);
+  if (!target) target = current.insertSheet(CHART_SHEET_NAME);
+  if (target.getLastRow() === 0) {
+    target.appendRow(CHART_HEADERS);
+  } else {
+    var current2 = target.getRange(1, 1, 1, Math.max(target.getLastColumn(), 1)).getValues()[0];
+    for (var i = 0; i < CHART_HEADERS.length; i++) {
+      if (!String(current2[i] || "").trim()) target.getRange(1, i + 1).setValue(CHART_HEADERS[i]);
+    }
+  }
+  return target;
+}
+
+function readChartAnalysis() {
+  var target = chartAnalysisSheet();
+  var values = target.getDataRange().getValues();
+  if (values.length < 2) return output({ status: "ok", rows: [] });
+
+  var rows = values.slice(1).map(function(row) {
+    var parsed = {};
+    try { parsed = JSON.parse(row[1] || "{}"); } catch (e) { parsed = {}; }
+    parsed.day = row[0] || "";
+    parsed.updatedAt = row[2] || "";
+    return parsed;
+  }).filter(function(item) { return item.day; });
+  return output({ status: "ok", rows: rows });
+}
+
+// Date (day) is the primary key — update the existing row for that day instead of appending a duplicate.
+function syncChartAnalysis(body) {
+  var target = chartAnalysisSheet();
+  var day = String(body.day || "").trim();
+  if (!day) return output({ status: "error", message: "day is required" });
+
+  var now = new Date().toISOString();
+  var rowValues = [day, JSON.stringify(body.data || {}), now];
+
+  var values = target.getDataRange().getValues();
+  var rowIndex = -1;
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === day) { rowIndex = i + 1; break; }
+  }
+  if (rowIndex > 0) {
+    target.getRange(rowIndex, 1, 1, CHART_HEADERS.length).setValues([rowValues]);
+  } else {
+    target.appendRow(rowValues);
+  }
+  Logger.log("[SHEETS] upserted ChartAnalysis row for day " + day);
+  return output({ status: "ok", day: day, updatedAt: now });
+}
+
+function deleteChartAnalysis(body) {
+  var target = chartAnalysisSheet();
+  var day = String(body.day || "").trim();
+  if (!day) return output({ status: "error", message: "day is required" });
+
+  var values = target.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === day) { target.deleteRow(i + 1); break; }
+  }
+  Logger.log("[SHEETS] deleted ChartAnalysis row for day " + day);
+  return output({ status: "ok" });
+}
+
