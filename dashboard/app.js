@@ -67,7 +67,7 @@
       state.rows = normalizeRows((vcprData.rows || []).filter(function (row) { return String(row.Active).toLowerCase() !== "false"; }));
       state.news = newsData.rows || [];
       if (macroData.status === "ok" && Array.isArray(macroData.rows)) {
-        caMacroSave(macroData.rows.map(macroRowFromSheet));
+        caMacroSave(macroData.rows);
         renderCaMacro();
       }
       render();
@@ -446,16 +446,6 @@
   function caMacroItems() { try { return JSON.parse(localStorage.getItem(CA_MACRO_KEY) || "[]"); } catch (_) { return []; } }
   function caMacroSave(items) { localStorage.setItem(CA_MACRO_KEY, JSON.stringify(items)); }
   function caMacroFind(month) { return caMacroItems().filter(function (row) { return row.month === month; })[0] || null; }
-  function macroRowFromSheet(row) {
-    var custom = []; try { custom = JSON.parse(row["Custom Fields"] || "[]"); } catch (_) { custom = []; }
-    return {
-      month: row.Month || "",
-      inflation: { previous: row["Inflation Previous"] || "", forecast: row["Inflation Forecast"] || "", actual: row["Inflation Actual"] || "" },
-      fedRate: { previous: row["Fed Rate Previous"] || "", forecast: row["Fed Rate Forecast"] || "", actual: row["Fed Rate Actual"] || "" },
-      employment: { previous: row["Employment Previous"] || "", forecast: row["Employment Forecast"] || "", actual: row["Employment Actual"] || "" },
-      custom: custom, notes: row.Notes || ""
-    };
-  }
   function caMacroSyncToSheet(data) {
     if (!config.scriptUrl) return;
     fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "syncMacro", month: data.month, inflation: data.inflation, fedRate: data.fedRate, employment: data.employment, custom: data.custom, notes: data.notes }) })

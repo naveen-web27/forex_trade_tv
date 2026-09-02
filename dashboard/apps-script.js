@@ -22,12 +22,7 @@ var NEWS_HEADERS = [
 ];
 
 var MACRO_SHEET_NAME = "Macro";
-var MACRO_HEADERS = [
-  "Month", "Inflation Previous", "Inflation Forecast", "Inflation Actual",
-  "Fed Rate Previous", "Fed Rate Forecast", "Fed Rate Actual",
-  "Employment Previous", "Employment Forecast", "Employment Actual",
-  "Custom Fields", "Notes", "Updated At"
-];
+var MACRO_HEADERS = ["Month", "Data", "Updated At"];
 
 function doGet(e) {
   var action = (e.parameter && e.parameter.action) || "";
@@ -194,28 +189,29 @@ function readMacro() {
   if (values.length < 2) return output({ status: "ok", rows: [] });
 
   var rows = values.slice(1).map(function(row) {
-    var item = {};
-    MACRO_HEADERS.forEach(function(header, index) { item[header] = row[index] === undefined ? "" : row[index]; });
-    return item;
-  }).filter(function(item) { return item.Month; });
+    var parsed = {};
+    try { parsed = JSON.parse(row[1] || "{}"); } catch (e) { parsed = {}; }
+    parsed.month = row[0] || "";
+    parsed.updatedAt = row[2] || "";
+    return parsed;
+  }).filter(function(item) { return item.month; });
   return output({ status: "ok", rows: rows });
 }
 
 // Month is the primary key — update the existing row for that month instead of appending a duplicate.
+// The whole entry (inflation/fedRate/employment/custom/notes) is stored as one JSON blob so new fields
+// never require a sheet schema change.
 function syncMacro(body) {
   var target = macroSheet();
   var month = String(body.month || "").trim();
   if (!month) return output({ status: "error", message: "month is required" });
 
-  var inflation = body.inflation || {}, fedRate = body.fedRate || {}, employment = body.employment || {};
   var now = new Date().toISOString();
-  var rowValues = [
-    month,
-    inflation.previous || "", inflation.forecast || "", inflation.actual || "",
-    fedRate.previous || "", fedRate.forecast || "", fedRate.actual || "",
-    employment.previous || "", employment.forecast || "", employment.actual || "",
-    JSON.stringify(body.custom || []), body.notes || "", now
-  ];
+  var payload = {
+    inflation: body.inflation || {}, fedRate: body.fedRate || {},
+    employment: body.employment || {}, custom: body.custom || [], notes: body.notes || ""
+  };
+  var rowValues = [month, JSON.stringify(payload), now];
 
   var values = target.getDataRange().getValues();
   var rowIndex = -1;
