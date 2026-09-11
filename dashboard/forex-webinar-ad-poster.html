@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forex Workshop — Ad Poster (Download)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;700&family=Manrope:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1b2a; --navy:#0a1420; --navy2:#12273a; --gold:#ffc300; --gold-dark:#d99e00;
+    --white:#fff; --muted:#9fb3c8; --green:#00d47e; --red:#ff4d4d; --line:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#556370;font-family:Manrope,sans-serif;display:flex;flex-direction:column;align-items:center;gap:22px;padding:30px 14px}
+  h2{font-family:Manrope,sans-serif;color:#fff;margin:0}
+  .toolbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .toolbar button{font:800 13px Manrope,sans-serif;padding:12px 20px;border:none;border-radius:9px;cursor:pointer;
+                  background:linear-gradient(180deg,#ffd23f,var(--gold-dark));color:#1a1200;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+  .toolbar button:active{transform:scale(.98)}
+  .hint{color:#dfe6ec;font-size:12.5px;max-width:560px;text-align:center;line-height:1.6}
+
+  /* ---- poster (1080x1350 — Instagram portrait ratio, scaled down to fit screen) ---- */
+  .poster-scale{transform-origin:top center}
+  .poster{
+    width:1080px;height:1350px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(700px 500px at 85% -5%, rgba(255,195,0,.25), transparent 60%),
+      radial-gradient(650px 550px at 5% 105%, rgba(0,212,126,.18), transparent 60%),
+      linear-gradient(160deg,#0a1420,#0d2136 55%,#0a1420);
+    color:#fff; font-family:Manrope,sans-serif; box-shadow:0 30px 70px rgba(0,0,0,.5);
+    display:flex;flex-direction:column;
+  }
+  .poster * {box-sizing:border-box}
+
+  /* top brand row */
+  .p-top{display:flex;align-items:center;justify-content:space-between;padding:46px 56px 0}
+  .p-brand{display:flex;align-items:center;gap:12px;font:900 24px Manrope,sans-serif;letter-spacing:-.02em}
+  .p-brand .mark{width:44px;height:44px;border-radius:11px 11px 11px 3px;background:var(--gold);color:#1a1200;
+                  display:grid;place-items:center;font-family:Georgia,serif;font-weight:900;font-size:26px}
+  .p-live{background:rgba(255,77,77,.15);border:1.5px solid var(--red);color:#ff8080;
+          font:800 15px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;
+          padding:8px 16px;border-radius:999px;display:flex;align-items:center;gap:8px}
+  .p-live .blip{width:9px;height:9px;border-radius:50%;background:var(--red)}
+
+  /* hero copy */
+  .p-hero{padding:36px 56px 0}
+  .p-eyebrow{font:800 17px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:16px}
+  .p-title{font-family:Georgia,serif;font-weight:400;font-size:76px;line-height:1.02;letter-spacing:-.02em;margin:0}
+  .p-title em{font-style:italic;color:var(--gold)}
+  .p-sub{margin:26px 0 0;font-size:24px;line-height:1.5;color:#dfe8ef;max-width:900px;font-weight:500}
+
+  /* pill row */
+  .p-pills{display:flex;gap:14px;flex-wrap:wrap;padding:34px 56px 0}
+  .p-pill{background:rgba(255,255,255,.08);border:1.5px solid var(--line);border-radius:999px;
+          padding:12px 22px;font:700 17px 'DM Mono',monospace;color:#fff}
+  .p-pill.g{background:rgba(0,212,126,.14);border-color:rgba(0,212,126,.4);color:var(--green)}
+
+  /* price block */
+  .p-price-row{display:flex;align-items:center;gap:26px;padding:44px 56px 0}
+  .p-price-old{font:700 30px 'DM Mono',monospace;color:#9fb3c8;text-decoration:line-through}
+  .p-price-new{font:900 96px Georgia,serif;color:var(--gold);letter-spacing:-.03em;line-height:1}
+  .p-price-tag{font:800 18px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.06em}
+
+  /* bonus strip */
+  .p-bonus{display:flex;gap:16px;padding:38px 56px 0}
+  .p-bonus-card{flex:1;background:rgba(255,255,255,.06);border:1.5px solid var(--line);border-radius:16px;
+                padding:22px 20px;text-align:center}
+  .p-bonus-card .ic{font-size:34px;margin-bottom:10px}
+  .p-bonus-card b{display:block;font-size:17px;font-weight:800}
+  .p-bonus-card span{display:block;font:700 13px 'DM Mono',monospace;color:var(--gold);margin-top:6px}
+
+  /* footer CTA bar */
+  .p-footer{margin-top:auto;background:linear-gradient(180deg,#ffd23f,var(--gold-dark));
+             padding:34px 56px;display:flex;align-items:center;justify-content:space-between}
+  .p-footer .cta-main{font:900 34px Manrope,sans-serif;color:#1a1200}
+  .p-footer .cta-sub{font:800 17px 'DM Mono',monospace;color:#4a3600;margin-top:6px;text-transform:uppercase;letter-spacing:.04em}
+  .p-footer .arrow{font:900 44px Manrope,sans-serif;color:#1a1200}
+
+  .p-watermark{position:absolute;right:56px;bottom:130px;font:700 15px 'DM Mono',monospace;color:rgba(255,255,255,.35)}
+
+  @media (max-width:1150px){
+    .poster{transform:scale(0.42)}
+  }
+  @media (min-width:1151px) and (max-width:1500px){
+    .poster{transform:scale(0.62)}
+  }
+</style>
+</head>
+<body>
+
+<h2>📸 Meta / Instagram Ad Poster</h2>
+<p class="hint">1080 × 1350 px (Instagram portrait ad ratio). Click <b>Download as PNG</b> to save the poster image,
+  then upload it directly to Meta Ads Manager or Instagram. Edit the text in this HTML file to customize before exporting.</p>
+
+<div class="toolbar">
+  <button id="downloadBtn">⬇ Download as PNG</button>
+</div>
+
+<div class="poster-scale">
+  <div class="poster" id="poster">
+    <div class="p-top">
+      <div class="p-brand"><span class="mark">F</span>ForexEdge&nbsp;Live</div>
+      <div class="p-live"><span class="blip"></span>Live Workshop</div>
+    </div>
+
+    <div class="p-hero">
+      <div class="p-eyebrow">5-Hour Live Trading Workshop</div>
+      <h1 class="p-title">Master <em>One</em> Forex<br>Strategy. Trade<br>12 Pairs Daily.</h1>
+      <p class="p-sub">A complete, rule-based forex system — real entries, real stop losses, and a free bot that scans the market for you every morning.</p>
+    </div>
+
+    <div class="p-pills">
+      <div class="p-pill">🎯 Beginner Friendly</div>
+      <div class="p-pill">🌐 In English</div>
+      <div class="p-pill g">🤖 Free Bonus Bot</div>
+    </div>
+
+    <div class="p-price-row">
+      <div class="p-price-old">₹4,999</div>
+      <div class="p-price-new">₹999</div>
+      <div>
+        <div class="p-price-tag">Launch Offer</div>
+        <div class="p-price-tag">Only 10 Seats</div>
+      </div>
+    </div>
+
+    <div class="p-bonus">
+      <div class="p-bonus-card"><div class="ic">🤖</div><b>Scanner Bot</b><span>FREE</span></div>
+      <div class="p-bonus-card"><div class="ic">📋</div><b>Trade Checklist</b><span>FREE</span></div>
+      <div class="p-bonus-card"><div class="ic">🧮</div><b>Size Calculator</b><span>FREE</span></div>
+      <div class="p-bonus-card"><div class="ic">🎥</div><b>Lifetime Recording</b><span>FREE</span></div>
+    </div>
+
+    <div class="p-watermark">Limited to 10 seats · Recording shared in 24 hrs</div>
+
+    <div class="p-footer">
+      <div>
+        <div class="cta-main">Reserve Your Seat — ₹999</div>
+        <div class="cta-sub">Link in Bio · Seats Filling Fast</div>
+      </div>
+      <div class="arrow">→</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Renders the poster to a canvas and triggers a PNG download without external libraries.
+  document.getElementById('downloadBtn').addEventListener('click', async () => {
+    const poster = document.getElementById('poster');
+    const prevTransform = poster.style.transform;
+    poster.style.transform = 'none'; // export at full 1080x1350, ignore responsive scale
+
+    try {
+      const dataUrl = await htmlToPngFallback(poster);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'forex-webinar-ad-poster.png';
+      a.click();
+    } catch (e) {
+      alert('Auto-download needs an internet connection (loads a small renderer library) or use your browser\'s screenshot tool on the poster above.');
+    } finally {
+      poster.style.transform = prevTransform;
+    }
+  });
+
+  // Lazy-loads html2canvas from CDN on first click, then reuses it.
+  function htmlToPngFallback(node){
+    return new Promise((resolve, reject) => {
+      function render(){
+        window.html2canvas(node, {width:1080, height:1350, scale:1, backgroundColor:null})
+          .then(canvas => resolve(canvas.toDataURL('image/png')))
+          .catch(reject);
+      }
+      if (window.html2canvas) { render(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload = render;
+      s.onerror = () => reject(new Error('renderer failed to load'));
+      document.head.appendChild(s);
+    });
+  }
+</script>
+</body>
+</html>

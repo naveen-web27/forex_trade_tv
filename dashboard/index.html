@@ -148,6 +148,17 @@
     .ca-entry-notes{font:11px 'DM Mono',monospace;color:var(--muted);line-height:1.5;max-height:54px;overflow:hidden}
     .ca-entry-actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
     .ca-entry-actions button{flex:1}
+    .ca-score-summary{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr));gap:10px;margin-bottom:18px}
+    .ca-score-stat{background:#f7faf7;border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+    .ca-score-stat span{font:9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .ca-score-stat b{font:700 18px 'DM Mono',monospace;color:var(--ink)}
+    .ca-scorecard{border-left:3px solid var(--green)}
+    .ca-score-result{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:center;background:#f0fff6;border:1px solid var(--mint);border-radius:6px;padding:12px 14px;margin-top:14px}
+    .ca-score-number{font:700 30px 'DM Mono',monospace;color:var(--green)}
+    .ca-score-number small{font-size:12px;color:var(--muted)}
+    .ca-score-result b{font:700 12px Manrope,sans-serif;color:var(--ink)}
+    .ca-score-result p{margin:3px 0 0;color:var(--muted);font:10px 'DM Mono',monospace;line-height:1.45}
+    @media(max-width:700px){.ca-score-summary{grid-template-columns:1fr 1fr}.ca-score-result{grid-template-columns:1fr;gap:5px}}
     @media(max-width:700px){.ca-field-grid{grid-template-columns:repeat(2,1fr)}.ca-grid{grid-template-columns:1fr}}
     .ca-macro-head,.ca-macro-row{grid-template-columns:2.2fr .85fr .85fr .95fr .85fr 60px}
     .ca-custom-list{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
@@ -163,6 +174,15 @@
     .ca-fetch-grid span{font:12px 'DM Mono',monospace;color:var(--ink)}
     .ca-fetch-images{display:flex;gap:10px;flex-wrap:wrap}
     .ca-fetch-images img{max-width:240px;border-radius:6px;border:1px solid var(--line)}
+    .ca-review-recent{display:flex;flex-wrap:wrap;gap:8px}
+    .ca-review-chip{font:11px 'DM Mono',monospace;color:var(--ink);background:#f7faf7;border:1px solid var(--line);border-radius:20px;padding:6px 14px;cursor:pointer}
+    .ca-review-chip:hover{border-color:var(--green);background:var(--mint)}
+    #tab-panel-review .ca-fetch-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+    #tab-panel-review .ca-fetch-grid span{font-size:14px}
+    #tab-panel-review .ca-fetch-images{flex-direction:column;gap:18px}
+    #tab-panel-review .ca-fetch-images figure{margin:0;display:flex;flex-direction:column;gap:6px}
+    #tab-panel-review .ca-fetch-images figcaption{font:700 11px Manrope,sans-serif;color:var(--green);text-transform:uppercase;letter-spacing:.06em}
+    #tab-panel-review .ca-fetch-images img{max-width:100%;width:100%;border-radius:8px;border:1px solid var(--line);box-shadow:var(--shadow)}
   </style>
 </head>
 <body>
@@ -177,7 +197,9 @@
     <nav class="page-tab-nav" role="tablist" aria-label="Instrument view">
       <button class="page-tab-btn" id="ptab-pairs" role="tab" aria-selected="false" aria-controls="tab-panel-pairs">Other Pairs</button>
       <button class="page-tab-btn active" id="ptab-gold" role="tab" aria-selected="true" aria-controls="tab-panel-gold">Gold (XAUUSD)<span class="tab-badge">XAU</span></button>
+      <button class="page-tab-btn" id="ptab-score" role="tab" aria-selected="false" aria-controls="tab-panel-score">Trade Score</button>
       <button class="page-tab-btn" id="ptab-analysis" role="tab" aria-selected="false" aria-controls="tab-panel-analysis">Analysis Journal<span class="tab-badge">NEW</span></button>
+      <button class="page-tab-btn" id="ptab-review" role="tab" aria-selected="false" aria-controls="tab-panel-review">Chart Review</button>
     </nav>
     <div id="tab-panel-pairs" class="page-tab-panel" role="tabpanel">
     <section class="toolbar"><div class="tabs" role="tablist"><button class="tab active" data-timeframe="all">All zones</button><button class="tab" data-timeframe="daily">Daily</button><button class="tab" data-timeframe="weekly">Weekly</button><button class="tab" data-timeframe="monthly">Monthly</button></div><label class="search"><span>Search</span><input id="pair-search" type="search" placeholder="Pair, e.g. EURUSD"></label><label class="toggle"><input id="near-only" type="checkbox"><span>Near only</span></label></section>
@@ -445,6 +467,35 @@
     </section>
     </div>
 
+    <div id="tab-panel-score" class="page-tab-panel" role="tabpanel">
+    <section class="ca-section">
+      <div class="section-heading"><div><p class="eyebrow">VCPR execution</p><h2>Trade score</h2></div></div>
+      <p class="ca-intro">Enter the current numbers from TradingView. Refresh data auto-fills XAUUSD and DXY price where available. The worksheet calculates distance and alignment for the selected trade direction.</p>
+      <form id="trade-score-form">
+        <div class="ca-card"><h4>Trade and macro fundamentals</h4><div class="ca-field-grid">
+          <label class="ca-field"><span>Trade direction</span><select class="ca-select" name="direction"><option value="long">XAUUSD long</option><option value="short">XAUUSD short</option></select></label>
+          <label class="ca-field"><span>Core PCE previous %</span><input class="ca-select" name="pcePrevious" inputmode="decimal" placeholder="0.3"></label><label class="ca-field"><span>Core PCE forecast %</span><input class="ca-select" name="pceForecast" inputmode="decimal" placeholder="0.2"></label><label class="ca-field"><span>Core PCE actual %</span><input class="ca-select" name="pceActual" inputmode="decimal" placeholder="0.1"></label>
+          <label class="ca-field"><span>VIX value</span><input class="ca-select" name="vix" inputmode="decimal" placeholder="16"></label>
+          <label class="ca-field"><span>Unemployment previous %</span><input class="ca-select" name="unempPrevious" inputmode="decimal" placeholder="4.1"></label><label class="ca-field"><span>Unemployment forecast %</span><input class="ca-select" name="unempForecast" inputmode="decimal" placeholder="4.1"></label><label class="ca-field"><span>Unemployment actual %</span><input class="ca-select" name="unempActual" inputmode="decimal" placeholder="4.2"></label>
+          <label class="ca-field"><span>Fed rate previous %</span><input class="ca-select" name="fedPrevious" inputmode="decimal" placeholder="4.50"></label><label class="ca-field"><span>Fed rate forecast %</span><input class="ca-select" name="fedForecast" inputmode="decimal" placeholder="4.50"></label><label class="ca-field"><span>Fed rate actual %</span><input class="ca-select" name="fedCurrent" inputmode="decimal" placeholder="4.50"></label>
+        </div></div>
+        <div class="ca-card"><h4>XAUUSD VCPR and technical levels</h4><div class="ca-field-grid">
+          <label class="ca-field"><span>Live XAUUSD price</span><input class="ca-select" name="xauPrice" inputmode="decimal" placeholder="Auto-fill"></label><label class="ca-field"><span>RSI (14)</span><input class="ca-select" name="rsi" inputmode="decimal" placeholder="52"></label><label class="ca-field"><span>EMA 20</span><input class="ca-select" name="ema20" inputmode="decimal" placeholder="4030"></label><label class="ca-field"><span>EMA 200</span><input class="ca-select" name="ema200" inputmode="decimal" placeholder="4000"></label>
+          <label class="ca-field"><span>Daily VCPR bottom</span><input class="ca-select" name="dailyBottom" inputmode="decimal"></label><label class="ca-field"><span>Daily VCPR top</span><input class="ca-select" name="dailyTop" inputmode="decimal"></label><label class="ca-field"><span>Daily VCPR age (days)</span><input class="ca-select" name="dailyAge" inputmode="numeric" placeholder="1"></label>
+          <label class="ca-field"><span>Weekly VCPR bottom</span><input class="ca-select" name="weeklyBottom" inputmode="decimal"></label><label class="ca-field"><span>Weekly VCPR top</span><input class="ca-select" name="weeklyTop" inputmode="decimal"></label><label class="ca-field"><span>Monthly VCPR bottom</span><input class="ca-select" name="monthlyBottom" inputmode="decimal"></label><label class="ca-field"><span>Monthly VCPR top</span><input class="ca-select" name="monthlyTop" inputmode="decimal"></label>
+          <label class="ca-field"><span>Previous-day support (PDL)</span><input class="ca-select" name="pdl" inputmode="decimal"></label><label class="ca-field"><span>Previous-day resistance (PDH)</span><input class="ca-select" name="pdh" inputmode="decimal"></label><label class="ca-field"><span>Weekly pivot</span><input class="ca-select" name="weeklyPivot" inputmode="decimal"></label><label class="ca-field"><span>Monthly pivot</span><input class="ca-select" name="monthlyPivot" inputmode="decimal"></label>
+          <label class="ca-field"><span>Volume POC</span><input class="ca-select" name="poc" inputmode="decimal"></label><label class="ca-field"><span>Volume VAH</span><input class="ca-select" name="vah" inputmode="decimal"></label><label class="ca-field"><span>Volume VAL</span><input class="ca-select" name="val" inputmode="decimal"></label>
+        </div></div>
+        <div class="ca-card"><h4>Dollar and yield confirmation</h4><div class="ca-field-grid">
+          <label class="ca-field"><span>Live DXY price</span><input class="ca-select" name="dxyPrice" inputmode="decimal" placeholder="Auto-fill"></label><label class="ca-field"><span>DXY EMA 20</span><input class="ca-select" name="dxyEma20" inputmode="decimal"></label><label class="ca-field"><span>DXY EMA 200</span><input class="ca-select" name="dxyEma200" inputmode="decimal"></label>
+          <label class="ca-field"><span>US10Y current yield %</span><input class="ca-select" name="yieldPrice" inputmode="decimal"></label><label class="ca-field"><span>US10Y EMA 20</span><input class="ca-select" name="yieldEma20" inputmode="decimal"></label><label class="ca-field"><span>US10Y EMA 200</span><input class="ca-select" name="yieldEma200" inputmode="decimal"></label>
+        </div><div class="ca-actions"><button class="button" type="button" id="trade-score-autofill">Auto-fill live prices</button><button class="button" type="button" id="trade-score-prompt">Generate AI prompt</button><button class="button button-primary" type="button" id="trade-score-calculate">Calculate score</button></div></div>
+      </form>
+      <div class="ca-card ca-scorecard"><h4>Calculated decision</h4><div class="ca-score-result" id="ca-score-result" aria-live="polite"></div><div class="ca-fetch-grid" id="trade-score-levels"></div></div>
+      <div class="ai-prompt-wrap" id="trade-score-prompt-wrap" style="display:none"><div class="section-heading"><div><p class="eyebrow">Copy and ask</p><h2 style="font-family:inherit;font-size:16px">Trade analysis prompt</h2></div><button class="button" type="button" id="trade-score-copy-prompt">Copy prompt</button></div><textarea id="trade-score-prompt-output" readonly></textarea></div>
+    </section>
+    </div>
+
     <div id="tab-panel-analysis" class="page-tab-panel" role="tabpanel">
     <section class="ca-section">
       <div class="section-heading"><div><p class="eyebrow">Save it once, reuse it forever</p><h2>Chart analysis journal</h2></div></div>
@@ -598,9 +649,20 @@
         </div>
         <div class="ca-grid" id="ca-list"><div class="empty">No chart analysis saved yet — fill the form above and hit Save.</div></div>
       </div>
+    </section>
+    </div>
+
+    <div id="tab-panel-review" class="page-tab-panel" role="tabpanel">
+    <section class="ca-section">
+      <div class="section-heading"><div><p class="eyebrow">Big picture, one day at a time</p><h2>Chart review</h2></div></div>
+      <p class="ca-intro">Pick a date to pull that day's saved analysis straight from the sheet — full-size charts, every field, in one clean view.</p>
 
       <div class="ca-card">
-        <h4>Fetch analysis by date</h4>
+        <h4>Recent days</h4>
+        <div id="ca-review-recent" class="ca-review-recent"><p class="calc-note">Loading recent saved days…</p></div>
+      </div>
+
+      <div class="ca-card">
         <div class="ca-field-grid" style="max-width:340px;margin-bottom:12px">
           <label class="ca-field"><span>Date</span><input class="ca-select" type="date" id="ca-fetch-date"></label>
           <label class="ca-field"><button class="button button-primary" type="button" id="ca-fetch-date-btn">Fetch</button></label>

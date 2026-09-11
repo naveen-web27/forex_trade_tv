@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The ONE Method Forex Mastery Webinar — ₹999 Live Workshop</title>
+<meta name="description" content="Master a proven institutional-grade forex strategy in a 5-hour live webinar. One method, 12 pairs, a free Telegram scanner bot, and a complete trade checklist. Only ₹999.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1b2a; --navy:#0a1420; --navy2:#12273a; --gold:#ffc300; --gold-dark:#d99e00;
+    --white:#fff; --muted:#9fb3c8; --line:rgba(255,255,255,.12);
+    --green:#00d47e; --red:#ff4d4d; --paper:#f6f8fb;
+    --shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--navy);color:#fff;font-family:Manrope,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Georgia,serif;font-weight:400;letter-spacing:-.02em;margin:0}
+  img{max-width:100%;display:block}
+  a{color:inherit}
+  .wrap{width:min(1100px,92%);margin:0 auto}
+  .gold{color:var(--gold)}
+  .green{color:var(--green)}
+  .eyebrow{text-transform:uppercase;letter-spacing:.16em;font:700 11px/1 'DM Mono',monospace;color:var(--gold);margin:0 0 14px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+       font:800 15px/1 Manrope,sans-serif;padding:17px 26px;border-radius:10px;text-decoration:none;
+       transition:transform .15s ease, box-shadow .15s ease}
+  .btn:active{transform:scale(.98)}
+  .btn-primary{background:linear-gradient(180deg,#ffd23f,var(--gold-dark));color:#1a1200;box-shadow:0 10px 24px rgba(255,195,0,.35)}
+  .btn-primary:hover{box-shadow:0 14px 30px rgba(255,195,0,.5)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:#fff}
+  .section{padding:70px 0}
+  .section-title{font-size:clamp(26px,4vw,40px);color:#fff;margin-bottom:14px}
+  .section-sub{color:var(--muted);font-size:15px;max-width:640px;line-height:1.6;margin-bottom:44px}
+  .center{text-align:center;margin-left:auto;margin-right:auto}
+
+  /* ---------- topbar ---------- */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(10,20,32,.9);backdrop-filter:blur(10px);
+          border-bottom:1px solid var(--line)}
+  .topbar-inner{width:min(1100px,92%);margin:0 auto;height:66px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:16px;text-decoration:none;color:#fff}
+  .brand-mark{width:28px;height:28px;border-radius:8px 8px 8px 2px;background:var(--gold);color:#1a1200;
+              display:grid;place-items:center;font-family:Georgia,serif;font-weight:900}
+  .top-cta{display:none}
+  @media(min-width:720px){.top-cta{display:inline-flex}}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;padding:64px 0 56px;overflow:hidden;
+        background:radial-gradient(1100px 500px at 80% -10%,rgba(255,195,0,.16),transparent 60%),
+                   radial-gradient(900px 500px at 0% 110%,rgba(0,212,126,.12),transparent 60%);
+        border-bottom:1px solid var(--line)}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr}}
+  .badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+  .pill{font:700 11px/1 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.05em;
+        background:rgba(255,195,0,.12);border:1px solid rgba(255,195,0,.35);color:var(--gold);
+        padding:8px 12px;border-radius:999px}
+  .hero h1{font-size:clamp(34px,5.6vw,58px);line-height:1.05;color:#fff}
+  .hero p.lead{color:var(--muted);font-size:16px;line-height:1.65;margin:20px 0 30px;max-width:520px}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:22px}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:22px;color:var(--muted);font:500 12px 'DM Mono',monospace}
+  .hero-meta span{display:flex;align-items:center;gap:7px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .hero-card{background:linear-gradient(180deg,#132a40,#0e1f31);border:1px solid var(--line);border-radius:18px;
+             padding:26px;box-shadow:var(--shadow)}
+  .price-box{text-align:center;padding:18px 0 22px;border-bottom:1px dashed var(--line);margin-bottom:20px}
+  .price-old{color:var(--muted);text-decoration:line-through;font-size:16px}
+  .price-new{font:900 52px Georgia,serif;color:var(--gold);letter-spacing:-.03em}
+  .price-tag{font:700 11px 'DM Mono',monospace;color:var(--green);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+  .hero-list{list-style:none;margin:0 0 22px;padding:0;display:flex;flex-direction:column;gap:11px}
+  .hero-list li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:#e7edf3;line-height:1.5}
+  .hero-list li::before{content:"✓";color:var(--green);font-weight:800;flex:none}
+  .countdown{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+  .countdown div{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:8px;
+                 padding:8px 10px;text-align:center;min-width:52px}
+  .countdown b{display:block;font:800 18px 'DM Mono',monospace;color:#fff}
+  .countdown span{font:600 9px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase}
+  .seats-note{text-align:center;font-size:12px;color:var(--red);font-weight:700;margin-top:6px}
+
+  /* ---------- pain / trap section ---------- */
+  .cards-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.cards-2{grid-template-columns:1fr}}
+  .card{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:26px}
+  .card h3{font-family:Manrope,sans-serif;font-weight:800;font-size:17px;margin-bottom:14px}
+  .card ul{margin:0;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+  .card ul li{font-size:14px;line-height:1.55;color:#dbe4ec;display:flex;gap:9px}
+  .bad li::before{content:"✕";color:var(--red);font-weight:800}
+  .good li::before{content:"✓";color:var(--green);font-weight:800}
+  .card.bad{border-color:rgba(255,77,77,.25)}
+  .card.good{border-color:rgba(0,212,126,.3);background:linear-gradient(180deg,#0f2c22,#0c1f1a)}
+
+  /* ---------- pairs strip ---------- */
+  .pairs-strip{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:10px}
+  .pair-chip{font:700 12px 'DM Mono',monospace;background:rgba(255,255,255,.05);border:1px solid var(--line);
+             padding:9px 14px;border-radius:8px;color:#fff}
+
+  /* ---------- agenda ---------- */
+  .agenda-list{display:flex;flex-direction:column;gap:14px}
+  .agenda-item{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:flex-start;
+               background:var(--navy2);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .agenda-num{font:800 13px 'DM Mono',monospace;color:#1a1200;background:var(--gold);
+              width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex:none}
+  .agenda-item h4{margin:0 0 6px;font-family:Manrope,sans-serif;font-weight:800;font-size:15.5px;color:#fff}
+  .agenda-item p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+
+  /* ---------- bonuses ---------- */
+  .bonus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:860px){.bonus-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.bonus-grid{grid-template-columns:1fr}}
+  .bonus-card{position:relative;background:linear-gradient(180deg,#16324a,#0e2033);border:1px solid rgba(255,195,0,.3);
+              border-radius:14px;padding:24px 20px;text-align:left}
+  .bonus-card .tag{position:absolute;top:-11px;left:18px;background:var(--gold);color:#1a1200;
+                    font:800 10px 'DM Mono',monospace;padding:4px 10px;border-radius:999px;text-transform:uppercase}
+  .bonus-icon{font-size:26px;margin-bottom:12px}
+  .bonus-card h4{font-family:Manrope,sans-serif;font-weight:800;font-size:15px;margin:0 0 8px;color:#fff}
+  .bonus-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+  .bonus-value{margin-top:12px;font:700 12px 'DM Mono',monospace;color:var(--green)}
+  .value-total{text-align:center;margin-top:30px;font-size:15px;color:#fff}
+  .value-total b{color:var(--gold);font-size:20px}
+
+  /* ---------- proof ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;text-align:center}
+  @media(max-width:760px){.stat-grid{grid-template-columns:1fr 1fr}}
+  .stat{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:26px 14px}
+  .stat b{display:block;font:900 32px Georgia,serif;color:var(--gold)}
+  .stat span{color:var(--muted);font:700 11px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+
+  /* ---------- who is this for ---------- */
+  .fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.fit-grid{grid-template-columns:1fr}}
+
+  /* ---------- pricing ---------- */
+  .price-panel{background:linear-gradient(180deg,#16324a,#0a1420);border:1px solid rgba(255,195,0,.35);
+               border-radius:20px;padding:44px 36px;text-align:center;max-width:560px;box-shadow:var(--shadow)}
+  .price-panel .price-new{font-size:64px}
+  .price-panel ul{text-align:left;max-width:380px;margin:26px auto;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+  .price-panel ul li{display:flex;gap:10px;font-size:14px;color:#e7edf3}
+  .price-panel ul li::before{content:"✓";color:var(--green);font-weight:800}
+  .guarantee{margin-top:18px;font-size:12.5px;color:var(--muted)}
+
+  /* ---------- faq ---------- */
+  .faq-item{border-bottom:1px solid var(--line);padding:18px 0}
+  .faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:700;font-size:15px;color:#fff}
+  .faq-q .plus{font-size:20px;color:var(--gold);transition:transform .2s}
+  .faq-item.open .plus{transform:rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .faq-item.open .faq-a{max-height:220px}
+  .faq-a p{color:var(--muted);font-size:14px;line-height:1.6;margin:12px 0 0}
+
+  /* ---------- footer / sticky cta ---------- */
+  footer{padding:36px 0;text-align:center;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+  .sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(10,20,32,.95);
+              backdrop-filter:blur(10px);border-top:1px solid var(--line);
+              display:flex;align-items:center;justify-content:space-between;gap:14px;
+              padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .sticky-cta .info{display:flex;flex-direction:column}
+  .sticky-cta .info b{font:900 18px Georgia,serif;color:var(--gold)}
+  .sticky-cta .info span{font:600 10px 'DM Mono',monospace;color:var(--muted);text-transform:uppercase}
+  .sticky-cta .btn{padding:13px 20px;font-size:13px;white-space:nowrap}
+  body{padding-bottom:78px}
+  @media(min-width:860px){.sticky-cta{display:none}body{padding-bottom:0}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">V</span>
+      The&nbsp;ONE&nbsp;Method&nbsp;Workshop
+    </a>
+    <a class="btn btn-primary top-cta" href="#pricing">Reserve Seat — ₹999</a>
+  </div>
+</div>
+
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="badge-row">
+        <span class="pill">Live · 5 Hours</span>
+        <span class="pill">In English</span>
+        <span class="pill">Beginner Friendly</span>
+      </div>
+      <h1>Master <span class="gold">One Institutional-Grade</span> Forex Strategy — 12 Pairs, Zero Guesswork</h1>
+      <p class="lead">A single live workshop that gives you a complete, rule-based forex trading system —
+        real charts, exact entries, exact stop losses, and a <span class="green" style="font-weight:700">free Telegram bot</span>
+        that scans 12 currency pairs for you every morning.</p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#pricing">Reserve My Seat — ₹999</a>
+        <a class="btn btn-ghost" href="#agenda">See Full Agenda ↓</a>
+      </div>
+
+      <div class="hero-meta">
+        <span><i class="dot"></i>Only 10 seats — first batch</span>
+        <span><i class="dot"></i>Recording shared in 24 hrs</span>
+        <span><i class="dot"></i>Free bonus bot + cheat sheet</span>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="price-box">
+        <div class="price-old">₹4,999</div>
+        <div class="price-new">₹999</div>
+        <div class="price-tag">One-time · Lifetime access to recording</div>
+      </div>
+
+      <div class="countdown" id="countdown">
+        <div><b id="cd-d">00</b><span>Days</span></div>
+        <div><b id="cd-h">00</b><span>Hrs</span></div>
+        <div><b id="cd-m">00</b><span>Min</span></div>
+        <div><b id="cd-s">00</b><span>Sec</span></div>
+      </div>
+
+      <ul class="hero-list">
+        <li>5-hour live workshop + lifetime recording access</li>
+        <li>Free Telegram bot — scans 12 pairs every morning</li>
+        <li>Trade entry checklist + position sizing calculator</li>
+        <li>30-day practice journal template</li>
+        <li>Live Q&amp;A with real chart walkthroughs</li>
+      </ul>
+
+      <a class="btn btn-primary" style="width:100%" href="#pricing">Pay ₹999 &amp; Reserve Seat</a>
+      <div class="seats-note">⚠ Only 10 seats for this batch — closes when full</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAIN / WHY THIS ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="eyebrow center">The Problem</div>
+    <h2 class="section-title center">Why Most Traders Never Become Consistent</h2>
+    <p class="section-sub center">You've probably seen forex and options content that gives you 10 strategies and no real process. Here's the difference.</p>
+
+    <div class="cards-2">
+      <div class="card bad">
+        <h3>What most webinars &amp; options trading give you</h3>
+        <ul>
+          <li>10+ strategies — you're confused and master none of them</li>
+          <li>₹10,000–₹50,000 fees, no tools, no follow-up support</li>
+          <li>Theory-heavy sessions with no real chart walkthroughs</li>
+          <li>Options time decay eats your premium even when you're right</li>
+          <li>Expiry pressure forces exits at the worst possible moment</li>
+        </ul>
+      </div>
+      <div class="card good">
+        <h3>What you get in this workshop</h3>
+        <ul>
+          <li>ONE proven strategy — mastered completely in 5 hours</li>
+          <li>Covers 12 currency pairs every day, systematically</li>
+          <li>A free working Telegram bot that scans all 12 pairs for you</li>
+          <li>No time decay, no expiry — pure price action, full flexibility</li>
+          <li>Real entries, real stop losses, real backtested numbers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAIRS ================= -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow center">Coverage</div>
+    <h2 class="section-title center">12 Pairs. 1 Strategy. Every Single Day.</h2>
+    <p class="section-sub center">Your morning scan takes 15 minutes — or let the free bot do it for you.</p>
+    <div class="pairs-strip">
+      <span class="pair-chip">XAUUSD</span><span class="pair-chip">EURUSD</span><span class="pair-chip">GBPUSD</span>
+      <span class="pair-chip">USDJPY</span><span class="pair-chip">AUDUSD</span><span class="pair-chip">USDCAD</span>
+      <span class="pair-chip">USDCHF</span><span class="pair-chip">NZDUSD</span><span class="pair-chip">EURJPY</span>
+      <span class="pair-chip">GBPJPY</span><span class="pair-chip">EURGBP</span><span class="pair-chip">GBPAUD</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AGENDA ================= -->
+<section class="section" id="agenda" style="background:var(--navy2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">What You'll Learn</div>
+    <h2 class="section-title">A Complete 5-Hour Curriculum</h2>
+    <p class="section-sub">Every hour builds directly on the last — by the end you'll have a full, executable trading process.</p>
+
+    <div class="agenda-list">
+      <div class="agenda-item">
+        <div class="agenda-num">1</div>
+        <div><h4>Why This Strategy Works — The Math &amp; The Magnet Concept</h4>
+        <p>The exact formula behind the setup, what makes a zone "untouched," and why institutional orders make these zones react sharply.</p></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-num">2</div>
+        <div><h4>The 5 Proven Patterns — Real Charts, Candle by Candle</h4>
+        <p>Approach &amp; Snap, False Break, Band as Launchpad, Stacked Compression, and Morning Gap — with real trade outcomes.</p></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-num">3</div>
+        <div><h4>Live Chart Demo — Mark Today's Zones Together</h4>
+        <p>Follow along step-by-step on your own chart and identify a live, tradable setup in real time.</p></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-num">4</div>
+        <div><h4>Trade Rules, Stop Loss &amp; Position Sizing</h4>
+        <p>The exact entry checklist, fixed stop-loss rules, and the 1% risk position-sizing formula.</p></div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-num">5</div>
+        <div><h4>Trade Simulation Quiz + Backtest Proof + Open Q&amp;A</h4>
+        <p>Test your understanding on real setups, see verified backtest numbers, and get all your questions answered live.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BONUSES ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="eyebrow center">Free Gifts</div>
+    <h2 class="section-title center">Bonuses Included — Free With Your Seat</h2>
+    <p class="section-sub center">On top of the 5-hour live workshop, you also get these extras at no additional cost.</p>
+
+    <div class="bonus-grid">
+      <div class="bonus-card">
+        <div class="tag">Bonus 1</div>
+        <div class="bonus-icon">🤖</div>
+        <h4>Free Telegram Scanner Bot</h4>
+        <p>Scans all 12 pairs every morning and messages you which ones have an active untouched zone — no manual work.</p>
+        <div class="bonus-value">Worth ₹2,000</div>
+      </div>
+      <div class="bonus-card">
+        <div class="tag">Bonus 2</div>
+        <div class="bonus-icon">📋</div>
+        <h4>Trade Entry Checklist + Cheat Sheet</h4>
+        <p>A print-ready checklist covering session, band status, entry candle, SL, and news filters for every trade.</p>
+        <div class="bonus-value">Worth ₹999</div>
+      </div>
+      <div class="bonus-card">
+        <div class="tag">Bonus 3</div>
+        <div class="bonus-icon">🧮</div>
+        <h4>Position Size Calculator</h4>
+        <p>A ready-to-use spreadsheet that calculates your lot size instantly from account balance and stop loss.</p>
+        <div class="bonus-value">Worth ₹499</div>
+      </div>
+      <div class="bonus-card">
+        <div class="tag">Bonus 4</div>
+        <div class="bonus-icon">📓</div>
+        <h4>30-Day Practice Journal Template</h4>
+        <p>A structured journal to track every paper trade so you know exactly when you're ready to go live.</p>
+        <div class="bonus-value">Worth ₹499</div>
+      </div>
+      <div class="bonus-card">
+        <div class="tag">Bonus 5</div>
+        <div class="bonus-icon">🎥</div>
+        <h4>Lifetime Recording Access</h4>
+        <p>Missed a live minute? The full session recording is shared within 24 hours and yours to keep forever.</p>
+        <div class="bonus-value">Worth ₹1,500</div>
+      </div>
+      <div class="bonus-card">
+        <div class="tag">Bonus 6</div>
+        <div class="bonus-icon">💬</div>
+        <h4>Private Community Access</h4>
+        <p>Join fellow students in a private group to share setups, ask questions, and stay accountable.</p>
+        <div class="bonus-value">Worth ₹999</div>
+      </div>
+    </div>
+
+    <p class="value-total">Total bonus value: <b>₹6,496</b> — yours free with your ₹999 seat</p>
+  </div>
+</section>
+
+<!-- ================= PROOF ================= -->
+<section class="section" style="background:var(--navy2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow center">The Proof</div>
+    <h2 class="section-title center">Backtest Results — Feb 2026 Study</h2>
+    <p class="section-sub center">5 trading days, 5 pairs, full rule-based execution. Past results don't guarantee future performance — but the process is transparent.</p>
+    <div class="stat-grid">
+      <div class="stat"><b>18</b><span>Setups Found</span></div>
+      <div class="stat"><b>75%</b><span>Win Rate</span></div>
+      <div class="stat"><b>2.1R</b><span>Avg Winner</span></div>
+      <div class="stat"><b>+8.6R</b><span>Net (5 Days)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHO IS THIS FOR ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="eyebrow center">Is This For You?</div>
+    <h2 class="section-title center">Built for Beginners &amp; Working Professionals</h2>
+    <div class="fit-grid">
+      <div class="card good">
+        <h3>This is for you if</h3>
+        <ul>
+          <li>You want ONE clear, repeatable trading process — not 10 confusing strategies</li>
+          <li>You have a full-time job and can only trade a small window each day</li>
+          <li>You've struggled with options time decay and expiry pressure</li>
+          <li>You want to eventually pass a funded account challenge, risk-free</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>This is not for you if</h3>
+        <ul>
+          <li>You're looking for a "guaranteed profit" signal service</li>
+          <li>You're not willing to paper trade before risking real money</li>
+          <li>You want 10+ strategies instead of mastering one properly</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section class="section" id="pricing" style="background:radial-gradient(900px 500px at 50% 0%,rgba(255,195,0,.1),transparent 60%)">
+  <div class="wrap" style="display:flex;justify-content:center">
+    <div class="price-panel">
+      <div class="eyebrow" style="text-align:center">Limited Seats</div>
+      <h2 class="section-title" style="margin-bottom:6px">Reserve Your Seat Today</h2>
+      <div class="price-old">Regular Price: ₹4,999</div>
+      <div class="price-new">₹999</div>
+      <div class="price-tag">Launch offer — first batch only</div>
+
+      <ul>
+        <li>5-hour live strategy workshop (English)</li>
+        <li>Free Telegram bot scanning 12 pairs daily</li>
+        <li>Entry checklist, position size calculator &amp; journal template</li>
+        <li>Lifetime recording access + private community</li>
+      </ul>
+
+      <!-- Replace href below with your actual payment gateway link (Razorpay / Instamojo / Stripe Payment Link) -->
+      <a class="btn btn-primary" style="width:100%" href="https://rzp.io/l/your-payment-link" target="_blank" rel="noopener">
+        Pay ₹999 &amp; Reserve My Seat →
+      </a>
+      <div class="guarantee">🔒 Secure payment · Only 10 seats per batch · Confirmation &amp; joining link sent instantly on WhatsApp</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="section">
+  <div class="wrap" style="max-width:760px;margin:0 auto">
+    <div class="eyebrow center">Questions</div>
+    <h2 class="section-title center">Frequently Asked Questions</h2>
+    <div style="margin-top:30px">
+      <div class="faq-item">
+        <div class="faq-q">Do I need prior forex experience? <span class="plus">+</span></div>
+        <div class="faq-a"><p>No. You should know basic candlestick reading and support/resistance — everything else is taught step by step in the workshop.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is the Telegram bot really free? <span class="plus">+</span></div>
+        <div class="faq-a"><p>Yes — it's included with your seat at no extra cost, and you get the code so you can see exactly how it works.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What if I miss the live session? <span class="plus">+</span></div>
+        <div class="faq-a"><p>The full recording is shared within 24 hours and is yours to keep forever, along with all bonus materials.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Which markets does this strategy work on? <span class="plus">+</span></div>
+        <div class="faq-a"><p>We focus on 12 major forex pairs including XAUUSD, EURUSD and GBPUSD, but the underlying concept applies to any market with a daily candle.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is this a guaranteed profit signal service? <span class="plus">+</span></div>
+        <div class="faq-a"><p>No. This is education — a rule-based system and process. Markets carry risk, and no result is guaranteed.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    © 2026 The ONE Method Forex Workshop. Trading involves risk. Past performance and backtests do not guarantee future results.
+  </div>
+</footer>
+
+<div class="sticky-cta">
+  <div class="info"><b>₹999</b><span>Only 10 seats left</span></div>
+  <a class="btn btn-primary" href="#pricing">Reserve Seat</a>
+</div>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item=>{
+    item.querySelector('.faq-q').addEventListener('click',()=>{
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(o=>o.classList.remove('open'));
+      if(!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Countdown timer — set target 7 days from first page load, persists per browser
+  (function(){
+    const key='forex_webinar_deadline';
+    let deadline = localStorage.getItem(key);
+    if(!deadline){
+      deadline = Date.now() + 7*24*60*60*1000;
+      localStorage.setItem(key, deadline);
+    }
+    deadline = parseInt(deadline,10);
+    function tick(){
+      const diff = Math.max(0, deadline - Date.now());
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor(diff%86400000/3600000);
+      const m = Math.floor(diff%3600000/60000);
+      const s = Math.floor(diff%60000/1000);
+      const pad = n=>String(n).padStart(2,'0');
+      document.getElementById('cd-d').textContent = pad(d);
+      document.getElementById('cd-h').textContent = pad(h);
+      document.getElementById('cd-m').textContent = pad(m);
+      document.getElementById('cd-s').textContent = pad(s);
+    }
+    tick();
+    setInterval(tick,1000);
+  })();
+</script>
+</body>
+</html>

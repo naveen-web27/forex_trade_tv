@@ -325,12 +325,117 @@
     { key: "dxy", weight: 1 }, { key: "us10y", weight: 1 }, { key: "vix", weight: 1 }, { key: "fed", weight: 1 },
     { key: "rr", weight: 0.5 }, { key: "grade", weight: 0.5 },
     { key: "prevCprWidth", weight: 1 }, { key: "todayCprWidth", weight: 1 },
-    { key: "ydayType", weight: 1 }, { key: "todayType", weight: 1 }, { key: "fvgZone", weight: 1 }
+    { key: "ydayType", weight: 1 }, { key: "todayType", weight: 1 }, { key: "fvgZone", weight: 1 },
+    { key: "vcprQuality", weight: 1 }, { key: "reaction", weight: 1 }, { key: "macroAlignment", weight: 1 }, { key: "newsRisk", weight: 1 },
+    { key: "technicalTrend", weight: 1 }, { key: "volumeProfile", weight: 1 }, { key: "orderFlow", weight: 1 }
   ];
   function caItems() { try { return JSON.parse(localStorage.getItem(CA_KEY) || "[]"); } catch (_) { return []; } }
   function caSaveItems(items) { localStorage.setItem(CA_KEY, JSON.stringify(items)); }
   function caOutcomeClass(outcome) { return String(outcome || "").toLowerCase() === "win" ? "win" : String(outcome || "").toLowerCase() === "loss" ? "loss" : String(outcome || "").toLowerCase() === "breakeven" ? "breakeven" : "pending"; }
   function caFormValues(form) { return Object.fromEntries(new FormData(form).entries()); }
+  function caScore(data) {
+    return ["vcprQuality", "reaction", "macroAlignment", "newsRisk", "technicalTrend", "volumeProfile", "orderFlow", "rrScore"].reduce(function (total, key) { return total + (Number(data[key]) || 0); }, 0);
+  }
+  function caScoreLabel(score) {
+    if (score >= 85) return { label: "A setup - high confluence", note: "All major conditions agree. Wait for your defined entry confirmation." };
+    if (score >= 70) return { label: "B setup - tradable", note: "Conditions are acceptable. Use normal risk and respect the stop." };
+    return { label: "No trade - conditions incomplete", note: "Wait for better VCPR confirmation, macro alignment, or a safer news window." };
+  }
+  function tradeScoreNumber(form, key) { return parseFloat(form.elements[key].value); }
+  function tradeScoreDistance(price, level) { return isNaN(price) || isNaN(level) ? "--" : Math.abs(price - level).toFixed(2); }
+  function tradeScoreDirection(current, fast, slow) {
+    if (isNaN(current) || isNaN(fast) || isNaN(slow)) return "not entered";
+    if (current > fast && fast > slow) return "bullish";
+    if (current < fast && fast < slow) return "bearish";
+    return "mixed";
+  }
+  function renderCaScore() {
+    var form = $("#trade-score-form"), result = $("#ca-score-result"), levels = $("#trade-score-levels");
+    if (!form || !result) return;
+    var direction = form.elements.direction.value;
+    var pceActual = tradeScoreNumber(form, "pceActual"), pceForecast = tradeScoreNumber(form, "pceForecast");
+    var unempActual = tradeScoreNumber(form, "unempActual"), unempForecast = tradeScoreNumber(form, "unempForecast");
+    var fedCurrent = tradeScoreNumber(form, "fedCurrent"), fedPrevious = tradeScoreNumber(form, "fedPrevious");
+    var vix = tradeScoreNumber(form, "vix"), price = tradeScoreNumber(form, "xauPrice"), rsi = tradeScoreNumber(form, "rsi");
+    var xauTrend = tradeScoreDirection(price, tradeScoreNumber(form, "ema20"), tradeScoreNumber(form, "ema200"));
+    var dxyTrend = tradeScoreDirection(tradeScoreNumber(form, "dxyPrice"), tradeScoreNumber(form, "dxyEma20"), tradeScoreNumber(form, "dxyEma200"));
+    var yieldTrend = tradeScoreDirection(tradeScoreNumber(form, "yieldPrice"), tradeScoreNumber(form, "yieldEma20"), tradeScoreNumber(form, "yieldEma200"));
+    var macroBull = (!isNaN(pceActual) && !isNaN(pceForecast) && pceActual < pceForecast ? 1 : 0) + (!isNaN(unempActual) && !isNaN(unempForecast) && unempActual > unempForecast ? 1 : 0) + (!isNaN(fedCurrent) && !isNaN(fedPrevious) && fedCurrent < fedPrevious ? 1 : 0);
+    var macroBear = (!isNaN(pceActual) && !isNaN(pceForecast) && pceActual > pceForecast ? 1 : 0) + (!isNaN(unempActual) && !isNaN(unempForecast) && unempActual < unempForecast ? 1 : 0) + (!isNaN(fedCurrent) && !isNaN(fedPrevious) && fedCurrent > fedPrevious ? 1 : 0);
+    var score = 0;
+    if (direction === "long") { if (macroBull >= 2) score += 30; else if (macroBull) score += 15; if (xauTrend === "bullish") score += 20; if (!isNaN(rsi) && rsi >= 35 && rsi <= 60) score += 10; if (dxyTrend === "bearish") score += 10; if (yieldTrend === "bearish") score += 10; }
+    else { if (macroBear >= 2) score += 30; else if (macroBear) score += 15; if (xauTrend === "bearish") score += 20; if (!isNaN(rsi) && rsi >= 40 && rsi <= 65) score += 10; if (dxyTrend === "bullish") score += 10; if (yieldTrend === "bullish") score += 10; }
+    if (!isNaN(vix) && vix >= 20) score += 10;
+    var vcprLevels = ["dailyBottom", "dailyTop", "weeklyBottom", "weeklyTop", "monthlyBottom", "monthlyTop"].map(function (key) { return Math.abs(price - tradeScoreNumber(form, key)); }).filter(function (distance) { return !isNaN(distance); });
+    var nearestVcpr = vcprLevels.length ? Math.min.apply(Math, vcprLevels) : NaN;
+    if (!isNaN(nearestVcpr) && nearestVcpr <= 2) score += 10;
+    else if (!isNaN(nearestVcpr) && nearestVcpr <= 5) score += 5;
+    var verdict = caScoreLabel(score);
+    result.innerHTML = '<div class="ca-score-number">' + score + '<small>/100</small></div><div><b>' + verdict.label + '</b><p>Macro: ' + (macroBull > macroBear ? "gold supportive" : macroBear > macroBull ? "gold negative" : "mixed") + ' | XAU trend: ' + xauTrend + ' | DXY: ' + dxyTrend + ' | US10Y: ' + yieldTrend + ' | Nearest VCPR: ' + (isNaN(nearestVcpr) ? "not entered" : nearestVcpr.toFixed(2)) + '</p></div>';
+    if (levels) {
+      var fields = [["Daily VCPR", "dailyBottom", "dailyTop"], ["Weekly VCPR", "weeklyBottom", "weeklyTop"], ["Monthly VCPR", "monthlyBottom", "monthlyTop"], ["PDL", "pdl"], ["PDH", "pdh"], ["Weekly pivot", "weeklyPivot"], ["Monthly pivot", "monthlyPivot"], ["POC", "poc"], ["VAH", "vah"], ["VAL", "val"]];
+      levels.innerHTML = fields.map(function (field) {
+        var text = field.length === 3 ? tradeScoreDistance(price, tradeScoreNumber(form, field[1])) + " / " + tradeScoreDistance(price, tradeScoreNumber(form, field[2])) : tradeScoreDistance(price, tradeScoreNumber(form, field[1]));
+        return '<div><b>' + field[0] + ' distance</b><span>' + text + '</span></div>';
+      }).join("");
+    }
+  }
+  function fillTradeScoreField(form, name, value) {
+    if (form.elements[name] && !form.elements[name].value && value != null && value !== "") form.elements[name].value = value;
+  }
+  function autoFillTradeScore() {
+    var form = $("#trade-score-form");
+    if (!form) return;
+    var xau = latestPrice("XAUUSD"), dxy = latestPrice("DXY");
+    if (!isNaN(xau)) fillTradeScoreField(form, "xauPrice", xau.toFixed(2));
+    if (!isNaN(dxy)) fillTradeScoreField(form, "dxyPrice", dxy.toFixed(3));
+    state.rows.filter(function (row) { return row.Symbol === "XAUUSD"; }).forEach(function (row) {
+      var timeframe = String(row.Timeframe || "").toLowerCase();
+      var prefix = timeframe === "daily" ? "daily" : timeframe === "weekly" ? "weekly" : timeframe === "monthly" ? "monthly" : "";
+      if (!prefix) return;
+      fillTradeScoreField(form, prefix + "Bottom", row.BCPR);
+      fillTradeScoreField(form, prefix + "Top", row.TCPR);
+    });
+    var macro = caMacroItems().slice().sort(function (a, b) { return b.month.localeCompare(a.month); })[0];
+    if (macro) {
+      fillTradeScoreField(form, "pcePrevious", macro.inflation && macro.inflation.previous);
+      fillTradeScoreField(form, "pceActual", macro.inflation && macro.inflation.actual);
+      fillTradeScoreField(form, "pceForecast", macro.inflation && macro.inflation.forecast);
+      fillTradeScoreField(form, "fedCurrent", macro.fedRate && macro.fedRate.actual);
+      fillTradeScoreField(form, "fedPrevious", macro.fedRate && macro.fedRate.previous);
+      fillTradeScoreField(form, "fedForecast", macro.fedRate && macro.fedRate.forecast);
+      fillTradeScoreField(form, "unempPrevious", macro.employment && macro.employment.previous);
+      fillTradeScoreField(form, "unempActual", macro.employment && macro.employment.actual);
+      fillTradeScoreField(form, "unempForecast", macro.employment && macro.employment.forecast);
+    }
+    renderCaScore();
+  }
+  function buildTradeScorePrompt() {
+    var form = $("#trade-score-form"), values = caFormValues(form);
+    var score = $("#ca-score-result").textContent.trim();
+    var macro = "Core PCE (previous / forecast / actual): " + [values.pcePrevious, values.pceForecast, values.pceActual].map(function (v) { return v || "--"; }).join(" / ") + "%\n" +
+      "Unemployment (previous / forecast / actual): " + [values.unempPrevious, values.unempForecast, values.unempActual].map(function (v) { return v || "--"; }).join(" / ") + "%\n" +
+      "Fed rate (previous / forecast / actual): " + [values.fedPrevious, values.fedForecast, values.fedCurrent].map(function (v) { return v || "--"; }).join(" / ") + "%\n" +
+      "VIX: " + (values.vix || "--");
+    var technical = ["xauPrice", "rsi", "ema20", "ema200", "dailyBottom", "dailyTop", "dailyAge", "weeklyBottom", "weeklyTop", "monthlyBottom", "monthlyTop", "pdl", "pdh", "weeklyPivot", "monthlyPivot", "poc", "vah", "val", "dxyPrice", "dxyEma20", "dxyEma200", "yieldPrice", "yieldEma20", "yieldEma200"]
+      .map(function (key) { return key + ": " + (values[key] || "--"); }).join("\n");
+    return "You are an XAUUSD VCPR trading analyst. Analyze this planned " + values.direction.toUpperCase() + " trade. Do not claim certainty; identify conditions that would invalidate the setup.\n\nMACRO FUNDAMENTALS\n" + macro + "\n\nTECHNICAL AND INTERMARKET DATA\n" + technical + "\n\nDASHBOARD CALCULATION\n" + score + "\n\nTASK\n1. State the gold bias from PCE, employment, Fed rate, and VIX, including conflicts.\n2. Assess XAUUSD against EMA20, EMA200, RSI, PDL/PDH, pivots, POC/VAH/VAL, and each VCPR band.\n3. Assess whether DXY and US10Y confirm or conflict with the trade.\n4. Give a trade decision: trade, wait for confirmation, or skip.\n5. Specify entry trigger, invalidation level, stop logic, and target levels using only the entered prices.";
+  }
+  function renderCaScoreSummary() {
+    var target = $("#ca-score-summary");
+    if (!target) return;
+    var completed = caItems().filter(function (item) {
+      var isVcpr = /vcpr|virgin cpr/i.test(item.strategy || "");
+      return isVcpr && (item.outcome === "Win" || item.outcome === "Loss" || item.outcome === "Breakeven");
+    });
+    var wins = completed.filter(function (item) { return item.outcome === "Win"; }).length;
+    var decisive = completed.filter(function (item) { return item.outcome === "Win" || item.outcome === "Loss"; });
+    var highScore = decisive.filter(function (item) { return caScore(item) >= 70; });
+    var highWins = highScore.filter(function (item) { return item.outcome === "Win"; }).length;
+    var average = completed.length ? Math.round(completed.reduce(function (sum, item) { return sum + caScore(item); }, 0) / completed.length) : 0;
+    var stat = function (label, value) { return '<div class="ca-score-stat"><span>' + label + '</span><b>' + value + '</b></div>'; };
+    target.innerHTML = stat("Closed trades", completed.length) + stat("Wins", wins) + stat("Overall win rate", decisive.length ? Math.round(wins / decisive.length * 100) + "%" : "--") + stat("70+ score win rate", highScore.length ? Math.round(highWins / highScore.length * 100) + "%" : "--") + stat("Average score", completed.length ? average + "/100" : "--");
+  }
   function caThumb(item) { return item.xauImage || item.dxyImage || item.us10yImage || ""; }
   function renderCaList() {
     var items = caItems();
@@ -352,7 +457,7 @@
       var thumb = img
         ? '<img class="ca-entry-thumb" src="' + esc(img) + '" data-view="' + idx + '" alt="chart">'
         : '<div class="ca-entry-thumb placeholder">No image</div>';
-      var tags = [item.day, item.timeframe, item.session, item.dxy, item.us10y, item.vix, item.fed, item.rr, item.grade, item.sl ? "SL " + item.sl : ""]
+      var tags = [item.day, item.timeframe, item.session, "Score " + caScore(item) + "/100", item.dxy, item.us10y, item.vix, item.fed, item.rr, item.grade, item.sl ? "SL " + item.sl : ""]
         .filter(Boolean).map(function (t) { return '<span class="ca-tag">' + esc(t) + '</span>'; }).join("");
       return '<div class="ca-entry" data-index="' + idx + '">' + thumb +
         '<div class="ca-entry-body">' +
@@ -395,12 +500,14 @@
     if (!form || !item) return;
     var keys = ["day", "strategy", "direction", "session", "prevCprWidth", "todayCprWidth", "ydayType", "todayType",
       "fvgZone", "dxy", "dxyNote", "us10y", "us10yNote", "vix", "fed", "rr", "grade", "outcome",
-      "entryPrice", "sl", "minSlWin", "maxSlLoss", "xauImage", "dxyImage", "us10yImage", "notes"];
+      "entryPrice", "sl", "minSlWin", "maxSlLoss", "xauImage", "dxyImage", "us10yImage", "notes", "vcprQuality",
+      "reaction", "macroAlignment", "newsRisk", "technicalTrend", "volumeProfile", "orderFlow", "rrScore"];
     keys.forEach(function (key) {
       if (form.elements[key] != null && item[key] != null) form.elements[key].value = item[key];
     });
     $("#ca-custom").innerHTML = "";
     (item.custom || []).forEach(function (field) { caAddCustomField("ca-custom", field.label, field.value); });
+    renderCaScore();
     form.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function caSyncToSheet(data) {
@@ -415,6 +522,19 @@
     fetch(config.scriptUrl, { method: "POST", body: JSON.stringify({ action: "deleteChartAnalysis", day: day }) }).catch(function () {});
   }
   var caLastFetchedDay = null;
+  function caLoadRecentDays() {
+    var box = $("#ca-review-recent");
+    if (!box) return;
+    if (!config.scriptUrl) { box.innerHTML = '<p class="calc-note">Apps Script URL not configured in config.js.</p>'; return; }
+    box.innerHTML = '<p class="calc-note">Loading…</p>';
+    fetch(config.scriptUrl + (config.scriptUrl.indexOf("?") >= 0 ? "&" : "?") + "action=chartAnalysis&t=" + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (json) {
+        var days = (json.rows || []).map(function (row) { return row.day; }).filter(Boolean).sort().reverse().slice(0, 20);
+        box.innerHTML = days.length ? days.map(function (d) { return '<span class="ca-review-chip" data-day="' + esc(d) + '">' + esc(d) + '</span>'; }).join("") : '<p class="calc-note">No saved analysis in the sheet yet.</p>';
+      })
+      .catch(function () { box.innerHTML = '<p class="calc-note">Could not reach the Google Sheet.</p>'; });
+  }
   function caFetchAnalysisByDate() {
     var day = $("#ca-fetch-date").value;
     var result = $("#ca-fetch-date-result");
@@ -446,8 +566,9 @@
     var notes = item.notes ? '<p class="calc-note">' + esc(item.notes) + '</p>' : '';
     var custom = (item.custom || []).filter(function (f) { return f.label || f.value; })
       .map(function (f) { return '<span class="ca-tag">' + esc(f.label) + ": " + esc(f.value) + '</span>'; }).join(" ");
+    var imageLabels = { xauImage: "XAUUSD chart", dxyImage: "DXY chart", us10yImage: "US10Y chart" };
     var images = ["xauImage", "dxyImage", "us10yImage"].filter(function (k) { return item[k]; })
-      .map(function (k) { return '<img src="' + esc(item[k]) + '" alt="' + k + '">'; }).join("");
+      .map(function (k) { return '<figure><figcaption>' + imageLabels[k] + '</figcaption><img src="' + esc(item[k]) + '" alt="' + k + '"></figure>'; }).join("");
     return loadBtn + grid + notes + (custom ? '<div class="ca-tags">' + custom + '</div>' : "") + (images ? '<div class="ca-fetch-images">' + images + '</div>' : "");
   }
 
@@ -622,20 +743,20 @@
       (value.note ? '<p class="calc-note">' + esc(value.note) + '</p>' : '');
   }
   $("#refresh").addEventListener("click", load); $("#pair-search").addEventListener("input", render); $("#near-only").addEventListener("change", render);
-  (function () {
-    var tabs = [$("#ptab-pairs"), $("#ptab-gold"), $("#ptab-analysis")];
-    var panels = [$("#tab-panel-pairs"), $("#tab-panel-gold"), $("#tab-panel-analysis")];
-    var tabKeys = ["pairs", "gold", "analysis"];
-    tabs.forEach(function (btn, i) {
-      if (!btn) return;
-      btn.addEventListener("click", function () {
-        tabs.forEach(function (b, j) { if (b) { b.classList.toggle("active", j === i); b.setAttribute("aria-selected", j === i); } });
-        panels.forEach(function (p, j) { if (p) p.classList.toggle("active", j === i); });
-        state.mainTab = tabKeys[i];
-        render();
-      });
-    });
-  }());
+  var mainTabs = [$("#ptab-pairs"), $("#ptab-gold"), $("#ptab-score"), $("#ptab-analysis"), $("#ptab-review")];
+  var mainPanels = [$("#tab-panel-pairs"), $("#tab-panel-gold"), $("#tab-panel-score"), $("#tab-panel-analysis"), $("#tab-panel-review")];
+  var mainTabKeys = ["pairs", "gold", "score", "analysis", "review"];
+  function caActivateTab(key) {
+    var i = mainTabKeys.indexOf(key);
+    if (i < 0) return;
+    mainTabs.forEach(function (b, j) { if (b) { b.classList.toggle("active", j === i); b.setAttribute("aria-selected", j === i); } });
+    mainPanels.forEach(function (p, j) { if (p) p.classList.toggle("active", j === i); });
+    state.mainTab = key;
+    render();
+    autoFillTradeScore();
+    if (key === "review") caLoadRecentDays();
+  }
+  mainTabs.forEach(function (btn, i) { if (btn) btn.addEventListener("click", function () { caActivateTab(mainTabKeys[i]); }); });
   document.querySelectorAll(".tab").forEach(function (tab) { tab.addEventListener("click", function () { document.querySelectorAll(".tab").forEach(function (item) { item.classList.remove("active"); }); tab.classList.add("active"); state.timeframe = tab.dataset.timeframe; render(); }); });
   $("#trade-form").addEventListener("submit", function (event) { event.preventDefault(); var form = new FormData(event.target); var items = journal(); items.unshift(Object.fromEntries(form.entries())); saveJournal(items); event.target.reset(); });
   $("#journal-body").addEventListener("click", function (event) { if (event.target.dataset.delete) { var items = journal(); items.splice(Number(event.target.dataset.delete), 1); saveJournal(items); } });
@@ -732,25 +853,44 @@
     var form = event.target;
     var data = caFormValues(form);
     data.custom = caReadCustomFields("ca-custom");
+    data.score = caScore(data);
     if (!data.day) data.day = new Date().toISOString().slice(0, 10);
     data.id = Date.now();
     var items = caItems(); items.unshift(data); caSaveItems(items);
-    renderCaList();
+    renderCaList(); renderCaScoreSummary();
     caSyncToSheet(data);
     form.reset();
     $("#ca-custom").innerHTML = "";
     try { $("#ca-day").valueAsDate = new Date(); } catch (_) {}
   });
   $("#ca-find-similar").addEventListener("click", function () { var data = caFormValues($("#ca-form")); data.custom = caReadCustomFields("ca-custom"); renderCaMatches(data); });
+  $("#trade-score-calculate").addEventListener("click", renderCaScore);
+  $("#trade-score-form").addEventListener("input", renderCaScore);
+  $("#trade-score-autofill").addEventListener("click", function () {
+    autoFillTradeScore();
+  });
+  $("#trade-score-prompt").addEventListener("click", function () {
+    renderCaScore();
+    $("#trade-score-prompt-output").value = buildTradeScorePrompt();
+    $("#trade-score-prompt-wrap").style.display = "block";
+    $("#trade-score-prompt-wrap").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+  $("#trade-score-copy-prompt").addEventListener("click", function () {
+    var button = this, text = $("#trade-score-prompt-output").value;
+    navigator.clipboard.writeText(text).then(function () {
+      button.textContent = "Copied";
+      setTimeout(function () { button.textContent = "Copy prompt"; }, 1500);
+    }).catch(function () { button.textContent = "Copy failed"; });
+  });
   $("#ca-form").addEventListener("reset", function () {
-    setTimeout(function () { $("#ca-match-panel").style.display = "none"; $("#ca-custom").innerHTML = ""; }, 0);
+    setTimeout(function () { $("#ca-match-panel").style.display = "none"; $("#ca-custom").innerHTML = ""; renderCaScore(); }, 0);
   });
   $("#ca-list").addEventListener("click", function (event) {
     var loadIdx = event.target.dataset.load, delIdx = event.target.dataset.deleteCa, viewIdx = event.target.dataset.view;
     if (loadIdx != null && loadIdx !== "") caLoadIntoForm(caItems()[Number(loadIdx)]);
     if (delIdx != null && delIdx !== "") {
       var items = caItems(); var removed = items.splice(Number(delIdx), 1)[0];
-      caSaveItems(items); renderCaList();
+      caSaveItems(items); renderCaList(); renderCaScoreSummary();
       if (removed) caDeleteFromSheet(removed.day);
     }
     if (viewIdx != null && viewIdx !== "") { var item = caItems()[Number(viewIdx)]; var img = caThumb(item); if (img) window.open(img, "_blank"); }
@@ -779,7 +919,13 @@
   });
   $("#ca-fetch-date-btn").addEventListener("click", caFetchAnalysisByDate);
   $("#ca-fetch-date-result").addEventListener("click", function (event) {
-    if (event.target.id === "ca-fetch-load-btn" && caLastFetchedDay) caLoadIntoForm(caLastFetchedDay);
+    if (event.target.id === "ca-fetch-load-btn" && caLastFetchedDay) { caActivateTab("analysis"); caLoadIntoForm(caLastFetchedDay); }
+  });
+  $("#ca-review-recent").addEventListener("click", function (event) {
+    var day = event.target.dataset.day;
+    if (!day) return;
+    $("#ca-fetch-date").value = day;
+    caFetchAnalysisByDate();
   });
   $("#ca-macro-month").addEventListener("change", function () {
     var month = $("#ca-macro-month").value;
@@ -813,5 +959,5 @@
     }
   });
   initCalcPairs();
-  renderJournal(); renderCaList(); renderCaMacro(); load();
+  renderJournal(); renderCaList(); renderCaScore(); renderCaScoreSummary(); renderCaMacro(); load();
 }());

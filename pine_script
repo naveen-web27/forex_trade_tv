@@ -39,6 +39,8 @@ mTREND  = input.bool(true,  "H. Trend Change Detector", group=gT)
 mDash   = input.bool(true,  "G. Dashboard",          group=gT)
 mWVCPR  = input.bool(true,  "D2. Weekly Virgin CPR",  group=gT)
 mMVCPR  = input.bool(true,  "D3. Monthly Virgin CPR", group=gT)
+mJSON   = input.bool(false, "L. JSON snapshot table", group=gT)
+mJSONAlert = input.bool(false, "L. Send JSON alert on candle close", group=gT)
 
 // ─────────────────────────── RSI INPUTS
 gR = "A · RSI"
@@ -970,6 +972,33 @@ if mDash and barstate.islast
                 mvc += 1
     f_cell(dash,0,18,"M-Virgin CPRs",bgR,color.white)
     f_cell(dash,1,18,str.tostring(mvc),bgR,mvc>0?color.orange:color.white)
+
+// ─────────────────────────── L · MANUAL JSON SNAPSHOT
+// Enable this in settings, then copy the displayed text into the dashboard JSON import.
+var table jsonTable = na
+jsonText = '{"symbol":"' + syminfo.ticker + '"' +
+  ',"price":' + str.tostring(close, format.mintick) +
+  ',"rsi":' + str.tostring(rsi, "#.##") +
+  ',"ema20":' + str.tostring(ema20, format.mintick) +
+  ',"ema200":' + str.tostring(ema200, format.mintick) +
+  ',"dailyPivot":' + str.tostring(piv, format.mintick) +
+  ',"dailyVcprBottom":' + str.tostring(math.min(tc, bc), format.mintick) +
+  ',"dailyVcprTop":' + str.tostring(math.max(tc, bc), format.mintick) +
+  ',"weeklyPivot":' + str.tostring(wPivot, format.mintick) +
+  ',"monthlyPivot":' + str.tostring(mPivot, format.mintick) +
+  ',"poc":' + str.tostring(pocPx, format.mintick) +
+  ',"vah":' + str.tostring(vahPx, format.mintick) +
+  ',"val":' + str.tostring(valPx, format.mintick) + '}'
+if mJSON and barstate.islast
+    if na(jsonTable)
+        jsonTable := table.new(position.middle_right, 1, 2, border_width=1)
+    table.cell(jsonTable, 0, 0, "JSON SNAPSHOT - copy text", bgcolor=color.new(color.blue, 10), text_color=color.white, text_size=size.small)
+    table.cell(jsonTable, 0, 1, jsonText, bgcolor=color.new(color.black, 15), text_color=color.white, text_size=size.tiny)
+else if not na(jsonTable)
+    table.clear(jsonTable, 0, 0, 0, 1)
+
+if mJSONAlert and barstate.isconfirmed
+    alert(jsonText, alert.freq_once_per_bar_close)
 
 // ═════════════════════════════════════════════════════════════════════
 //  K · SMART MONEY / INSTITUTIONAL ORDER FLOW  (bottom-left)
