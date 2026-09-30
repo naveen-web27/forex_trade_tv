@@ -183,6 +183,23 @@
     #tab-panel-review .ca-fetch-images figure{margin:0;display:flex;flex-direction:column;gap:6px}
     #tab-panel-review .ca-fetch-images figcaption{font:700 11px Manrope,sans-serif;color:var(--green);text-transform:uppercase;letter-spacing:.06em}
     #tab-panel-review .ca-fetch-images img{max-width:100%;width:100%;border-radius:8px;border:1px solid var(--line);box-shadow:var(--shadow)}
+    .inflation-calc{margin:0 0 42px;padding:22px 24px;background:var(--white);border:1px solid var(--line);border-radius:7px}
+    .inflation-calc-head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:16px}
+    .inflation-calc-head p{margin:6px 0 0;color:var(--muted);font-size:12px}
+    .inflation-calc-form{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+    .inflation-calc-form label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font:10px 'DM Mono',monospace;text-transform:uppercase}
+    .inflation-calc-form input{width:145px;padding:10px 11px;border:1px solid var(--line);border-radius:5px;color:var(--ink);background:#fff}
+    .inflation-results{display:none;margin-top:18px;overflow-x:auto}
+    .inflation-results.show{display:block}
+    .inflation-table{width:100%;border-collapse:collapse;min-width:680px;text-align:left}
+    .inflation-table th{padding:9px 10px;background:#f4f7f2;color:var(--muted);font:10px 'DM Mono',monospace;text-transform:uppercase}
+    .inflation-table td{padding:11px 10px;border-top:1px solid var(--line);font-size:11px;line-height:1.45;vertical-align:top}
+    .inflation-table td:first-child{font:700 13px 'DM Mono',monospace;white-space:nowrap}
+    .inflation-table tr[data-outlook="bullish"] td:first-child{color:var(--green)}
+    .inflation-table tr[data-outlook="bearish"] td:first-child{color:var(--red)}
+    .inflation-table tr[data-outlook="neutral"] td:first-child{color:var(--amber)}
+    .inflation-caveat{margin:12px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+    @media(max-width:700px){.inflation-calc{padding:17px 14px}.inflation-calc-head{display:block}.inflation-calc-form label,.inflation-calc-form input{width:100%}.inflation-calc-form .button{width:100%}}
   </style>
 </head>
 <body>
@@ -194,6 +211,16 @@
     <section class="hero"><div><p class="eyebrow">Market preparation / 12 instruments</p><h1>Trade the level,<br><em>not the noise.</em></h1><p class="hero-copy">A compact view of active Virgin CPR zones, live distance, and the next decision worth making.</p></div><div class="hero-note"><span class="pulse"></span><strong>Alert window</strong><span>5 to 20 pips from a band</span></div></section>
     <section class="stats" aria-label="Dashboard summary"><div><span>Pairs with zones</span><strong id="stat-pairs">--</strong></div><div><span>Active bands</span><strong id="stat-bands">--</strong></div><div class="stat-alert"><span>Near reaction</span><strong id="stat-near">--</strong></div><div><span>Latest scan</span><strong id="stat-scan">--</strong></div></section>
     <section class="journal-section"><div class="section-heading"><div><p class="eyebrow">Quick maths</p><h2>Pips &amp; P/L calculator</h2></div></div><form id="calc-form" class="trade-form calc-form"><select name="pair" id="calc-pair"></select><select name="direction"><option>Long</option><option>Short</option></select><input name="entry" type="number" step="any" placeholder="Entry price" required><input name="exit" type="number" step="any" placeholder="Exit price" required><input name="lots" type="number" step="any" value="1" placeholder="Lot size"><button class="button" type="button" id="calc-use-live">Use live price</button><button class="button button-primary" type="submit">Calculate</button></form><div id="calc-result" class="calc-result"></div></section>
+    <section class="inflation-calc" aria-labelledby="inflation-calc-title">
+      <div class="inflation-calc-head"><div><p class="eyebrow">Core PCE / CPI · monthly change</p><h2 id="inflation-calc-title" style="font-size:27px">Inflation reaction scenarios</h2><p>Enter the previous reading and forecast to compare possible actual results.</p></div></div>
+      <form id="inflation-calc-form" class="inflation-calc-form">
+        <label>Previous (%)<input name="previous" type="number" step="any" placeholder="e.g. 0.2" required></label>
+        <label>Forecast (%)<input name="forecast" type="number" step="any" placeholder="e.g. 0.3" required></label>
+        <button class="button button-primary" type="submit">Calculate scenarios</button>
+      </form>
+      <div id="inflation-results" class="inflation-results" aria-live="polite"></div>
+      <p class="inflation-caveat">Typical short-term relationship only: markets react to the actual-versus-forecast surprise and the resulting move in USD and yields. This does not predict an exact price move or guarantee a Fed rate change.</p>
+    </section>
     <nav class="page-tab-nav" role="tablist" aria-label="Instrument view">
       <button class="page-tab-btn" id="ptab-pairs" role="tab" aria-selected="false" aria-controls="tab-panel-pairs">Other Pairs</button>
       <button class="page-tab-btn active" id="ptab-gold" role="tab" aria-selected="true" aria-controls="tab-panel-gold">Gold (XAUUSD)<span class="tab-badge">XAU</span></button>

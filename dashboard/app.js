@@ -742,6 +742,30 @@
       '<div><b>Lot size</b><span>' + lots.toFixed(2) + '</span></div>' +
       (value.note ? '<p class="calc-note">' + esc(value.note) + '</p>' : '');
   }
+  function runInflationCalculator(event) {
+    event.preventDefault();
+    var form = new FormData(event.target);
+    var previous = Number(form.get("previous")), forecast = Number(form.get("forecast"));
+    var results = $("#inflation-results");
+    var scenarios = [-2, -1, 0, 1, 2];
+    var formatPercent = function (value) { return Number(value.toFixed(3)).toString() + "%"; };
+    var rows = scenarios.map(function (offset) {
+      var actual = Number((forecast + offset * 0.1).toFixed(3));
+      var outlook = offset < 0 ? "bullish" : offset > 0 ? "bearish" : "neutral";
+      var surprise = offset < 0 ? "Below forecast" : offset > 0 ? "Above forecast" : "In line with forecast";
+      var trend = actual < previous ? "slower than previous" : actual > previous ? "higher than previous" : "same as previous";
+      var fed = offset < 0
+        ? "Less pressure to keep rates high; cuts may become more likely, not certain."
+        : offset > 0
+          ? "More pressure to keep rates high; cuts may be delayed, and a hike is not automatic."
+          : "Little new rate signal from this release; the reading may be largely priced in.";
+      var usd = offset < 0 ? "May weaken" : offset > 0 ? "May strengthen" : "Could be mixed";
+      var gold = offset < 0 ? "May rise (bullish bias)" : offset > 0 ? "May fall (bearish bias)" : "Mixed / no clear bias";
+      return '<tr data-outlook="' + outlook + '"><td>' + formatPercent(actual) + '</td><td>' + surprise + "; " + trend + '</td><td>' + fed + '</td><td>' + usd + '</td><td>' + gold + '</td></tr>';
+    }).join("");
+    results.innerHTML = '<table class="inflation-table"><thead><tr><th>Possible actual</th><th>Compared with forecast / previous</th><th>Likely Fed-rate expectations</th><th>USD tendency</th><th>XAUUSD tendency</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    results.classList.add("show");
+  }
   $("#refresh").addEventListener("click", load); $("#pair-search").addEventListener("input", render); $("#near-only").addEventListener("change", render);
   var mainTabs = [$("#ptab-pairs"), $("#ptab-gold"), $("#ptab-score"), $("#ptab-analysis"), $("#ptab-review")];
   var mainPanels = [$("#tab-panel-pairs"), $("#tab-panel-gold"), $("#tab-panel-score"), $("#tab-panel-analysis"), $("#tab-panel-review")];
@@ -762,6 +786,7 @@
   $("#journal-body").addEventListener("click", function (event) { if (event.target.dataset.delete) { var items = journal(); items.splice(Number(event.target.dataset.delete), 1); saveJournal(items); } });
   $("#export-journal").addEventListener("click", function () { var items = journal(); var csv = "Pair,Direction,Entry,Stop,Target,Note\n" + items.map(function (item) { return [item.pair, item.direction, item.entry, item.stop, item.target, item.note].map(function (value) { return '"' + String(value || "").replace(/"/g, '""') + '"'; }).join(","); }).join("\n"); var link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); link.download = "vcpr-trade-journal.csv"; link.click(); });
   $("#calc-form").addEventListener("submit", runCalculator);
+  $("#inflation-calc-form").addEventListener("submit", runInflationCalculator);
   $("#calc-use-live").addEventListener("click", function () { var pair = $("#calc-pair").value; var price = latestPrice(pair); if (!isNaN(price)) { $("#calc-form").entry.value = price; $("#calc-form").exit.value = price; } });
   $("#gold-generate-prompt").addEventListener("click", function () {
     var wrap = $("#ai-prompt-wrap"), output = $("#ai-prompt-output");
